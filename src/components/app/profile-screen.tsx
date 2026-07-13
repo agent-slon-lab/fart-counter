@@ -18,6 +18,9 @@ import {
   Download,
   Trash2,
   ChevronRight,
+  QrCode,
+  MapPin,
+  CloudSun,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,9 +36,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useStore, type AccentColor, type ThemeMode } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
-import { translations } from "@/lib/i18n";
+import { LANGUAGES, translations } from "@/lib/i18n";
 import { toast } from "sonner";
 import {
   installNotifications,
@@ -44,6 +53,7 @@ import {
 } from "@/lib/notifications";
 import { buildExportPayload, downloadText, readFileAsText } from "@/lib/export";
 import { dateKey } from "@/lib/store";
+import { qrToDataURL } from "@/lib/qr";
 import { AchievementsList } from "./achievements-list";
 import { ShareCardDialog } from "./share-card-dialog";
 
@@ -65,25 +75,32 @@ export function ProfileScreen() {
   const resetAllData = useStore((s) => s.resetAllData);
   const farts = useStore((s) => s.farts);
   const water = useStore((s) => s.water);
+  const food = useStore((s) => s.food);
+  const moods = useStore((s) => s.moods);
   const unlocked = useStore((s) => s.unlockedAchievements);
 
   const [achOpen, setAchOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // (Re)install notification scheduler whenever settings change
+  // Install notifications when settings change
   useEffect(() => {
     installNotifications({
       enabled: settings.notificationsEnabled,
       evening: settings.eveningReminder,
       water: settings.waterReminder,
+      morning: settings.morningReminder,
+      gentle: settings.gentleReminder,
       lang: settings.language,
     });
   }, [
     settings.notificationsEnabled,
     settings.eveningReminder,
     settings.waterReminder,
+    settings.morningReminder,
+    settings.gentleReminder,
     settings.language,
   ]);
 
@@ -104,12 +121,12 @@ export function ProfileScreen() {
 
   function handleExportAll() {
     const payload = buildExportPayload(farts, water, settings, unlocked);
+    (payload as any).food = food;
+    (payload as any).moods = moods;
     const json = JSON.stringify(payload, null, 2);
     const filename = `fart-counter-backup-${dateKey(new Date())}.json`;
     const ok = downloadText(filename, json, "application/json");
-    toast(ok ? t("toast_data_exported") : t("export_failed"), {
-      icon: ok ? "✅" : "⚠️",
-    });
+    toast(ok ? t("toast_data_exported") : t("export_failed"), { icon: ok ? "✅" : "⚠️" });
   }
 
   function handleImportClick() {
@@ -122,11 +139,7 @@ export function ProfileScreen() {
     try {
       const text = await readFileAsText(file);
       const ok = importData(text);
-      if (ok) {
-        toast(t("toast_data_imported"), { icon: "✅" });
-      } else {
-        toast(t("toast_import_failed"), { icon: "⚠️" });
-      }
+      toast(ok ? t("toast_data_imported") : t("toast_import_failed"), { icon: ok ? "✅" : "⚠️" });
     } catch {
       toast(t("toast_import_failed"), { icon: "⚠️" });
     }
@@ -139,45 +152,57 @@ export function ProfileScreen() {
     toast(t("toast_data_reset"), { icon: "🗑️" });
   }
 
+  function handleCopyLink() {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    navigator.clipboard?.writeText(url).then(
+      () => toast(t("share_app_link_copied"), { icon: "📋" }),
+      () => toast(t("export_failed"), { icon: "⚠️" })
+    );
+  }
+
   const perm = notificationPermission();
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const qrData = qrOpen ? qrToDataURL(shareUrl, 6) : "";
 
   return (
     <div className="flex flex-col gap-4 px-4 pb-4">
       <h1 className="pt-1 text-center text-lg font-bold">{t("settings_title")}</h1>
 
       {/* Achievements shortcut */}
-      <Card
-        className="cursor-pointer p-4 transition-colors hover:bg-muted/40"
-        onClick={() => setAchOpen(true)}
-      >
+      <Card className="cursor-pointer p-4 transition-colors hover:bg-muted/40" onClick={() => setAchOpen(true)}>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-xl">
-            🏆
-          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-xl">🏆</div>
           <div className="flex-1">
             <p className="text-sm font-bold">{t("achievements_title")}</p>
             <p className="text-xs text-muted-foreground">
-              {unlocked.length} / 7 {t("achievements_unlocked").toLowerCase()}
+              {unlocked.length} / 18 {t("achievements_unlocked").toLowerCase()}
             </p>
           </div>
           <ChevronRight className="h-5 w-5 text-muted-foreground" />
         </div>
       </Card>
 
-      {/* Share card shortcut */}
-      <Card
-        className="cursor-pointer p-4 transition-colors hover:bg-muted/40"
-        onClick={() => setShareOpen(true)}
-      >
+      {/* Share card */}
+      <Card className="cursor-pointer p-4 transition-colors hover:bg-muted/40" onClick={() => setShareOpen(true)}>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-xl">
-            📤
-          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-xl">📤</div>
           <div className="flex-1">
             <p className="text-sm font-bold">{t("share_card_section")}</p>
-            <p className="text-xs text-muted-foreground">
-              {t("generate_share_card")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("generate_share_card")}</p>
+          </div>
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        </div>
+      </Card>
+
+      {/* QR code */}
+      <Card className="cursor-pointer p-4 transition-colors hover:bg-muted/40" onClick={() => setQrOpen(true)}>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-xl">
+            <QrCode className="h-5 w-5" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold">{t("share_app_qr")}</p>
+            <p className="text-xs text-muted-foreground">{t("share_app_link")}</p>
           </div>
           <ChevronRight className="h-5 w-5 text-muted-foreground" />
         </div>
@@ -186,15 +211,15 @@ export function ProfileScreen() {
       {/* Language */}
       <SectionCard icon={<Globe className="h-4 w-4" />} title={t("language_section")}>
         <div className="grid grid-cols-2 gap-2">
-          {(["ru", "en"] as const).map((l) => (
+          {LANGUAGES.map((l) => (
             <Button
-              key={l}
-              variant={lang === l ? "default" : "outline"}
+              key={l.id}
+              variant={lang === l.id ? "default" : "outline"}
               size="sm"
-              onClick={() => setLanguage(l)}
+              onClick={() => setLanguage(l.id)}
               className="font-semibold"
             >
-              {l === "ru" ? "🇷🇺 Русский" : "🇬🇧 English"}
+              {l.flag} {l.label}
             </Button>
           ))}
         </div>
@@ -222,26 +247,21 @@ export function ProfileScreen() {
         </div>
       </SectionCard>
 
-      {/* Accent color */}
+      {/* Accent */}
       <SectionCard icon={<Palette className="h-4 w-4" />} title={t("accent_section")}>
         <div className="grid grid-cols-4 gap-2">
           {ACCENTS.map((a) => (
             <button
               key={a.id}
               onClick={() => setAccent(a.id)}
-              aria-label={translations[lang][a.key]}
+              aria-label={translations[lang][a.key] ?? translations.en[a.key]}
               className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-2 transition-all ${
-                settings.accent === a.id
-                  ? "border-foreground scale-105"
-                  : "border-transparent hover:border-border"
+                settings.accent === a.id ? "border-foreground scale-105" : "border-transparent hover:border-border"
               }`}
             >
-              <span
-                className="h-8 w-8 rounded-full shadow-md"
-                style={{ backgroundColor: a.color }}
-              />
+              <span className="h-8 w-8 rounded-full shadow-md" style={{ backgroundColor: a.color }} />
               <span className="text-[9px] font-medium leading-tight text-center text-muted-foreground">
-                {translations[lang][a.key]}
+                {translations[lang][a.key] ?? translations.en[a.key]}
               </span>
             </button>
           ))}
@@ -249,48 +269,25 @@ export function ProfileScreen() {
       </SectionCard>
 
       {/* Sound & Vibration */}
-      <SectionCard icon={<Volume2 className="h-4 w-4" />} title={t("sound_section")}>
-        <ToggleRow
-          icon={<Volume2 className="h-4 w-4" />}
-          label={t("sound_enabled")}
-          checked={settings.soundEnabled}
-          onChange={(v) => setSetting("soundEnabled", v)}
-        />
-        <ToggleRow
-          icon={<Vibrate className="h-4 w-4" />}
-          label={t("vibration_enabled")}
-          checked={settings.vibrationEnabled}
-          onChange={(v) => setSetting("vibrationEnabled", v)}
-        />
+      <SectionCard icon={<Volume2 className="h-4 w-4" />} title={t("sound_settings_section")}>
+        <ToggleRow icon={<Volume2 className="h-4 w-4" />} label={t("sound_enabled")} checked={settings.soundEnabled} onChange={(v) => setSetting("soundEnabled", v)} />
+        <ToggleRow icon={<Vibrate className="h-4 w-4" />} label={t("vibration_enabled")} checked={settings.vibrationEnabled} onChange={(v) => setSetting("vibrationEnabled", v)} />
+        <ToggleRow icon={<MapPin className="h-4 w-4" />} label={t("map_enable")} checked={settings.geoEnabled} onChange={(v) => setSetting("geoEnabled", v)} />
+        <ToggleRow icon={<CloudSun className="h-4 w-4" />} label={t("weather_enable")} checked={settings.weatherEnabled} onChange={(v) => setSetting("weatherEnabled", v)} />
       </SectionCard>
 
       {/* Notifications */}
       <SectionCard icon={<Bell className="h-4 w-4" />} title={t("notifications_section")}>
         {perm === "denied" && (
-          <p className="mb-2 rounded-md bg-destructive/10 px-2 py-1 text-[11px] text-destructive">
-            {t("notif_permission_denied")}
-          </p>
+          <p className="mb-2 rounded-md bg-destructive/10 px-2 py-1 text-[11px] text-destructive">{t("notif_permission_denied")}</p>
         )}
-        <ToggleRow
-          icon={<Bell className="h-4 w-4" />}
-          label={t("notifications_enabled")}
-          checked={settings.notificationsEnabled}
-          onChange={handleNotificationsToggle}
-        />
+        <ToggleRow icon={<Bell className="h-4 w-4" />} label={t("notifications_enabled")} checked={settings.notificationsEnabled} onChange={handleNotificationsToggle} />
         {settings.notificationsEnabled && (
           <>
-            <ToggleRow
-              icon={<span className="text-sm">🌙</span>}
-              label={t("reminder_evening")}
-              checked={settings.eveningReminder}
-              onChange={(v) => setSetting("eveningReminder", v)}
-            />
-            <ToggleRow
-              icon={<span className="text-sm">💧</span>}
-              label={t("reminder_water")}
-              checked={settings.waterReminder}
-              onChange={(v) => setSetting("waterReminder", v)}
-            />
+            <ToggleRow icon={<span className="text-sm">🌙</span>} label={t("reminder_evening")} checked={settings.eveningReminder} onChange={(v) => setSetting("eveningReminder", v)} />
+            <ToggleRow icon={<span className="text-sm">💧</span>} label={t("reminder_water")} checked={settings.waterReminder} onChange={(v) => setSetting("waterReminder", v)} />
+            <ToggleRow icon={<span className="text-sm">☀️</span>} label={t("reminder_morning")} checked={settings.morningReminder} onChange={(v) => setSetting("morningReminder", v)} />
+            <ToggleRow icon={<span className="text-sm">🤔</span>} label={t("notif_gentle_reminder_title")} checked={settings.gentleReminder} onChange={(v) => setSetting("gentleReminder", v)} />
           </>
         )}
       </SectionCard>
@@ -307,19 +304,8 @@ export function ProfileScreen() {
             {t("import_data")}
           </Button>
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="application/json,.json"
-          onChange={handleImportFile}
-          className="hidden"
-        />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setResetOpen(true)}
-          className="mt-2 w-full text-destructive hover:text-destructive"
-        >
+        <input ref={fileInputRef} type="file" accept="application/json,.json" onChange={handleImportFile} className="hidden" />
+        <Button variant="ghost" size="sm" onClick={() => setResetOpen(true)} className="mt-2 w-full text-destructive hover:text-destructive">
           <Trash2 className="mr-1.5 h-4 w-4" />
           {t("reset_data")}
         </Button>
@@ -327,16 +313,29 @@ export function ProfileScreen() {
 
       {/* About */}
       <SectionCard icon={<Info className="h-4 w-4" />} title={t("about_section")}>
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          {t("about_text")}
-        </p>
-        <p className="mt-2 rounded-md bg-primary/10 px-2 py-1.5 text-[11px] text-primary/90">
-          {t("medical_disclaimer")}
-        </p>
+        <p className="text-xs leading-relaxed text-muted-foreground">{t("about_text")}</p>
+        <p className="mt-2 rounded-md bg-primary/10 px-2 py-1.5 text-[11px] text-primary/90">{t("medical_disclaimer")}</p>
       </SectionCard>
 
       <AchievementsList open={achOpen} onOpenChange={setAchOpen} />
       <ShareCardDialog open={shareOpen} onOpenChange={setShareOpen} />
+
+      {/* QR dialog */}
+      <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+        <DialogContent className="max-w-[320px]">
+          <DialogHeader>
+            <DialogTitle className="text-center">{t("share_app_qr")}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-3">
+            {qrData && <img src={qrData} alt="QR" className="h-56 w-56 rounded-lg border border-border bg-white p-2" />}
+            <p className="text-center text-xs text-muted-foreground">{t("landing_qr_title")}</p>
+            <Button variant="outline" size="sm" onClick={handleCopyLink} className="w-full">
+              <Share2 className="mr-1.5 h-3.5 w-3.5" />
+              {t("share_app_link")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Reset confirm */}
       <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
@@ -347,10 +346,7 @@ export function ProfileScreen() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleReset}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+            <AlertDialogAction onClick={handleReset} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -360,39 +356,19 @@ export function ProfileScreen() {
   );
 }
 
-function SectionCard({
-  icon,
-  title,
-  children,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  children: React.ReactNode;
-}) {
+function SectionCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
     <Card className="p-4">
       <div className="mb-3 flex items-center gap-2 text-muted-foreground">
         {icon}
-        <span className="text-xs font-semibold uppercase tracking-widest">
-          {title}
-        </span>
+        <span className="text-xs font-semibold uppercase tracking-widest">{title}</span>
       </div>
       {children}
     </Card>
   );
 }
 
-function ToggleRow({
-  icon,
-  label,
-  checked,
-  onChange,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
+function ToggleRow({ icon, label, checked, onChange }: { icon: React.ReactNode; label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className="flex items-center justify-between py-1.5">
       <div className="flex items-center gap-2">

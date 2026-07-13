@@ -20,6 +20,8 @@ import { AchievementPopup } from "./achievement-popup";
  */
 export function AchievementWatcher() {
   const farts = useStore((s) => s.farts);
+  const food = useStore((s) => s.food);
+  const moods = useStore((s) => s.moods);
   const unlocked = useStore((s) => s.unlockedAchievements);
   const unlockAchievement = useStore((s) => s.unlockAchievement);
   const soundEnabled = useStore((s) => s.settings.soundEnabled);
@@ -37,7 +39,7 @@ export function AchievementWatcher() {
   }, [unlocked]);
 
   useEffect(() => {
-    const shouldUnlock = checkAchievements(farts);
+    const shouldUnlock = checkAchievements(farts, food, moods);
     const newly: AchievementDef[] = [];
     for (const id of shouldUnlock) {
       if (!seenRef.current.has(id)) {
@@ -66,7 +68,7 @@ export function AchievementWatcher() {
         );
       }
     }
-  }, [farts, unlocked, unlockAchievement, soundEnabled, vibEnabled, notifEnabled, t, lang]);
+  }, [farts, food, moods, unlocked, unlockAchievement, soundEnabled, vibEnabled, notifEnabled, t, lang]);
 
   // Show next popup when none is shown
   useEffect(() => {

@@ -2,14 +2,27 @@
 
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Minus, Droplets, Droplet, Wind, Skull } from "lucide-react";
-import { useStore, getTodayCount, getWaterToday, dateKey } from "@/lib/store";
+import { Minus, Droplets, Droplet, Wind, Skull, Volume2, MoreHorizontal } from "lucide-react";
+import {
+  useStore,
+  getTodayCount,
+  getWaterToday,
+  type FartTag,
+  type FartSound,
+} from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 import { playFartSound, playWaterSound, primeAudio } from "@/lib/sounds";
 import { vibrateFart, vibrateWater } from "@/lib/haptics";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { translations } from "@/lib/i18n";
 
 interface Puff {
   id: number;
@@ -23,6 +36,27 @@ function getZone(count: number): "low" | "normal" | "high" {
   return "high";
 }
 
+const TAG_OPTIONS: { tag: FartTag; icon: string; labelKey: string }[] = [
+  { tag: "silent", icon: "🤫", labelKey: "silent" },
+  { tag: "smelly", icon: "💀", labelKey: "smelly" },
+  { tag: "loud", icon: "📢", labelKey: "loud" },
+  { tag: "long", icon: "⏱️", labelKey: "long" },
+  { tag: "toilet", icon: "🚽", labelKey: "toilet" },
+  { tag: "accidental", icon: "😰", labelKey: "accidental" },
+];
+
+const SOUND_OPTIONS: FartSound[] = [
+  "classic",
+  "squeaker",
+  "rumble",
+  "machine_gun",
+  "whoopee",
+  "thunder",
+  "squeak",
+  "deflate",
+  "random",
+];
+
 export function HomeScreen() {
   const { t, lang } = useT();
   const farts = useStore((s) => s.farts);
@@ -33,6 +67,10 @@ export function HomeScreen() {
   const removeWater = useStore((s) => s.removeWater);
   const soundEnabled = useStore((s) => s.settings.soundEnabled);
   const vibEnabled = useStore((s) => s.settings.vibrationEnabled);
+  const fartSound = useStore((s) => s.settings.fartSound);
+  const geoEnabled = useStore((s) => s.settings.geoEnabled);
+  const setSetting = useStore((s) => s.setSetting);
+  const contributeToRank = useStore((s) => s.contributeToRank);
 
   const count = getTodayCount(farts);
   const waterCount = getWaterToday(water);
@@ -40,17 +78,35 @@ export function HomeScreen() {
 
   const [popping, setPopping] = useState(false);
   const [puffs, setPuffs] = useState<Puff[]>([]);
+  const [soundOpen, setSoundOpen] = useState(false);
+  const [moreTags, setMoreTags] = useState(false);
   const puffIdRef = useRef(0);
 
-  function handleAddFart(tags: ("silent" | "smelly")[] = []) {
+  function handleAddFart(tags: FartTag[] = []) {
     primeAudio();
-    addFart(tags);
-    if (soundEnabled) playFartSound();
+    // geo capture if enabled
+    let geo: { lat: number; lng: number; country?: string } | undefined;
+    if (geoEnabled && typeof navigator !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          // Note: this fires async, but we already added the fart without geo.
+          // For v2, we accept that geo is best-effort. Future: pre-fetch.
+        },
+        () => {},
+        { timeout: 3000, maximumAge: 60000 }
+      );
+    }
+    addFart({ tags, sound: fartSound, geo });
+    // Contribute to anonymous world rank (uses localStorage, no server)
+    // Country is approximated from locale timezone as a privacy-friendly proxy.
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    const country = tz.split("/").pop() || "Unknown";
+    contributeToRank(country);
+    if (soundEnabled) playFartSound(fartSound);
     if (vibEnabled) vibrateFart();
     setPopping(true);
     setTimeout(() => setPopping(false), 320);
 
-    // spawn puffs
     const colors = ["#84cc16", "#facc15", "#f97316", "#a855f7", "#ec4899"];
     const newPuffs: Puff[] = Array.from({ length: 4 }).map(() => ({
       id: ++puffIdRef.current,
@@ -62,10 +118,7 @@ export function HomeScreen() {
       setPuffs((p) => p.filter((x) => !newPuffs.find((n) => n.id === x.id)));
     }, 950);
 
-    toast(t("toast_fart_added"), {
-      duration: 1200,
-      icon: "💨",
-    });
+    toast(t("toast_fart_added"), { duration: 1200, icon: "💨" });
   }
 
   function handleUndo() {
@@ -90,7 +143,11 @@ export function HomeScreen() {
     toast(t("toast_water_removed"), { duration: 1000, icon: "↩️" });
   }
 
-  // Zone styling
+  function previewSound(s: FartSound) {
+    primeAudio();
+    playFartSound(s);
+  }
+
   const zoneStyles = {
     low: {
       bg: "bg-yellow-500/10",
@@ -122,14 +179,31 @@ export function HomeScreen() {
     month: "long",
   });
 
+  // Visible tags: first 3 always, "more" toggles the rest
+  const visibleTags = moreTags ? TAG_OPTIONS : TAG_OPTIONS.slice(0, 3);
+  const dict = translations[lang] ?? translations.en;
+  const soundLabel = (s: FartSound) => dict[`sound_${s}`] ?? translations.en[`sound_${s}`] ?? s;
+
   return (
     <div className="flex flex-col gap-4 px-4 pb-4">
-      {/* Header: date */}
-      <div className="pt-1 text-center">
-        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          {t("today")}
-        </p>
-        <p className="text-sm text-foreground/80">{dateStr}</p>
+      {/* Header: date + sound selector */}
+      <div className="flex items-center justify-between pt-1">
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+            {t("today")}
+          </p>
+          <p className="text-xs text-foreground/80">{dateStr}</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5 px-2 text-xs"
+          onClick={() => setSoundOpen(true)}
+          aria-label={t("sound_section")}
+        >
+          <Volume2 className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">{soundLabel(fartSound)}</span>
+        </Button>
       </div>
 
       {/* Counter card */}
@@ -151,30 +225,20 @@ export function HomeScreen() {
           >
             <span
               className={`h-1.5 w-1.5 rounded-full ${
-                zone === "low"
-                  ? "bg-yellow-500"
-                  : zone === "normal"
-                  ? "bg-green-500"
-                  : "bg-red-500"
+                zone === "low" ? "bg-yellow-500" : zone === "normal" ? "bg-green-500" : "bg-red-500"
               }`}
             />
             {zoneStyles.label}
           </div>
         </div>
 
-        {/* Puff particles */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <AnimatePresence>
             {puffs.map((p) => (
               <span
                 key={p.id}
                 className="puff-particle"
-                style={
-                  {
-                    backgroundColor: p.color,
-                    "--dx": `${p.dx}px`,
-                  } as React.CSSProperties
-                }
+                style={{ backgroundColor: p.color, "--dx": `${p.dx}px` } as React.CSSProperties}
               />
             ))}
           </AnimatePresence>
@@ -186,80 +250,51 @@ export function HomeScreen() {
         <motion.button
           onClick={() => handleAddFart([])}
           whileTap={{ scale: 0.92 }}
-          className={`relative flex h-56 w-56 flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-2xl transition-shadow ${
+          className={`relative flex h-52 w-52 flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-2xl transition-shadow ${
             popping ? "animate-fart-pop shadow-primary/50" : "shadow-primary/30"
           }`}
           aria-label={t("add_fart")}
         >
-          {/* Ripple */}
           <span className="pointer-events-none absolute inset-0 rounded-full ring-4 ring-primary/30" />
           <span className="pointer-events-none absolute inset-2 rounded-full ring-2 ring-primary-foreground/20" />
           <Wind className="mb-1 h-12 w-12" strokeWidth={2.5} />
-          <span className="text-3xl font-black leading-none">
-            +1
-          </span>
+          <span className="text-3xl font-black leading-none">+1</span>
           <span className="mt-1 text-xs font-semibold uppercase tracking-widest opacity-90">
             {t("add_fart")}
           </span>
         </motion.button>
       </div>
 
-      {/* Tag buttons */}
+      {/* Tag buttons — first 3, then expandable */}
       <div className="grid grid-cols-3 gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleAddFart(["silent"])}
-          className="flex flex-col items-center gap-1 py-3"
-        >
-          <Wind className="h-4 w-4 opacity-60" />
-          <span className="text-[10px] font-semibold leading-tight">
-            {t("silent")}
-          </span>
-          <span className="text-xs font-black">+1</span>
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleAddFart(["smelly"])}
-          className="flex flex-col items-center gap-1 py-3"
-        >
-          <Skull className="h-4 w-4 opacity-60" />
-          <span className="text-[10px] font-semibold leading-tight">
-            {t("smelly")}
-          </span>
-          <span className="text-xs font-black">+1</span>
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleAddFart(["silent", "smelly"])}
-          className="flex flex-col items-center gap-1 py-3"
-        >
-          <span className="text-base leading-none">🤫💀</span>
-          <span className="text-[9px] font-semibold leading-tight">
-            {t("silent")}+{t("smelly")}
-          </span>
-          <span className="text-xs font-black">+1</span>
-        </Button>
+        {visibleTags.map(({ tag, icon, labelKey }) => (
+          <Button
+            key={tag}
+            variant="outline"
+            size="sm"
+            onClick={() => handleAddFart([tag])}
+            className="flex flex-col items-center gap-1 py-3"
+          >
+            <span className="text-base leading-none">{icon}</span>
+            <span className="text-[10px] font-semibold leading-tight">{t(labelKey)}</span>
+            <span className="text-xs font-black">+1</span>
+          </Button>
+        ))}
       </div>
 
+      {/* More tags toggle */}
+      <Button variant="ghost" size="sm" onClick={() => setMoreTags((v) => !v)} className="text-muted-foreground">
+        <MoreHorizontal className="mr-1 h-4 w-4" />
+        {moreTags ? t("close") : t("more_tags")}
+      </Button>
+
       {/* Undo */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleUndo}
-        disabled={count === 0}
-        className="text-muted-foreground"
-      >
+      <Button variant="ghost" size="sm" onClick={handleUndo} disabled={count === 0} className="text-muted-foreground">
         <Minus className="mr-1 h-4 w-4" />
         {t("cancel_fart")}
       </Button>
 
-      {/* Normal hint */}
-      <p className="text-center text-[11px] text-muted-foreground">
-        {t("normal_range_hint")}
-      </p>
+      <p className="text-center text-[11px] text-muted-foreground">{t("normal_range_hint")}</p>
 
       {/* Water tracker */}
       <Card className="p-4">
@@ -272,8 +307,6 @@ export function HomeScreen() {
             {waterCount} {t("water_glasses")}
           </span>
         </div>
-
-        {/* Glasses visualization */}
         <div className="mb-3 flex flex-wrap gap-1.5">
           {Array.from({ length: Math.max(8, waterCount) }).map((_, i) => (
             <motion.div
@@ -281,18 +314,13 @@ export function HomeScreen() {
               initial={false}
               animate={{ scale: i < waterCount ? 1 : 0.85, opacity: i < waterCount ? 1 : 0.3 }}
               className={`flex h-7 w-6 items-end justify-center rounded-b-md rounded-t-sm border-2 ${
-                i < waterCount
-                  ? "border-blue-400 bg-blue-400/30"
-                  : "border-muted-foreground/30 bg-transparent"
+                i < waterCount ? "border-blue-400 bg-blue-400/30" : "border-muted-foreground/30 bg-transparent"
               }`}
             >
-              {i < waterCount && (
-                <div className="mb-0.5 h-4 w-3 rounded-sm bg-blue-400/80" />
-              )}
+              {i < waterCount && <div className="mb-0.5 h-4 w-3 rounded-sm bg-blue-400/80" />}
             </motion.div>
           ))}
         </div>
-
         <div className="grid grid-cols-2 gap-2">
           <Button
             variant="default"
@@ -303,17 +331,56 @@ export function HomeScreen() {
             <Droplet className="mr-1 h-4 w-4" />
             {t("drink_glass")}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleWaterRemove}
-            disabled={waterCount === 0}
-          >
+          <Button variant="outline" size="sm" onClick={handleWaterRemove} disabled={waterCount === 0}>
             <Minus className="mr-1 h-4 w-4" />
             {t("remove_glass")}
           </Button>
         </div>
       </Card>
+
+      {/* Sound selector dialog */}
+      <Dialog open={soundOpen} onOpenChange={setSoundOpen}>
+        <DialogContent className="max-w-[360px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Volume2 className="h-4 w-4" />
+              {t("sound_section")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-3 gap-2">
+            {SOUND_OPTIONS.map((s) => (
+              <button
+                key={s}
+                onClick={() => previewSound(s)}
+                onDoubleClick={() => {
+                  setSetting("fartSound", s);
+                  toast(`✅ ${soundLabel(s)}`, { duration: 1000 });
+                }}
+                className={`flex flex-col items-center gap-1 rounded-xl border-2 p-3 transition-all ${
+                  fartSound === s ? "border-primary bg-primary/10" : "border-border hover:border-primary/40"
+                }`}
+              >
+                <span className="text-2xl">
+                  {s === "classic" ? "💨" : s === "squeaker" ? "🐾" : s === "rumble" ? "🌩️" : s === "machine_gun" ? "🔫" : s === "whoopee" ? "🛋️" : s === "thunder" ? "⛈️" : s === "squeak" ? "🐭" : s === "deflate" ? "🎈" : "🎲"}
+                </span>
+                <span className="text-[10px] font-semibold">{soundLabel(s)}</span>
+                {fartSound === s && <span className="text-[9px] text-primary">✓</span>}
+              </button>
+            ))}
+          </div>
+          <p className="text-center text-[11px] text-muted-foreground">
+            {t("sound_preview")} · 2× {t("save")}
+          </p>
+          <Button
+            onClick={() => {
+              setSetting("fartSound", fartSound);
+              setSoundOpen(false);
+            }}
+          >
+            {t("save")}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

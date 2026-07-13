@@ -15,17 +15,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Счётчик Пуков — Fart Counter",
+  metadataBase: new URL("https://fartcounter.app"),
+  title: {
+    default: "Счётчик Пуков — Fart Counter",
+    template: "%s · Счётчик Пуков",
+  },
   description:
-    "Офлайн PWA для отслеживания пуков. Юмор, статистика, достижения. Никаких серверов, никакой слежки.",
+    "Бесплатное офлайн PWA для отслеживания пуков. Юмор, статистика, 18 достижений, дневник питания, погода, мировая карта. Без рекламы, без слежки. 7 языков.",
   manifest: "/manifest.json",
   applicationName: "Счётчик Пуков",
   keywords: [
     "fart counter",
     "счётчик пуков",
+    "fart tracker",
     "PWA",
     "offline",
     "health tracker",
+    "contador de pedos",
+    "contador de pum",
+    "furz zähler",
+    "compteur de pet",
   ],
   authors: [{ name: "Fart Counter" }],
   icons: {
@@ -44,9 +53,26 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "Счётчик Пуков",
-    description: "Офлайн PWA для отслеживания пуков.",
+    title: "Счётчик Пуков — Fart Counter",
+    description: "Бесплатное офлайн PWA для отслеживания твоей ветрености. 18 достижений, 7 языков, без рекламы.",
     type: "website",
+    locale: "ru_RU",
+    siteName: "Fart Counter",
+    url: "/",
+    images: [
+      {
+        url: "/icon-512.png",
+        width: 512,
+        height: 512,
+        alt: "Fart Counter App",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Счётчик Пуков — Fart Counter",
+    description: "Бесплатное офлайн PWA. Без рекламы, без слежки. 7 языков.",
+    images: ["/icon-512.png"],
   },
 };
 

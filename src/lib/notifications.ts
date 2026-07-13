@@ -6,7 +6,7 @@
 import type { Language } from "./i18n";
 import { translations } from "./i18n";
 
-type NotifKind = "evening" | "water" | "achievement";
+type NotifKind = "evening" | "water" | "achievement" | "morning" | "gentle";
 
 interface ScheduledNotif {
   kind: NotifKind;
@@ -55,6 +55,34 @@ function scheduleEvening(lang: Language): ScheduledNotif | null {
   };
 }
 
+/** Schedule the next morning (9:00) greeting. */
+function scheduleMorning(lang: Language): ScheduledNotif | null {
+  const t = translations[lang];
+  const now = new Date();
+  const next = new Date(now);
+  next.setHours(9, 0, 0, 0);
+  if (next.getTime() <= now.getTime()) {
+    next.setDate(next.getDate() + 1);
+  }
+  return {
+    kind: "morning",
+    fireAt: next.getTime(),
+    title: t.notif_morning_title,
+    body: t.notif_morning_body,
+  };
+}
+
+/** Schedule next gentle reminder (4 hours from now). */
+function scheduleGentle(lang: Language): ScheduledNotif | null {
+  const t = translations[lang];
+  return {
+    kind: "gentle",
+    fireAt: Date.now() + 4 * 3600 * 1000,
+    title: t.notif_gentle_reminder_title,
+    body: t.notif_gentle_reminder_body,
+  };
+}
+
 /** Schedule next water reminder (2 hours from now). */
 function scheduleWater(lang: Language): ScheduledNotif | null {
   const t = translations[lang];
@@ -89,6 +117,8 @@ export function installNotifications(opts: {
   enabled: boolean;
   evening: boolean;
   water: boolean;
+  morning?: boolean;
+  gentle?: boolean;
   lang: Language;
 }): void {
   if (timerId !== null) {
@@ -112,6 +142,8 @@ function scheduleNext(opts: {
   enabled: boolean;
   evening: boolean;
   water: boolean;
+  morning?: boolean;
+  gentle?: boolean;
   lang: Language;
 }) {
   if (!opts.enabled) return;
@@ -122,6 +154,14 @@ function scheduleNext(opts: {
   }
   if (opts.water) {
     const n = scheduleWater(opts.lang);
+    if (n) candidates.push(n);
+  }
+  if (opts.morning) {
+    const n = scheduleMorning(opts.lang);
+    if (n) candidates.push(n);
+  }
+  if (opts.gentle) {
+    const n = scheduleGentle(opts.lang);
     if (n) candidates.push(n);
   }
   if (candidates.length === 0) return;

@@ -7,6 +7,8 @@ import { HomeScreen } from "@/components/app/home-screen";
 import { HistoryScreen } from "@/components/app/history-screen";
 import { StatsScreen } from "@/components/app/stats-screen";
 import { ProfileScreen } from "@/components/app/profile-screen";
+import { FoodScreen } from "@/components/app/food-screen";
+import { InsightsScreen } from "@/components/app/insights-screen";
 import { AchievementWatcher } from "@/components/app/achievement-watcher";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { useT } from "@/hooks/use-t";
@@ -16,8 +18,8 @@ export default function Home() {
   const [tab, setTab] = useState<TabId>("home");
   const [hydrated, setHydrated] = useState(false);
   const primeAudioOnce = useRef(false);
+  const mainRef = useRef<HTMLDivElement>(null);
 
-  // Wait for store hydration from localStorage to avoid hydration mismatch
   useEffect(() => {
     setHydrated(true);
   }, []);
@@ -34,6 +36,11 @@ export default function Home() {
     return () => window.removeEventListener("pointerdown", handler);
   }, []);
 
+  // Scroll to top on tab change
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [tab]);
+
   return (
     <div className="relative mx-auto flex min-h-screen max-w-[480px] flex-col bg-background">
       {/* App header */}
@@ -42,15 +49,13 @@ export default function Home() {
           <span className="text-xl">💨</span>
           <div className="leading-none">
             <p className="text-sm font-black">{t("app_name")}</p>
-            <p className="text-[10px] text-muted-foreground">
-              {t("app_tagline")}
-            </p>
+            <p className="text-[10px] text-muted-foreground">{t("app_tagline")}</p>
           </div>
         </div>
       </header>
 
       {/* Screen content */}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-24 thin-scroll">
+      <main ref={mainRef} className="flex-1 overflow-y-auto overflow-x-hidden pb-24 thin-scroll">
         {!hydrated ? (
           <div className="flex h-64 items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -67,6 +72,8 @@ export default function Home() {
             >
               {tab === "home" && <HomeScreen />}
               {tab === "history" && <HistoryScreen />}
+              {tab === "food" && <FoodScreen />}
+              {tab === "insights" && <InsightsScreen />}
               {tab === "stats" && <StatsScreen />}
               {tab === "profile" && <ProfileScreen />}
             </motion.div>
@@ -74,15 +81,9 @@ export default function Home() {
         )}
       </main>
 
-      {/* Bottom navigation */}
       <BottomNav active={tab} onChange={setTab} />
-
-      {/* Global achievement watcher */}
       <AchievementWatcher />
-
-      {/* PWA install prompt */}
       <InstallPrompt />
     </div>
   );
 }
-

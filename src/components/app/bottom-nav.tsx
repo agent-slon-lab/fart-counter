@@ -1,10 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Home, History, BarChart3, Settings } from "lucide-react";
+import { Home, History, BarChart3, Settings, Utensils, Sparkles } from "lucide-react";
 import { useT } from "@/hooks/use-t";
 
-export type TabId = "home" | "history" | "stats" | "profile";
+export type TabId = "home" | "history" | "food" | "insights" | "stats" | "profile";
 
 interface Props {
   active: TabId;
@@ -16,6 +16,8 @@ export function BottomNav({ active, onChange }: Props) {
   const items: { id: TabId; label: string; icon: React.ElementType }[] = [
     { id: "home", label: t("tab_home"), icon: Home },
     { id: "history", label: t("tab_history"), icon: History },
+    { id: "food", label: t("tab_food"), icon: Utensils },
+    { id: "insights", label: t("tab_insights"), icon: Sparkles },
     { id: "stats", label: t("tab_stats"), icon: BarChart3 },
     { id: "profile", label: t("tab_profile"), icon: Settings },
   ];
@@ -35,12 +37,12 @@ export function BottomNav({ active, onChange }: Props) {
             onClick={() => onChange(item.id)}
             aria-label={item.label}
             aria-current={isActive ? "page" : undefined}
-            className={`relative flex flex-1 flex-col items-center justify-center gap-1 py-2.5 transition-colors ${
+            className={`relative flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-colors ${
               isActive ? "text-primary" : "text-muted-foreground"
             }`}
           >
             <div className="relative flex h-7 w-7 items-center justify-center">
-              <Icon className="h-6 w-6" strokeWidth={isActive ? 2.5 : 2} />
+              <Icon className="h-5 w-5" strokeWidth={isActive ? 2.5 : 2} />
               {isActive && (
                 <motion.span
                   layoutId="nav-active-dot"
@@ -49,11 +51,7 @@ export function BottomNav({ active, onChange }: Props) {
                 />
               )}
             </div>
-            <span
-              className={`text-[10px] font-medium leading-none ${
-                isActive ? "font-semibold" : ""
-              }`}
-            >
+            <span className={`text-[9px] font-medium leading-none ${isActive ? "font-semibold" : ""}`}>
               {item.label}
             </span>
           </button>

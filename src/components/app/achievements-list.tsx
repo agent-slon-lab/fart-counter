@@ -18,9 +18,11 @@ interface Props {
 export function AchievementsList({ open, onOpenChange }: Props) {
   const { t } = useT();
   const farts = useStore((s) => s.farts);
+  const food = useStore((s) => s.food);
+  const moods = useStore((s) => s.moods);
   const unlocked = useStore((s) => s.unlockedAchievements);
 
-  const shouldUnlock = useMemo(() => new Set(checkAchievements(farts)), [farts]);
+  const shouldUnlock = useMemo(() => new Set(checkAchievements(farts, food, moods)), [farts, food, moods]);
   const unlockedCount = ACHIEVEMENTS.filter((a) => shouldUnlock.has(a.id)).length;
 
   return (
@@ -41,16 +43,16 @@ export function AchievementsList({ open, onOpenChange }: Props) {
             return (
               <div
                 key={a.id}
-                className={`flex items-start gap-3 rounded-xl border p-3 transition-colors ${
+                className="flex items-start gap-3 rounded-xl border p-3 transition-colors"
+                style={
                   isUnlocked
-                    ? "border-primary/40 bg-primary/5"
-                    : "border-border bg-muted/40 opacity-70"
-                }`}
+                    ? { borderColor: `${a.color}66`, backgroundColor: `${a.color}14` }
+                    : { backgroundColor: "var(--muted)", opacity: 0.7 }
+                }
               >
                 <div
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-2xl ${
-                    isUnlocked ? "bg-primary/15" : "bg-muted grayscale"
-                  }`}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-2xl"
+                  style={isUnlocked ? { backgroundColor: `${a.color}26` } : { backgroundColor: "var(--muted)", filter: "grayscale(1)" }}
                 >
                   {isUnlocked ? a.icon : <Lock className="h-4 w-4 text-muted-foreground" />}
                 </div>
@@ -58,7 +60,10 @@ export function AchievementsList({ open, onOpenChange }: Props) {
                   <div className="flex items-center gap-2">
                     <p className="truncate text-sm font-bold">{t(a.nameKey)}</p>
                     {isUnlocked && (
-                      <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary">
+                      <span
+                        className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase"
+                        style={{ backgroundColor: `${a.color}26`, color: a.color }}
+                      >
                         {t("achievements_unlocked")}
                       </span>
                     )}

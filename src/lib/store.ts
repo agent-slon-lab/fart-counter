@@ -1,4 +1,4 @@
-// Zustand store with localStorage persistence for Fart Counter PWA
+// Zustand store with localStorage persistence for Fart Counter PWA v2
 // Offline-first: all data lives in the browser, no backend.
 
 import { create } from "zustand";
@@ -7,19 +7,59 @@ import type { Language } from "./i18n";
 
 // ===== Data types =====
 
-export type FartTag = "silent" | "smelly";
+export type FartTag = "silent" | "smelly" | "loud" | "long" | "toilet" | "accidental";
+
+export type FartSound =
+  | "classic"
+  | "squeaker"
+  | "rumble"
+  | "machine_gun"
+  | "whoopee"
+  | "thunder"
+  | "squeak"
+  | "deflate"
+  | "random";
 
 export interface FartRecord {
   id: string;
   /** ISO timestamp */
   ts: string;
   tags: FartTag[];
+  /** Sound used (for replay / stats) */
+  sound?: FartSound;
+  /** Optional geo coordinates */
+  lat?: number;
+  lng?: number;
+  /** Country code (set when geo is captured) */
+  country?: string;
 }
 
 export interface WaterDay {
   /** YYYY-MM-DD */
   date: string;
   count: number;
+}
+
+export interface FoodEntry {
+  id: string;
+  ts: string;
+  /** food key (beans, cabbage, ...) or custom text */
+  name: string;
+}
+
+export interface MoodDay {
+  /** YYYY-MM-DD */
+  date: string;
+  mood: "happy" | "neutral" | "sad" | "angry" | "tired";
+}
+
+export interface WeatherSnapshot {
+  /** YYYY-MM-DD */
+  date: string;
+  tempC?: number;
+  pressureHpa?: number;
+  humidity?: number;
+  condition?: string;
 }
 
 export type AccentColor = "green" | "pink" | "blue" | "gold";
@@ -34,21 +74,34 @@ export interface AppSettings {
   notificationsEnabled: boolean;
   eveningReminder: boolean;
   waterReminder: boolean;
+  morningReminder: boolean;
+  gentleReminder: boolean;
+  /** Selected fart sound */
+  fartSound: FartSound;
+  /** Enable geo-marking when farting */
+  geoEnabled: boolean;
+  /** Enable weather correlation */
+  weatherEnabled: boolean;
 }
 
 export interface AppState {
   // Data
   farts: FartRecord[];
   water: WaterDay[];
+  food: FoodEntry[];
+  moods: MoodDay[];
+  weather: WeatherSnapshot[];
+  /** Anonymous world-ranking contribution: country code → count */
+  worldRank: Record<string, number>;
 
   // Settings
   settings: AppSettings;
 
-  // Achievements: ids that have been unlocked (persisted, so we don't re-pop)
+  // Achievements
   unlockedAchievements: string[];
 
   // Actions — Farts
-  addFart: (tags?: FartTag[]) => string | null;
+  addFart: (opts?: { tags?: FartTag[]; sound?: FartSound; geo?: { lat: number; lng: number; country?: string } }) => string | null;
   removeLastFartToday: () => void;
   deleteFart: (id: string) => void;
   setFartCountForDay: (dateYYYYMMDD: string, count: number) => void;
@@ -57,6 +110,20 @@ export interface AppState {
   // Actions — Water
   addWater: () => void;
   removeWater: () => void;
+
+  // Actions — Food
+  addFood: (name: string) => void;
+  removeFood: (id: string) => void;
+
+  // Actions — Mood
+  setMood: (mood: MoodDay["mood"]) => void;
+
+  // Actions — Weather
+  recordWeather: (snap: WeatherSnapshot) => void;
+
+  // Actions — World rank
+  contributeToRank: (country: string, count?: number) => void;
+  setWorldRank: (rank: Record<string, number>) => void;
 
   // Actions — Settings
   setLanguage: (lang: Language) => void;
@@ -87,10 +154,7 @@ export function dateKey(d: Date): string {
 }
 
 function uid(): string {
-  return (
-    Date.now().toString(36) +
-    Math.random().toString(36).slice(2, 8)
-  );
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
 // ===== Store =====
@@ -100,6 +164,11 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       farts: [],
       water: [],
+      food: [],
+      moods: [],
+      weather: [],
+      worldRank: {},
+
       settings: {
         language: "ru",
         theme: "system",
@@ -109,11 +178,26 @@ export const useStore = create<AppState>()(
         notificationsEnabled: false,
         eveningReminder: true,
         waterReminder: false,
+        morningReminder: false,
+        gentleReminder: false,
+        fartSound: "classic",
+        geoEnabled: false,
+        weatherEnabled: false,
       },
       unlockedAchievements: [],
 
-      addFart: (tags = []) => {
-        const rec: FartRecord = { id: uid(), ts: new Date().toISOString(), tags };
+      addFart: (opts) => {
+        const rec: FartRecord = {
+          id: uid(),
+          ts: new Date().toISOString(),
+          tags: opts?.tags ?? [],
+          sound: opts?.sound,
+        };
+        if (opts?.geo) {
+          rec.lat = opts.geo.lat;
+          rec.lng = opts.geo.lng;
+          rec.country = opts.geo.country;
+        }
         set((s) => ({ farts: [...s.farts, rec] }));
         return rec.id;
       },
@@ -121,7 +205,6 @@ export const useStore = create<AppState>()(
       removeLastFartToday: () => {
         const tk = todayKey();
         const farts = get().farts;
-        // find last fart with today's date
         for (let i = farts.length - 1; i >= 0; i--) {
           if (dateKey(new Date(farts[i].ts)) === tk) {
             const next = [...farts];
@@ -132,21 +215,15 @@ export const useStore = create<AppState>()(
         }
       },
 
-      deleteFart: (id) =>
-        set((s) => ({ farts: s.farts.filter((f) => f.id !== id) })),
+      deleteFart: (id) => set((s) => ({ farts: s.farts.filter((f) => f.id !== id) })),
 
       setFartCountForDay: (dateYYYYMMDD, count) => {
         set((s) => {
-          const others = s.farts.filter(
-            (f) => dateKey(new Date(f.ts)) !== dateYYYYMMDD
-          );
-          // distribute count across the day at random-ish times
+          const others = s.farts.filter((f) => dateKey(new Date(f.ts)) !== dateYYYYMMDD);
           const newRecs: FartRecord[] = [];
           const base = new Date(dateYYYYMMDD + "T12:00:00");
           for (let i = 0; i < count; i++) {
-            const offset = Math.floor(
-              (i / Math.max(count, 1)) * 12 * 3600 * 1000
-            );
+            const offset = Math.floor((i / Math.max(count, 1)) * 12 * 3600 * 1000);
             newRecs.push({
               id: uid(),
               ts: new Date(base.getTime() - 6 * 3600 * 1000 + offset).toISOString(),
@@ -162,9 +239,7 @@ export const useStore = create<AppState>()(
           const base = new Date(dateYYYYMMDD + "T12:00:00");
           const newRecs: FartRecord[] = [];
           for (let i = 0; i < count; i++) {
-            const offset = Math.floor(
-              (i / Math.max(count, 1)) * 12 * 3600 * 1000
-            );
+            const offset = Math.floor((i / Math.max(count, 1)) * 12 * 3600 * 1000);
             newRecs.push({
               id: uid(),
               ts: new Date(base.getTime() - 6 * 3600 * 1000 + offset).toISOString(),
@@ -179,9 +254,7 @@ export const useStore = create<AppState>()(
         const tk = todayKey();
         set((s) => {
           const idx = s.water.findIndex((w) => w.date === tk);
-          if (idx === -1) {
-            return { water: [...s.water, { date: tk, count: 1 }] };
-          }
+          if (idx === -1) return { water: [...s.water, { date: tk, count: 1 }] };
           const next = [...s.water];
           next[idx] = { ...next[idx], count: next[idx].count + 1 };
           return { water: next };
@@ -194,26 +267,50 @@ export const useStore = create<AppState>()(
           const idx = s.water.findIndex((w) => w.date === tk);
           if (idx === -1) return s;
           const next = [...s.water];
-          if (next[idx].count <= 1) {
-            next.splice(idx, 1);
-          } else {
-            next[idx] = { ...next[idx], count: next[idx].count - 1 };
-          }
+          if (next[idx].count <= 1) next.splice(idx, 1);
+          else next[idx] = { ...next[idx], count: next[idx].count - 1 };
           return { water: next };
         });
       },
 
-      setLanguage: (language) =>
-        set((s) => ({ settings: { ...s.settings, language } })),
+      addFood: (name) => {
+        const rec: FoodEntry = { id: uid(), ts: new Date().toISOString(), name };
+        set((s) => ({ food: [...s.food, rec] }));
+      },
 
-      setTheme: (theme) =>
-        set((s) => ({ settings: { ...s.settings, theme } })),
+      removeFood: (id) => set((s) => ({ food: s.food.filter((f) => f.id !== id) })),
 
-      setAccent: (accent) =>
-        set((s) => ({ settings: { ...s.settings, accent } })),
+      setMood: (mood) => {
+        const tk = todayKey();
+        set((s) => {
+          const others = s.moods.filter((m) => m.date !== tk);
+          return { moods: [...others, { date: tk, mood }] };
+        });
+      },
 
-      setSetting: (key, value) =>
-        set((s) => ({ settings: { ...s.settings, [key]: value } })),
+      recordWeather: (snap) => {
+        set((s) => {
+          const others = s.weather.filter((w) => w.date !== snap.date);
+          return { weather: [...others, snap] };
+        });
+      },
+
+      contributeToRank: (country, count = 1) => {
+        if (!country) return;
+        set((s) => ({
+          worldRank: {
+            ...s.worldRank,
+            [country]: (s.worldRank[country] ?? 0) + count,
+          },
+        }));
+      },
+
+      setWorldRank: (rank) => set({ worldRank: rank }),
+
+      setLanguage: (language) => set((s) => ({ settings: { ...s.settings, language } })),
+      setTheme: (theme) => set((s) => ({ settings: { ...s.settings, theme } })),
+      setAccent: (accent) => set((s) => ({ settings: { ...s.settings, accent } })),
+      setSetting: (key, value) => set((s) => ({ settings: { ...s.settings, [key]: value } })),
 
       unlockAchievement: (id) => {
         const cur = get().unlockedAchievements;
@@ -231,12 +328,12 @@ export const useStore = create<AppState>()(
           set({
             farts: Array.isArray(parsed.farts) ? parsed.farts : get().farts,
             water: Array.isArray(parsed.water) ? parsed.water : get().water,
-            unlockedAchievements: Array.isArray(parsed.unlockedAchievements)
-              ? parsed.unlockedAchievements
-              : get().unlockedAchievements,
-            settings: parsed.settings
-              ? { ...get().settings, ...parsed.settings }
-              : get().settings,
+            food: Array.isArray(parsed.food) ? parsed.food : get().food,
+            moods: Array.isArray(parsed.moods) ? parsed.moods : get().moods,
+            weather: Array.isArray(parsed.weather) ? parsed.weather : get().weather,
+            worldRank: parsed.worldRank && typeof parsed.worldRank === "object" ? parsed.worldRank : get().worldRank,
+            unlockedAchievements: Array.isArray(parsed.unlockedAchievements) ? parsed.unlockedAchievements : get().unlockedAchievements,
+            settings: parsed.settings ? { ...get().settings, ...parsed.settings } : get().settings,
           });
           return true;
         } catch {
@@ -248,13 +345,47 @@ export const useStore = create<AppState>()(
         set({
           farts: [],
           water: [],
+          food: [],
+          moods: [],
+          weather: [],
+          worldRank: {},
           unlockedAchievements: [],
         }),
     }),
     {
-      name: "fart-counter-store",
+      name: "fart-counter-store-v2",
       storage: createJSONStorage(() => localStorage),
-      version: 1,
+      version: 2,
+      // Migrate from v1 (old store) — pull in farts/water/settings/unlockedAchievements
+      migrate: (persisted: any, version: number) => {
+        if (!persisted) return persisted;
+        if (version < 2) {
+          // best effort: keep what we can
+          return {
+            ...persisted,
+            food: [],
+            moods: [],
+            weather: [],
+            worldRank: {},
+            settings: {
+              language: persisted.settings?.language ?? "ru",
+              theme: persisted.settings?.theme ?? "system",
+              accent: persisted.settings?.accent ?? "green",
+              soundEnabled: persisted.settings?.soundEnabled ?? true,
+              vibrationEnabled: persisted.settings?.vibrationEnabled ?? true,
+              notificationsEnabled: persisted.settings?.notificationsEnabled ?? false,
+              eveningReminder: persisted.settings?.eveningReminder ?? true,
+              waterReminder: persisted.settings?.waterReminder ?? false,
+              morningReminder: false,
+              gentleReminder: false,
+              fartSound: "classic",
+              geoEnabled: false,
+              weatherEnabled: false,
+            },
+          };
+        }
+        return persisted;
+      },
     }
   )
 );
@@ -281,4 +412,14 @@ export function getTotalAllTime(farts: FartRecord[]): number {
 export function getWaterToday(water: WaterDay[]): number {
   const tk = todayKey();
   return water.find((w) => w.date === tk)?.count ?? 0;
+}
+
+export function getMoodToday(moods: MoodDay[]): MoodDay["mood"] | null {
+  const tk = todayKey();
+  return moods.find((m) => m.date === tk)?.mood ?? null;
+}
+
+export function getFoodToday(food: FoodEntry[]): FoodEntry[] {
+  const tk = todayKey();
+  return food.filter((f) => dateKey(new Date(f.ts)) === tk);
 }
