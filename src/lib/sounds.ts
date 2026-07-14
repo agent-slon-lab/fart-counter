@@ -242,6 +242,156 @@ function soundDeflate(c: AudioContext) {
   osc.stop(now + duration + 0.02);
 }
 
+// ===== 5 NEW fart sound variants (whisper, burst, musical, wave, frog) =====
+
+function soundWhisper(c: AudioContext) {
+  const now = c.currentTime;
+  const duration = 0.35;
+  // Very quiet, filtered noise — like "shhhh"
+  const bufferSize = c.sampleRate * duration;
+  const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.3;
+  const noise = c.createBufferSource();
+  noise.buffer = buffer;
+  const filter = c.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.setValueAtTime(2500, now);
+  filter.frequency.exponentialRampToValueAtTime(1500, now + duration);
+  filter.Q.value = 1;
+  const gain = c.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.08, now + 0.05);
+  gain.gain.linearRampToValueAtTime(0.08, now + duration - 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(c.destination);
+  noise.start(now);
+  noise.stop(now + duration + 0.02);
+}
+
+function soundBurst(c: AudioContext) {
+  const now = c.currentTime;
+  // Single sharp explosive burst
+  const osc = c.createOscillator();
+  osc.type = "sawtooth";
+  osc.frequency.setValueAtTime(400, now);
+  osc.frequency.exponentialRampToValueAtTime(80, now + 0.12);
+  const filter = c.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(2000, now);
+  filter.frequency.exponentialRampToValueAtTime(200, now + 0.12);
+  // Noise burst on top
+  const bufferSize = c.sampleRate * 0.1;
+  const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+  const noise = c.createBufferSource();
+  noise.buffer = buffer;
+  const noiseFilter = c.createBiquadFilter();
+  noiseFilter.type = "lowpass";
+  noiseFilter.frequency.value = 800;
+  const gain = c.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.5, now + 0.005);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+  osc.connect(filter);
+  filter.connect(gain);
+  noise.connect(noiseFilter);
+  noiseFilter.connect(gain);
+  gain.connect(c.destination);
+  osc.start(now);
+  noise.start(now);
+  osc.stop(now + 0.17);
+  noise.stop(now + 0.17);
+}
+
+function soundMusical(c: AudioContext) {
+  const now = c.currentTime;
+  // Three ascending notes — like a tiny melody
+  const notes = [220, 277, 330, 415];
+  notes.forEach((freq, i) => {
+    const start = now + i * 0.08;
+    const osc = c.createOscillator();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(freq, start);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.8, start + 0.1);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.22, start + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.12);
+    const filter = c.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 1200;
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(c.destination);
+    osc.start(start);
+    osc.stop(start + 0.14);
+  });
+}
+
+function soundWave(c: AudioContext) {
+  const now = c.currentTime;
+  const duration = 0.7;
+  // Modulated sine wave — gets louder and quieter in waves
+  const osc = c.createOscillator();
+  osc.type = "sawtooth";
+  osc.frequency.setValueAtTime(180, now);
+  // LFO for amplitude modulation
+  const lfo = c.createOscillator();
+  lfo.frequency.setValueAtTime(8, now);
+  const lfoGain = c.createGain();
+  lfoGain.gain.value = 0.15;
+  const baseGain = c.createGain();
+  baseGain.gain.value = 0.2;
+  lfo.connect(lfoGain);
+  lfoGain.connect(baseGain.gain);
+  const filter = c.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 600;
+  const env = c.createGain();
+  env.gain.setValueAtTime(0.0001, now);
+  env.gain.exponentialRampToValueAtTime(1, now + 0.05);
+  env.gain.linearRampToValueAtTime(1, now + duration - 0.1);
+  env.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  osc.connect(filter);
+  filter.connect(baseGain);
+  baseGain.connect(env);
+  env.connect(c.destination);
+  osc.start(now);
+  lfo.start(now);
+  osc.stop(now + duration + 0.02);
+  lfo.stop(now + duration + 0.02);
+}
+
+function soundFrog(c: AudioContext) {
+  const now = c.currentTime;
+  // 4 short "ribbit" bursts
+  for (let i = 0; i < 4; i++) {
+    const start = now + i * 0.12;
+    const osc = c.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(150, start);
+    osc.frequency.exponentialRampToValueAtTime(400, start + 0.04);
+    osc.frequency.exponentialRampToValueAtTime(150, start + 0.08);
+    const filter = c.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 800;
+    filter.Q.value = 8;
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.25, start + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.09);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(c.destination);
+    osc.start(start);
+    osc.stop(start + 0.1);
+  }
+}
+
 const SOUND_MAP: Record<Exclude<FartSound, "random">, (c: AudioContext) => void> = {
   classic: soundClassic,
   squeaker: soundSqueaker,
@@ -251,6 +401,11 @@ const SOUND_MAP: Record<Exclude<FartSound, "random">, (c: AudioContext) => void>
   thunder: soundThunder,
   squeak: soundSqueak,
   deflate: soundDeflate,
+  whisper: soundWhisper,
+  burst: soundBurst,
+  musical: soundMusical,
+  wave: soundWave,
+  frog: soundFrog,
 };
 
 const SOUND_KEYS = Object.keys(SOUND_MAP) as (keyof typeof SOUND_MAP)[];

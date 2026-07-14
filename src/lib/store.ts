@@ -7,7 +7,18 @@ import type { Language } from "./i18n";
 
 // ===== Data types =====
 
-export type FartTag = "silent" | "smelly" | "loud" | "long" | "toilet" | "accidental";
+export type FartTag =
+  | "silent"
+  | "smelly"
+  | "loud"
+  | "long"
+  | "toilet"
+  | "accidental"
+  | "whisper"
+  | "burst"
+  | "musical"
+  | "wave"
+  | "frog";
 
 export type FartSound =
   | "classic"
@@ -18,6 +29,11 @@ export type FartSound =
   | "thunder"
   | "squeak"
   | "deflate"
+  | "whisper"
+  | "burst"
+  | "musical"
+  | "wave"
+  | "frog"
   | "random";
 
 export interface FartRecord {

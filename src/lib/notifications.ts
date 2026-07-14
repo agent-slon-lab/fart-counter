@@ -5,6 +5,7 @@
 
 import type { Language } from "./i18n";
 import { translations } from "./i18n";
+import { getFactOfDay } from "./facts";
 
 type NotifKind = "evening" | "water" | "achievement" | "morning" | "gentle";
 
@@ -55,7 +56,7 @@ function scheduleEvening(lang: Language): ScheduledNotif | null {
   };
 }
 
-/** Schedule the next morning (9:00) greeting. */
+/** Schedule the next morning (9:00) greeting with fact of the day. */
 function scheduleMorning(lang: Language): ScheduledNotif | null {
   const t = translations[lang];
   const now = new Date();
@@ -68,7 +69,7 @@ function scheduleMorning(lang: Language): ScheduledNotif | null {
     kind: "morning",
     fireAt: next.getTime(),
     title: t.notif_morning_title,
-    body: t.notif_morning_body,
+    body: `${t.notif_morning_body} ${getFactOfDay(lang, next)}`,
   };
 }
 

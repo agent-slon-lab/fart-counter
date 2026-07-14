@@ -83,7 +83,7 @@ export function LandingClient() {
             <div className="mt-2 flex h-32 w-32 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg">
               <Wind className="h-10 w-10" />
             </div>
-            <p className="mt-2 text-xs font-bold uppercase tracking-widest text-primary">+1 {t("add_fart")}</p>
+            <p className="mt-2 text-xs font-bold uppercase tracking-widest text-primary">{t("add_fart")}</p>
           </div>
         </div>
       </section>

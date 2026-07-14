@@ -69,7 +69,10 @@ export function HistoryScreen() {
   }, [farts, viewMonth]);
 
   const selectedFarts = useMemo(
-    () => getFartsForDate(farts, selectedDate),
+    () =>
+      getFartsForDate(farts, selectedDate).sort(
+        (a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime()
+      ),
     [farts, selectedDate]
   );
   const selectedCount = selectedFarts.length;
@@ -164,7 +167,7 @@ export function HistoryScreen() {
             hasRecord: "font-bold after:content-['•'] after:absolute after:bottom-0.5 after:text-primary",
           }}
           formatters={{
-            weekdayName: (date) =>
+            formatWeekdayName: (date) =>
               date.toLocaleDateString(locale, { weekday: "short" }),
           }}
         />
@@ -360,7 +363,7 @@ function RecordRow({
   t,
 }: {
   rec: FartRecord;
-  lang: "ru" | "en";
+  lang: "ru" | "en" | "es" | "pt" | "de" | "fr" | "hi";
   onDelete: () => void;
   t: (k: never) => string;
 }) {

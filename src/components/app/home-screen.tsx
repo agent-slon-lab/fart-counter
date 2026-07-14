@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Minus, Droplets, Droplet, Wind, Skull, Volume2, MoreHorizontal } from "lucide-react";
+import { Minus, Droplets, Droplet, Wind, Volume2, Lightbulb, Shuffle } from "lucide-react";
 import {
   useStore,
   getTodayCount,
@@ -13,6 +13,7 @@ import {
 import { useT } from "@/hooks/use-t";
 import { playFartSound, playWaterSound, primeAudio } from "@/lib/sounds";
 import { vibrateFart, vibrateWater } from "@/lib/haptics";
+import { getFactOfDay, getRandomFact } from "@/lib/facts";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -36,13 +37,18 @@ function getZone(count: number): "low" | "normal" | "high" {
   return "high";
 }
 
-const TAG_OPTIONS: { tag: FartTag; icon: string; labelKey: string }[] = [
-  { tag: "silent", icon: "🤫", labelKey: "silent" },
-  { tag: "smelly", icon: "💀", labelKey: "smelly" },
-  { tag: "loud", icon: "📢", labelKey: "loud" },
-  { tag: "long", icon: "⏱️", labelKey: "long" },
-  { tag: "toilet", icon: "🚽", labelKey: "toilet" },
-  { tag: "accidental", icon: "😰", labelKey: "accidental" },
+const TAG_OPTIONS: { tag: FartTag; icon: string; labelKey: string; sound: FartSound }[] = [
+  { tag: "silent", icon: "🤫", labelKey: "silent", sound: "squeak" },
+  { tag: "smelly", icon: "💀", labelKey: "smelly", sound: "rumble" },
+  { tag: "loud", icon: "📢", labelKey: "loud", sound: "thunder" },
+  { tag: "long", icon: "⏱️", labelKey: "long", sound: "deflate" },
+  { tag: "toilet", icon: "🚽", labelKey: "toilet", sound: "whoopee" },
+  { tag: "accidental", icon: "😰", labelKey: "accidental", sound: "squeaker" },
+  { tag: "whisper", icon: "🍃", labelKey: "whisper", sound: "whisper" },
+  { tag: "burst", icon: "💥", labelKey: "burst", sound: "burst" },
+  { tag: "musical", icon: "🎵", labelKey: "musical", sound: "musical" },
+  { tag: "wave", icon: "🌊", labelKey: "wave", sound: "wave" },
+  { tag: "frog", icon: "🐸", labelKey: "frog", sound: "frog" },
 ];
 
 const SOUND_OPTIONS: FartSound[] = [
@@ -54,8 +60,24 @@ const SOUND_OPTIONS: FartSound[] = [
   "thunder",
   "squeak",
   "deflate",
+  "whisper",
+  "burst",
+  "musical",
+  "wave",
+  "frog",
   "random",
 ];
+
+// If user has selected "auto" — pick sound based on tag
+function resolveSound(setting: FartSound, tags: FartTag[]): FartSound {
+  if (setting !== "random") return setting;
+  // Pick the sound mapped to the first tag (if any), else classic
+  for (const t of tags) {
+    const found = TAG_OPTIONS.find((o) => o.tag === t);
+    if (found) return found.sound;
+  }
+  return "classic";
+}
 
 export function HomeScreen() {
   const { t, lang } = useT();
@@ -79,8 +101,15 @@ export function HomeScreen() {
   const [popping, setPopping] = useState(false);
   const [puffs, setPuffs] = useState<Puff[]>([]);
   const [soundOpen, setSoundOpen] = useState(false);
-  const [moreTags, setMoreTags] = useState(false);
+  const [factIndex, setFactIndex] = useState(0);
+  const [fact, setFact] = useState<string | null>(null);
   const puffIdRef = useRef(0);
+
+  // Set fact of the day on client (avoids SSR date mismatch)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFact(factIndex === 0 ? getFactOfDay(lang) : getRandomFact(lang));
+  }, [lang, factIndex]);
 
   function handleAddFart(tags: FartTag[] = []) {
     primeAudio();
@@ -96,13 +125,13 @@ export function HomeScreen() {
         { timeout: 3000, maximumAge: 60000 }
       );
     }
-    addFart({ tags, sound: fartSound, geo });
+    addFart({ tags, sound: resolveSound(fartSound, tags), geo });
     // Contribute to anonymous world rank (uses localStorage, no server)
     // Country is approximated from locale timezone as a privacy-friendly proxy.
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
     const country = tz.split("/").pop() || "Unknown";
     contributeToRank(country);
-    if (soundEnabled) playFartSound(fartSound);
+    if (soundEnabled) playFartSound(resolveSound(fartSound, tags));
     if (vibEnabled) vibrateFart();
     setPopping(true);
     setTimeout(() => setPopping(false), 320);
@@ -179,8 +208,6 @@ export function HomeScreen() {
     month: "long",
   });
 
-  // Visible tags: first 3 always, "more" toggles the rest
-  const visibleTags = moreTags ? TAG_OPTIONS : TAG_OPTIONS.slice(0, 3);
   const dict = translations[lang] ?? translations.en;
   const soundLabel = (s: FartSound) => dict[`sound_${s}`] ?? translations.en[`sound_${s}`] ?? s;
 
@@ -265,28 +292,43 @@ export function HomeScreen() {
         </motion.button>
       </div>
 
-      {/* Tag buttons — first 3, then expandable */}
-      <div className="grid grid-cols-3 gap-2">
-        {visibleTags.map(({ tag, icon, labelKey }) => (
+      {/* Fact of the day */}
+      <Card className="border-primary/30 bg-primary/5 p-3">
+        <div className="mb-1 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
+            <Lightbulb className="h-3.5 w-3.5" />
+            {t("fact_of_day_title")}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setFactIndex((i) => i + 1)}
+            aria-label={t("fact_next")}
+          >
+            <Shuffle className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+        <p className="text-sm leading-snug">
+          {fact || "…"}
+        </p>
+      </Card>
+
+      {/* Tag buttons — all visible at once, grid 3 columns */}
+      <div className="grid grid-cols-3 gap-1.5">
+        {TAG_OPTIONS.map(({ tag, icon, labelKey }) => (
           <Button
             key={tag}
             variant="outline"
             size="sm"
             onClick={() => handleAddFart([tag])}
-            className="flex flex-col items-center gap-1 py-3"
+            className="flex flex-col items-center gap-0.5 py-2.5"
           >
             <span className="text-base leading-none">{icon}</span>
             <span className="text-[10px] font-semibold leading-tight">{t(labelKey)}</span>
-            <span className="text-xs font-black">+1</span>
           </Button>
         ))}
       </div>
-
-      {/* More tags toggle */}
-      <Button variant="ghost" size="sm" onClick={() => setMoreTags((v) => !v)} className="text-muted-foreground">
-        <MoreHorizontal className="mr-1 h-4 w-4" />
-        {moreTags ? t("close") : t("more_tags")}
-      </Button>
 
       {/* Undo */}
       <Button variant="ghost" size="sm" onClick={handleUndo} disabled={count === 0} className="text-muted-foreground">
@@ -332,8 +374,8 @@ export function HomeScreen() {
             {t("drink_glass")}
           </Button>
           <Button variant="outline" size="sm" onClick={handleWaterRemove} disabled={waterCount === 0}>
-            <Minus className="mr-1 h-4 w-4" />
-            {t("remove_glass")}
+            <span className="mr-1 text-base leading-none">−</span>
+            {t("drink_glass")}
           </Button>
         </div>
       </Card>
@@ -361,7 +403,7 @@ export function HomeScreen() {
                 }`}
               >
                 <span className="text-2xl">
-                  {s === "classic" ? "💨" : s === "squeaker" ? "🐾" : s === "rumble" ? "🌩️" : s === "machine_gun" ? "🔫" : s === "whoopee" ? "🛋️" : s === "thunder" ? "⛈️" : s === "squeak" ? "🐭" : s === "deflate" ? "🎈" : "🎲"}
+                  {s === "classic" ? "💨" : s === "squeaker" ? "🐾" : s === "rumble" ? "🌩️" : s === "machine_gun" ? "🔫" : s === "whoopee" ? "🛋️" : s === "thunder" ? "⛈️" : s === "squeak" ? "🐭" : s === "deflate" ? "🎈" : s === "whisper" ? "🍃" : s === "burst" ? "💥" : s === "musical" ? "🎵" : s === "wave" ? "🌊" : s === "frog" ? "🐸" : "🎲"}
                 </span>
                 <span className="text-[10px] font-semibold">{soundLabel(s)}</span>
                 {fartSound === s && <span className="text-[9px] text-primary">✓</span>}
