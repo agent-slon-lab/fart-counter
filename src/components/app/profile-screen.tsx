@@ -357,7 +357,7 @@ export function ProfileScreen() {
         <p className="mt-2 rounded-md bg-primary/10 px-2 py-1.5 text-[11px] text-primary/90">{t("medical_disclaimer")}</p>
         {/* GitHub link */}
         <a
-          href="https://github.com/USERNAME/fart-counter"
+          href="https://github.com/agent-slon-lab/fart-counter"
           target="_blank"
           rel="noopener noreferrer"
           className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-xs font-medium hover:bg-muted/50 transition-colors"
