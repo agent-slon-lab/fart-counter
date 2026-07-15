@@ -215,7 +215,7 @@ const ru: Dict = {
   reset_data: "Сбросить все данные",
   confirm_reset: "Удалить ВСЕ записи? Это необратимо!",
   about_section: "О приложении",
-  about_text: "Счётчик Пуков v1.0.0 — офлайн PWA. Никаких серверов, никакой слежки. Только ты и твоя ветреность.",
+  about_text: "Счётчик Пуков v1.0.1 — офлайн PWA. Никаких серверов, никакой слежки. Только ты и твоя ветреность.",
   medical_disclaimer: "Норма 10–20 пуков в сутки — медицинский факт. Больше — повод задуматься о рационе.",
   app_version: "Версия",
   app_source_code: "Исходный код",
@@ -340,6 +340,24 @@ const ru: Dict = {
   // Fact of the day
   fact_of_day_title: "Факт дня",
   fact_next: "Ещё факт",
+
+  // Landing installation instructions
+  landing_install_android_title: "📱 На Android (Chrome)",
+  landing_install_android_step1: "Откройте ссылку в Chrome на телефоне",
+  landing_install_android_step2: "Нажмите три точки (⋮) в правом верхнем углу",
+  landing_install_android_step3: "Выберите «Установить приложение» или «Добавить на главный экран»",
+  landing_install_android_step4: "Подтвердите — на рабочем столе появится иконка 💨",
+  landing_install_iphone_title: "🍎 На iPhone (Safari — обязательно!)",
+  landing_install_iphone_step1: "Откройте ссылку в Safari (не в Chrome!)",
+  landing_install_iphone_step2: "Нажмите кнопку «Поделиться» (квадрат со стрелочкой ↗)",
+  landing_install_iphone_step3: "Прокрутите и выберите «На экран Домой»",
+  landing_install_iphone_step4: "Нажмите «Добавить» — иконка 💨 появится на главном экране",
+  landing_install_desktop_title: "🖥️ На компьютере (Chrome/Edge)",
+  landing_install_desktop_step1: "Откройте приложение в Chrome или Edge",
+  landing_install_desktop_step2: "В адресной строке справа появится иконка «Установить»",
+  landing_install_desktop_step3: "Нажмите её → «Установить»",
+  landing_install_desktop_step4: "Приложение откроется в отдельном окне, как обычная программа",
+  landing_install_choose_platform: "Выберите вашу платформу",
 
   // Notifications
   notif_evening_title: "Не забудь внести пуки! 💨",
@@ -601,7 +619,7 @@ const en: Dict = {
   reset_data: "Reset all data",
   confirm_reset: "Delete ALL records? This is irreversible!",
   about_section: "About",
-  about_text: "Fart Counter v1.0.0 — offline PWA. No servers, no tracking. Just you and your windiness.",
+  about_text: "Fart Counter v1.0.1 — offline PWA. No servers, no tracking. Just you and your windiness.",
   medical_disclaimer: "Norm 10–20 farts per day is a medical fact. More is a reason to rethink your diet.",
   app_version: "Version",
   app_source_code: "Source code",
@@ -726,6 +744,24 @@ const en: Dict = {
   // Fact of the day
   fact_of_day_title: "Fact of the day",
   fact_next: "Another fact",
+
+  // Landing installation instructions
+  landing_install_android_title: "📱 On Android (Chrome)",
+  landing_install_android_step1: "Open the link in Chrome on your phone",
+  landing_install_android_step2: "Tap three dots (⋮) in the top right corner",
+  landing_install_android_step3: "Choose \"Install app\" or \"Add to Home screen\"",
+  landing_install_android_step4: "Confirm — the 💨 icon appears on your home screen",
+  landing_install_iphone_title: "🍎 On iPhone (Safari — required!)",
+  landing_install_iphone_step1: "Open the link in Safari (NOT Chrome!)",
+  landing_install_iphone_step2: "Tap the Share button (square with arrow ↗)",
+  landing_install_iphone_step3: "Scroll and choose \"Add to Home Screen\"",
+  landing_install_iphone_step4: "Tap \"Add\" — the 💨 icon appears on your home screen",
+  landing_install_desktop_title: "🖥️ On Desktop (Chrome/Edge)",
+  landing_install_desktop_step1: "Open the app in Chrome or Edge",
+  landing_install_desktop_step2: "An Install icon appears in the address bar (right side)",
+  landing_install_desktop_step3: "Click it → \"Install\"",
+  landing_install_desktop_step4: "App opens in a separate window, like a real program",
+  landing_install_choose_platform: "Choose your platform",
 
   // Notifications
   notif_evening_title: "Don't forget to log your farts! 💨",

@@ -68,15 +68,21 @@ const SOUND_OPTIONS: FartSound[] = [
   "random",
 ];
 
-// If user has selected "auto" — pick sound based on tag
-function resolveSound(setting: FartSound, tags: FartTag[]): FartSound {
-  if (setting !== "random") return setting;
-  // Pick the sound mapped to the first tag (if any), else classic
-  for (const t of tags) {
-    const found = TAG_OPTIONS.find((o) => o.tag === t);
-    if (found) return found.sound;
+// Resolve sound for the central big button:
+// - If "random" → pick a random sound from all 13
+// - Otherwise → use the configured sound
+function resolveBigButtonSound(setting: FartSound): FartSound {
+  if (setting === "random") {
+    const all = SOUND_OPTIONS.filter((s) => s !== "random");
+    return all[Math.floor(Math.random() * all.length)];
   }
-  return "classic";
+  return setting;
+}
+
+// Get the bound sound for a tag (always uses tag's own sound, ignoring header setting)
+function resolveTagSound(tag: FartTag): FartSound {
+  const found = TAG_OPTIONS.find((o) => o.tag === tag);
+  return found ? found.sound : "classic";
 }
 
 export function HomeScreen() {
@@ -125,13 +131,19 @@ export function HomeScreen() {
         { timeout: 3000, maximumAge: 60000 }
       );
     }
-    addFart({ tags, sound: resolveSound(fartSound, tags), geo });
+    // Determine sound: tags ALWAYS use their own bound sound;
+    // central big button (no tags) uses the header setting (could be random)
+    const sound = tags.length > 0
+      ? resolveTagSound(tags[0])
+      : resolveBigButtonSound(fartSound);
+
+    addFart({ tags, sound, geo });
     // Contribute to anonymous world rank (uses localStorage, no server)
     // Country is approximated from locale timezone as a privacy-friendly proxy.
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
     const country = tz.split("/").pop() || "Unknown";
     contributeToRank(country);
-    if (soundEnabled) playFartSound(resolveSound(fartSound, tags));
+    if (soundEnabled) playFartSound(sound);
     if (vibEnabled) vibrateFart();
     setPopping(true);
     setTimeout(() => setPopping(false), 320);

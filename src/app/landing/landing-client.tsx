@@ -8,10 +8,13 @@ import { translations } from "@/lib/i18n";
 import { qrToDataURL } from "@/lib/qr";
 import Link from "next/link";
 
+type Platform = "android" | "iphone" | "desktop";
+
 export function LandingClient() {
   const language = useStore((s) => s.settings.language);
   const [shareUrl, setShareUrl] = useState("");
   const [qrData, setQrData] = useState("");
+  const [platform, setPlatform] = useState<Platform>("android");
 
   useEffect(() => {
     const url = typeof window !== "undefined" ? window.location.origin : "";
@@ -117,23 +120,72 @@ export function LandingClient() {
         </div>
       </section>
 
-      {/* Install */}
+      {/* Install with platform-specific instructions */}
       <section className="mx-auto max-w-2xl px-4 py-8">
-        <div className="rounded-3xl border-2 border-primary/30 bg-primary/5 p-6 text-center">
-          <h2 className="mb-2 text-2xl font-bold">{t("landing_install_title")}</h2>
-          <p className="mb-4 text-sm text-muted-foreground">{t("landing_install_desc")}</p>
-          {qrData && (
-            <div className="mx-auto inline-block rounded-2xl bg-white p-3 shadow-md">
-              <img src={qrData} alt="QR" className="h-44 w-44" />
-            </div>
+        <div className="rounded-3xl border-2 border-primary/30 bg-primary/5 p-6">
+          <h2 className="mb-2 text-center text-2xl font-bold">{t("landing_install_title")}</h2>
+          <p className="mb-5 text-center text-sm text-muted-foreground">{t("landing_install_desc")}</p>
+
+          {/* QR + Open App */}
+          <div className="mb-6 flex flex-col items-center gap-3">
+            {qrData && (
+              <div className="inline-block rounded-2xl bg-white p-3 shadow-md">
+                <img src={qrData} alt="QR" className="h-40 w-40" />
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">{t("landing_qr_title")}</p>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-lg transition-transform hover:scale-105"
+            >
+              {t("open_app")} <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {/* Platform tabs */}
+          <p className="mb-3 text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            {t("landing_install_choose_platform")}
+          </p>
+          <div className="mb-4 grid grid-cols-3 gap-2">
+            <PlatformTab active={platform === "android"} onClick={() => setPlatform("android")} icon="📱" label="Android" />
+            <PlatformTab active={platform === "iphone"} onClick={() => setPlatform("iphone")} icon="🍎" label="iPhone" />
+            <PlatformTab active={platform === "desktop"} onClick={() => setPlatform("desktop")} icon="🖥️" label="PC" />
+          </div>
+
+          {/* Platform instructions */}
+          {platform === "android" && (
+            <InstallSteps
+              title={t("landing_install_android_title")}
+              steps={[
+                t("landing_install_android_step1"),
+                t("landing_install_android_step2"),
+                t("landing_install_android_step3"),
+                t("landing_install_android_step4"),
+              ]}
+            />
           )}
-          <p className="mt-3 text-xs text-muted-foreground">{t("landing_qr_title")}</p>
-          <Link
-            href="/"
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-lg transition-transform hover:scale-105"
-          >
-            {t("open_app")} <ArrowRight className="h-4 w-4" />
-          </Link>
+          {platform === "iphone" && (
+            <InstallSteps
+              title={t("landing_install_iphone_title")}
+              steps={[
+                t("landing_install_iphone_step1"),
+                t("landing_install_iphone_step2"),
+                t("landing_install_iphone_step3"),
+                t("landing_install_iphone_step4"),
+              ]}
+            />
+          )}
+          {platform === "desktop" && (
+            <InstallSteps
+              title={t("landing_install_desktop_title")}
+              steps={[
+                t("landing_install_desktop_step1"),
+                t("landing_install_desktop_step2"),
+                t("landing_install_desktop_step3"),
+                t("landing_install_desktop_step4"),
+              ]}
+            />
+          )}
         </div>
       </section>
 
@@ -142,5 +194,41 @@ export function LandingClient() {
         <p className="text-xs text-muted-foreground">{t("landing_footer")}</p>
       </footer>
     </div>
+  );
+}
+
+function PlatformTab({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: string; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-center gap-1 rounded-xl border-2 p-3 transition-all ${
+        active ? "border-primary bg-primary/15 scale-105" : "border-border bg-card hover:border-primary/40"
+      }`}
+    >
+      <span className="text-2xl">{icon}</span>
+      <span className="text-xs font-semibold">{label}</span>
+    </button>
+  );
+}
+
+function InstallSteps({ title, steps }: { title: string; steps: string[] }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl bg-card p-4"
+    >
+      <p className="mb-3 text-sm font-bold">{title}</p>
+      <ol className="space-y-2">
+        {steps.map((step, i) => (
+          <li key={i} className="flex items-start gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+              {i + 1}
+            </span>
+            <span className="text-sm leading-snug">{step}</span>
+          </li>
+        ))}
+      </ol>
+    </motion.div>
   );
 }
