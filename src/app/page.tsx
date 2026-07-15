@@ -12,6 +12,7 @@ import { InsightsScreen } from "@/components/app/insights-screen";
 import { AchievementWatcher } from "@/components/app/achievement-watcher";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { UpdateBanner } from "@/components/pwa/update-banner";
+import { EveningReminderBanner } from "@/components/pwa/evening-reminder-banner";
 import { useT } from "@/hooks/use-t";
 
 export default function Home() {
@@ -86,6 +87,7 @@ export default function Home() {
       <AchievementWatcher />
       <InstallPrompt />
       <UpdateBanner />
+      <EveningReminderBanner />
     </div>
   );
 }

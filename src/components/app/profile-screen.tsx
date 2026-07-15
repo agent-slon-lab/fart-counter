@@ -296,6 +296,10 @@ export function ProfileScreen() {
             <ToggleRow icon={<span className="text-sm">🤔</span>} label={t("notif_gentle_reminder_title")} checked={settings.gentleReminder} onChange={(v) => setSetting("gentleReminder", v)} />
           </>
         )}
+        {/* Honest limitation note */}
+        <p className="mt-2 rounded-md bg-amber-500/10 px-2 py-1.5 text-[10px] leading-snug text-amber-700 dark:text-amber-400">
+          {t("notif_limitation_note")}
+        </p>
       </SectionCard>
 
       {/* Data */}

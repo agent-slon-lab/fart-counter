@@ -215,7 +215,7 @@ const ru: Dict = {
   reset_data: "Сбросить все данные",
   confirm_reset: "Удалить ВСЕ записи? Это необратимо!",
   about_section: "О приложении",
-  about_text: "Счётчик Пуков v1.0.2 — офлайн PWA. Никаких серверов, никакой слежки. Только ты и твоя ветреность.",
+  about_text: "Счётчик Пуков v1.0.3 — офлайн PWA. Никаких серверов, никакой слежки. Только ты и твоя ветреность.",
   medical_disclaimer: "Норма 10–20 пуков в сутки — медицинский факт. Больше — повод задуматься о рационе.",
   app_version: "Версия",
   app_source_code: "Исходный код",
@@ -369,8 +369,15 @@ const ru: Dict = {
   notif_morning_body: "Новый день — новые пуки! Удачи!",
   notif_permission_denied: "Уведомления отключены в браузере",
   notif_enabled: "Уведомления включены",
+  notif_limitation_note: "⚠️ Уведомления работают только при открытом приложении. Это ограничение PWA без push-сервера.",
   notif_gentle_reminder_title: "Давно не пукал? 🤔",
   notif_gentle_reminder_body: "Уже 4 часа без пука. Всё ок? Не забывай считать!",
+
+  // Evening reminder banner (check on launch)
+  evening_banner_title: "Не забудь внести пуки! 💨",
+  evening_banner_body: "Уже поздно, а ты внёс мало пуков за сегодня. Посчитай!",
+  evening_banner_dismiss: "Позже",
+  evening_banner_count_now: "Посчитать сейчас",
 
   // Toasts
   toast_fart_added: "+1 пук!",
@@ -619,7 +626,7 @@ const en: Dict = {
   reset_data: "Reset all data",
   confirm_reset: "Delete ALL records? This is irreversible!",
   about_section: "About",
-  about_text: "Fart Counter v1.0.2 — offline PWA. No servers, no tracking. Just you and your windiness.",
+  about_text: "Fart Counter v1.0.3 — offline PWA. No servers, no tracking. Just you and your windiness.",
   medical_disclaimer: "Norm 10–20 farts per day is a medical fact. More is a reason to rethink your diet.",
   app_version: "Version",
   app_source_code: "Source code",
@@ -773,8 +780,15 @@ const en: Dict = {
   notif_morning_body: "New day, new farts! Good luck!",
   notif_permission_denied: "Notifications disabled in browser",
   notif_enabled: "Notifications enabled",
+  notif_limitation_note: "⚠️ Notifications only work when the app is open. This is a PWA limitation without a push server.",
   notif_gentle_reminder_title: "Long time no fart? 🤔",
   notif_gentle_reminder_body: "4 hours without a fart. All good? Don't forget to count!",
+
+  // Evening reminder banner (check on launch)
+  evening_banner_title: "Don't forget to log your farts! 💨",
+  evening_banner_body: "It's late and you've logged few farts today. Count them!",
+  evening_banner_dismiss: "Later",
+  evening_banner_count_now: "Count now",
 
   // Toasts
   toast_fart_added: "+1 fart!",
