@@ -21,6 +21,8 @@ import {
   QrCode,
   MapPin,
   CloudSun,
+  RefreshCw,
+  Github,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,6 +56,8 @@ import {
 import { buildExportPayload, downloadText, readFileAsText } from "@/lib/export";
 import { dateKey } from "@/lib/store";
 import { qrToDataURL } from "@/lib/qr";
+import { APP_VERSION, forceUpdate } from "@/lib/version";
+import { useManualUpdateCheck } from "@/components/pwa/update-banner";
 import { AchievementsList } from "./achievements-list";
 import { ShareCardDialog } from "./share-card-dialog";
 
@@ -84,6 +88,8 @@ export function ProfileScreen() {
   const [qrOpen, setQrOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const updateCheck = useManualUpdateCheck();
+  const handleCheckUpdates = updateCheck.check;
 
   // Install notifications when settings change
   useEffect(() => {
@@ -313,8 +319,52 @@ export function ProfileScreen() {
 
       {/* About */}
       <SectionCard icon={<Info className="h-4 w-4" />} title={t("about_section")}>
+        {/* Version info */}
+        <div className="mb-2 flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{t("app_version")}</p>
+            <p className="text-lg font-black tabular-nums">v{APP_VERSION}</p>
+          </div>
+          <Button variant="outline" size="sm" className="h-8" onClick={handleCheckUpdates} disabled={updateCheck.state === "checking"}>
+            <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${updateCheck.state === "checking" ? "animate-spin" : ""}`} />
+            {t("check_updates")}
+          </Button>
+        </div>
+        {/* Update status */}
+        {updateCheck.state === "available" && updateCheck.newVersion && (
+          <div className="mb-2 rounded-lg border-2 border-primary/40 bg-primary/10 px-3 py-2">
+            <p className="text-xs font-bold text-primary">{t("update_available")}</p>
+            <p className="text-[11px] text-muted-foreground">
+              v{APP_VERSION} → v{updateCheck.newVersion}
+            </p>
+            <Button size="sm" className="mt-2 h-7 w-full" onClick={() => forceUpdate()}>
+              <RefreshCw className="mr-1 h-3 w-3" />
+              {t("update_now")}
+            </Button>
+          </div>
+        )}
+        {updateCheck.state === "latest" && (
+          <p className="mb-2 rounded-md bg-green-500/10 px-2 py-1.5 text-[11px] text-green-600 dark:text-green-400">
+            ✓ {t("update_current")}
+          </p>
+        )}
+        {updateCheck.state === "error" && (
+          <p className="mb-2 rounded-md bg-destructive/10 px-2 py-1.5 text-[11px] text-destructive">
+            ⚠ {t("weather_error")}
+          </p>
+        )}
         <p className="text-xs leading-relaxed text-muted-foreground">{t("about_text")}</p>
         <p className="mt-2 rounded-md bg-primary/10 px-2 py-1.5 text-[11px] text-primary/90">{t("medical_disclaimer")}</p>
+        {/* GitHub link */}
+        <a
+          href="https://github.com/USERNAME/fart-counter"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-xs font-medium hover:bg-muted/50 transition-colors"
+        >
+          <Github className="h-3.5 w-3.5" />
+          {t("app_source_code")} →
+        </a>
       </SectionCard>
 
       <AchievementsList open={achOpen} onOpenChange={setAchOpen} />
