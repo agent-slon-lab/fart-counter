@@ -12,7 +12,7 @@
 
 Откройте приложение на телефоне и добавьте на главный экран:
 
-**🌐 Ссылка:** [fart-counter.vercel.app](https://fart-counter.vercel.app)
+**🌐 Ссылка:** [fart-counter-lake.vercel.app](https://fart-counter-lake.vercel.app/)
 
 - 🤖 **Android (Chrome):** открыть ссылку → меню (⋮) → «Установить приложение»
 - 🍎 **iPhone (Safari):** открыть ссылку → Поделиться → «На экран Домой»

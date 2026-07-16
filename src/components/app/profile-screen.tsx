@@ -172,12 +172,26 @@ export function ProfileScreen() {
     toast(t("toast_data_reset"), { icon: "🗑️" });
   }
 
-  function handleCopyLink() {
+  async function handleCopyLink() {
     const url = typeof window !== "undefined" ? window.location.href : "";
-    navigator.clipboard?.writeText(url).then(
-      () => toast(t("share_app_link_copied"), { icon: "📋" }),
-      () => toast(t("export_failed"), { icon: "⚠️" })
-    );
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        // Fallback for browsers without clipboard API
+        const textarea = document.createElement("textarea");
+        textarea.value = url;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      toast(t("share_app_link_copied"), { icon: "📋" });
+    } catch {
+      toast(t("export_failed"), { icon: "⚠️" });
+    }
   }
 
   const perm = notificationPermission();
