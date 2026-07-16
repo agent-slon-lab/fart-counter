@@ -13,17 +13,23 @@ import { AchievementWatcher } from "@/components/app/achievement-watcher";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { UpdateBanner } from "@/components/pwa/update-banner";
 import { EveningReminderBanner } from "@/components/pwa/evening-reminder-banner";
+import { Onboarding, hasCompletedOnboarding } from "@/components/pwa/onboarding";
 import { useT } from "@/hooks/use-t";
 
 export default function Home() {
   const { t } = useT();
   const [tab, setTab] = useState<TabId>("home");
   const [hydrated, setHydrated] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const primeAudioOnce = useRef(false);
   const mainRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setHydrated(true);
+    // Check onboarding only on client
+    if (!hasCompletedOnboarding()) {
+      setShowOnboarding(true);
+    }
   }, []);
 
   // Prime audio on first user interaction (mobile autoplay policy)
@@ -45,6 +51,11 @@ export default function Home() {
 
   return (
     <div className="relative mx-auto flex min-h-screen max-w-[480px] flex-col bg-background">
+      {/* Onboarding (shown only once) */}
+      {showOnboarding && (
+        <Onboarding onComplete={() => setShowOnboarding(false)} />
+      )}
+
       {/* App header */}
       <header className="safe-top sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/95 px-4 py-2 backdrop-blur-md">
         <div className="flex items-center gap-2">

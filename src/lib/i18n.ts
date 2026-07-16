@@ -215,7 +215,7 @@ const ru: Dict = {
   reset_data: "Сбросить все данные",
   confirm_reset: "Удалить ВСЕ записи? Это необратимо!",
   about_section: "О приложении",
-  about_text: "Счётчик Пуков v1.0.3 — офлайн PWA. Никаких серверов, никакой слежки. Только ты и твоя ветреность.",
+  about_text: "Счётчик Пуков v1.1.0 — офлайн PWA. Никаких серверов, никакой слежки. Только ты и твоя ветреность.",
   medical_disclaimer: "Норма 10–20 пуков в сутки — медицинский факт. Больше — повод задуматься о рационе.",
   app_version: "Версия",
   app_source_code: "Исходный код",
@@ -378,6 +378,30 @@ const ru: Dict = {
   evening_banner_body: "Уже поздно, а ты внёс мало пуков за сегодня. Посчитай!",
   evening_banner_dismiss: "Позже",
   evening_banner_count_now: "Посчитать сейчас",
+
+  // Onboarding (3-screen welcome)
+  onboarding_welcome_title: "Добро пожаловать!",
+  onboarding_welcome_subtitle: "Давай посчитаем твои пуки 💨",
+  onboarding_choose_lang: "Выбери язык",
+  onboarding_get_started: "Начать",
+  onboarding_skip: "Пропустить",
+  onboarding_next: "Далее",
+  onboarding_back: "Назад",
+
+  onboarding_lightweight_title: "Лёгкое приложение",
+  onboarding_lightweight_subtitle: "Менее 1 МБ — мгновенная загрузка",
+  onboarding_no_ads: "Без рекламы",
+  onboarding_no_tracking: "Без слежки",
+  onboarding_offline: "Работает офлайн",
+  onboarding_free: "Бесплатно навсегда",
+
+  onboarding_quickstart_title: "Быстрый старт",
+  onboarding_quickstart_subtitle: "Всё просто:",
+  onboarding_step1: "Нажми +1 когда пукнешь",
+  onboarding_step2: "Отслеживай статистику и графики",
+  onboarding_step3: "Открывай достижения",
+  onboarding_step4: "Делись с друзьями",
+  onboarding_start_farting: "Поехали! 💨",
 
   // Toasts
   toast_fart_added: "+1 пук!",
@@ -626,7 +650,7 @@ const en: Dict = {
   reset_data: "Reset all data",
   confirm_reset: "Delete ALL records? This is irreversible!",
   about_section: "About",
-  about_text: "Fart Counter v1.0.3 — offline PWA. No servers, no tracking. Just you and your windiness.",
+  about_text: "Fart Counter v1.1.0 — offline PWA. No servers, no tracking. Just you and your windiness.",
   medical_disclaimer: "Norm 10–20 farts per day is a medical fact. More is a reason to rethink your diet.",
   app_version: "Version",
   app_source_code: "Source code",
@@ -789,6 +813,30 @@ const en: Dict = {
   evening_banner_body: "It's late and you've logged few farts today. Count them!",
   evening_banner_dismiss: "Later",
   evening_banner_count_now: "Count now",
+
+  // Onboarding (3-screen welcome)
+  onboarding_welcome_title: "Welcome!",
+  onboarding_welcome_subtitle: "Let's count your farts 💨",
+  onboarding_choose_lang: "Choose your language",
+  onboarding_get_started: "Get Started",
+  onboarding_skip: "Skip",
+  onboarding_next: "Next",
+  onboarding_back: "Back",
+
+  onboarding_lightweight_title: "Lightweight App",
+  onboarding_lightweight_subtitle: "Less than 1 MB — instant load",
+  onboarding_no_ads: "No ads",
+  onboarding_no_tracking: "No tracking",
+  onboarding_offline: "Works offline",
+  onboarding_free: "Free forever",
+
+  onboarding_quickstart_title: "Quick Start",
+  onboarding_quickstart_subtitle: "It's simple:",
+  onboarding_step1: "Press +1 when you fart",
+  onboarding_step2: "Track stats and charts",
+  onboarding_step3: "Unlock achievements",
+  onboarding_step4: "Share with friends",
+  onboarding_start_farting: "Start farting! 💨",
 
   // Toasts
   toast_fart_added: "+1 fart!",

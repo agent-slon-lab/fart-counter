@@ -173,6 +173,23 @@ function uid(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
+/**
+ * Detect the user's preferred language from the browser.
+ * Falls back to English if the browser language is not supported.
+ * This runs only on the client (during store initialization).
+ */
+function detectBrowserLanguage(): Language {
+  // Default to English for SSR / first render
+  if (typeof navigator === "undefined") return "en";
+  const browserLang = (navigator.language || "en").toLowerCase();
+  // Check exact match first (e.g. "ru", "es")
+  const exact = browserLang.split("-")[0];
+  const supported: Language[] = ["ru", "en", "es", "pt", "de", "fr", "hi"];
+  if (supported.includes(exact as Language)) return exact as Language;
+  // Fallback to English
+  return "en";
+}
+
 // ===== Store =====
 
 export const useStore = create<AppState>()(
@@ -186,7 +203,7 @@ export const useStore = create<AppState>()(
       worldRank: {},
 
       settings: {
-        language: "ru",
+        language: detectBrowserLanguage(),
         theme: "system",
         accent: "green",
         soundEnabled: true,

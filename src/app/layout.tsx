@@ -61,10 +61,10 @@ export const metadata: Metadata = {
     url: "/",
     images: [
       {
-        url: "/icon-512.png",
-        width: 512,
-        height: 512,
-        alt: "Fart Counter App",
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Fart Counter — Free offline PWA",
       },
     ],
   },
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Счётчик Пуков — Fart Counter",
     description: "Бесплатное офлайн PWA. Без рекламы, без слежки. 7 языков.",
-    images: ["/icon-512.png"],
+    images: ["/og-image.png"],
   },
 };
 
