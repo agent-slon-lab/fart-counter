@@ -21,7 +21,9 @@ export function LandingClient() {
     if (url) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setShareUrl(url);
-      setQrData(qrToDataURL(url, 6));
+      qrToDataURL(url, 8).then((data) => {
+        setQrData(data);
+      });
     }
   }, []);
 
@@ -130,7 +132,7 @@ export function LandingClient() {
           <div className="mb-6 flex flex-col items-center gap-3">
             {qrData && (
               <div className="inline-block rounded-2xl bg-white p-3 shadow-md">
-                <img src={qrData} alt="QR" className="h-40 w-40" />
+                <img src={qrData} alt="QR" className="h-48 w-48" />
               </div>
             )}
             <p className="text-xs text-muted-foreground">{t("landing_qr_title")}</p>

@@ -87,9 +87,23 @@ export function ProfileScreen() {
   const [shareOpen, setShareOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
+  const [qrData, setQrData] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateCheck = useManualUpdateCheck();
   const handleCheckUpdates = updateCheck.check;
+
+  // Generate QR code asynchronously when dialog opens
+  useEffect(() => {
+    if (!qrOpen) return;
+    let cancelled = false;
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    qrToDataURL(url, 8).then((data) => {
+      if (!cancelled) setQrData(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [qrOpen]);
 
   // Install notifications when settings change
   useEffect(() => {
@@ -167,8 +181,6 @@ export function ProfileScreen() {
   }
 
   const perm = notificationPermission();
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-  const qrData = qrOpen ? qrToDataURL(shareUrl, 6) : "";
 
   return (
     <div className="flex flex-col gap-4 px-4 pb-4">
@@ -376,12 +388,20 @@ export function ProfileScreen() {
 
       {/* QR dialog */}
       <Dialog open={qrOpen} onOpenChange={setQrOpen}>
-        <DialogContent className="max-w-[320px]">
+        <DialogContent className="max-w-[360px]">
           <DialogHeader>
             <DialogTitle className="text-center">{t("share_app_qr")}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center gap-3">
-            {qrData && <img src={qrData} alt="QR" className="h-56 w-56 rounded-lg border border-border bg-white p-2" />}
+            <div className="rounded-2xl bg-white p-4 shadow-md">
+              {qrData ? (
+                <img src={qrData} alt="QR" className="h-64 w-64" />
+              ) : (
+                <div className="flex h-64 w-64 items-center justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                </div>
+              )}
+            </div>
             <p className="text-center text-xs text-muted-foreground">{t("landing_qr_title")}</p>
             <Button variant="outline" size="sm" onClick={handleCopyLink} className="w-full">
               <Share2 className="mr-1.5 h-3.5 w-3.5" />
