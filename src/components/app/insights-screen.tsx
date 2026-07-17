@@ -348,22 +348,25 @@ export function InsightsScreen() {
         </p>
       </Card>
 
-      {/* World rank */}
+      {/* World rank — Coming Soon */}
       <Card className="p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Globe className="h-4 w-4 text-blue-500" />
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">{t("map_world_ranking")}</span>
-          </div>
-          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={handleShareRank}>
-            {t("map_share_rank")}
-          </Button>
+        <div className="mb-3 flex items-center gap-2">
+          <Globe className="h-4 w-4 text-blue-500" />
+          <span className="text-xs uppercase tracking-widest text-muted-foreground">{t("map_section")}</span>
         </div>
-        {sortedRank.length === 0 ? (
-          <p className="py-3 text-center text-sm text-muted-foreground">{t("map_no_locations")}</p>
-        ) : (
-          <div>
-            <div className="mb-3 rounded-lg bg-primary/10 p-3 text-center">
+        {/* Coming Soon notice */}
+        <div className="rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-5 text-center">
+          <div className="mb-2 text-3xl">🌍</div>
+          <p className="text-sm font-bold">{t("map_coming_soon")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("map_coming_soon_desc")}</p>
+        </div>
+        {/* Your local rank (timezone-based, no server) */}
+        {sortedRank.length > 0 && (
+          <div className="mt-3">
+            <p className="mb-2 text-[10px] uppercase tracking-widest text-muted-foreground">
+              {t("map_world_ranking")} (local)
+            </p>
+            <div className="rounded-lg bg-primary/10 p-3 text-center">
               <p className="text-xs text-muted-foreground">{myCountry}</p>
               <p className="text-2xl font-black text-primary">
                 {myRank > 0 ? `#${myRank}` : "—"}
@@ -372,25 +375,9 @@ export function InsightsScreen() {
                 {worldRank[myCountry] ?? 0} 💨
               </p>
             </div>
-            <div className="max-h-48 space-y-1 overflow-y-auto thin-scroll pr-1">
-              {sortedRank.slice(0, 20).map(([country, count], i) => (
-                <div
-                  key={country}
-                  className={`flex items-center justify-between rounded-lg px-3 py-1.5 text-sm ${
-                    country === myCountry ? "bg-primary/15" : "hover:bg-muted"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="w-6 text-right text-xs font-bold text-muted-foreground">#{i + 1}</span>
-                    <span className="font-medium">{country}</span>
-                  </span>
-                  <span className="tabular-nums font-bold">{count} 💨</span>
-                </div>
-              ))}
-            </div>
-            <p className="mt-2 text-center text-[10px] text-muted-foreground">
-              {t("map_global_total")}: {sortedRank.reduce((s, [, c]) => s + c, 0)} 💨
-            </p>
+            <Button variant="ghost" size="sm" className="mt-2 h-7 w-full text-xs" onClick={handleShareRank}>
+              {t("map_share_rank")}
+            </Button>
           </div>
         )}
       </Card>

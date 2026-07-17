@@ -23,7 +23,9 @@ import {
   CloudSun,
   RefreshCw,
   Github,
+  Shield,
 } from "lucide-react";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -395,6 +397,14 @@ export function ProfileScreen() {
           <Github className="h-3.5 w-3.5" />
           {t("app_source_code")} →
         </a>
+        {/* Privacy Policy link */}
+        <Link
+          href="/privacy"
+          className="mt-2 flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-xs font-medium hover:bg-muted/50 transition-colors"
+        >
+          <Shield className="h-3.5 w-3.5" />
+          {t("app_privacy")} →
+        </Link>
       </SectionCard>
 
       <AchievementsList open={achOpen} onOpenChange={setAchOpen} />
