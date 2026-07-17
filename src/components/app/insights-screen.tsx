@@ -30,6 +30,8 @@ export function InsightsScreen() {
   useEffect(() => {
     if (!settings.weatherEnabled) return;
     let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     async function fetchWeatherByCoords(lat: number, lon: number) {
       try {
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,pressure,relative_humidity,weather_code`;
@@ -51,52 +53,74 @@ export function InsightsScreen() {
         if (!cancelled) setWeatherErr(t("weather_error"));
       } finally {
         if (!cancelled) setWeatherLoading(false);
+        if (timeoutId) clearTimeout(timeoutId);
+      }
+    }
+
+    async function tryIPGeolocation() {
+      // Try multiple IP geolocation services (some may be blocked by ad blockers)
+      const services = [
+        "https://ipapi.co/json/",
+        "https://ipwho.is/",
+        "https://geolocation-db.com/json/",
+      ];
+      for (const url of services) {
+        try {
+          const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
+          if (!res.ok) continue;
+          const data = await res.json();
+          if (cancelled) return;
+          // Different APIs use different field names
+          const lat = data.latitude || data.lat;
+          const lon = data.longitude || data.lon || data.lng;
+          if (lat && lon) {
+            fetchWeatherByCoords(lat, lon);
+            return;
+          }
+        } catch {
+          // Try next service
+          continue;
+        }
+      }
+      // All IP services failed
+      if (!cancelled) {
+        setWeatherErr(t("weather_error"));
+        setWeatherLoading(false);
       }
     }
 
     async function fetchWeather() {
       setWeatherLoading(true);
-      // Try GPS first
+      // Hard timeout: if nothing happens in 10s, show error
+      timeoutId = setTimeout(() => {
+        if (!cancelled) {
+          setWeatherErr(t("weather_error"));
+          setWeatherLoading(false);
+        }
+      }, 10000);
+
+      // Try GPS first (more accurate), but with short timeout
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          (pos) => fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude),
-          async () => {
-            // GPS failed/denied — fallback to IP geolocation (ipapi.co, no key)
-            try {
-              const res = await fetch("https://ipapi.co/json/");
-              if (!res.ok) throw new Error();
-              const data = await res.json();
-              if (cancelled) return;
-              if (data.latitude && data.longitude) {
-                fetchWeatherByCoords(data.latitude, data.longitude);
-              } else {
-                throw new Error();
-              }
-            } catch {
-              if (!cancelled) { setWeatherErr(t("weather_error")); setWeatherLoading(false); }
-            }
+          (pos) => {
+            if (!cancelled) fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude);
           },
-          { timeout: 5000, maximumAge: 30 * 60 * 1000 }
+          () => {
+            // GPS failed/denied — fallback to IP geolocation (no permission needed)
+            if (!cancelled) tryIPGeolocation();
+          },
+          { timeout: 4000, maximumAge: 30 * 60 * 1000, enableHighAccuracy: false }
         );
       } else {
         // No GPS API — use IP geolocation directly
-        try {
-          const res = await fetch("https://ipapi.co/json/");
-          if (!res.ok) throw new Error();
-          const data = await res.json();
-          if (cancelled) return;
-          if (data.latitude && data.longitude) {
-            fetchWeatherByCoords(data.latitude, data.longitude);
-          } else {
-            throw new Error();
-          }
-        } catch {
-          if (!cancelled) { setWeatherErr(t("weather_error")); setWeatherLoading(false); }
-        }
+        tryIPGeolocation();
       }
     }
     fetchWeather();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [settings.weatherEnabled, recordWeather, t]);
 
   const todayWeather = weather.find((w) => w.date === dateKey(new Date()));
@@ -260,40 +284,46 @@ export function InsightsScreen() {
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-xs uppercase tracking-widest text-muted-foreground">{t("cycles_weekly")}</span>
         </div>
-        <div className="flex h-32 items-end justify-between gap-1.5">
-          {weeklyCycle.counts.map((c, i) => {
-            const heightPct = weeklyCycle.max > 0 ? (c / weeklyCycle.max) * 100 : 0;
-            return (
-              <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                <div className="flex w-full flex-1 items-end">
-                  <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: `${heightPct}%` }}
-                    transition={{ delay: i * 0.05, type: "spring", stiffness: 200, damping: 20 }}
-                    className="w-full rounded-t-md bg-primary min-h-[2px]"
-                    style={{ minHeight: c > 0 ? 4 : 2 }}
-                  />
-                </div>
-                <span className="text-[9px] font-medium text-muted-foreground">{t(WEEKDAY_KEYS[i] as never)}</span>
-                <span className="text-[10px] font-bold tabular-nums">{c}</span>
-              </div>
-            );
-          })}
-        </div>
-        <p className="mt-3 text-xs text-muted-foreground">
-          {weeklyCycle.peakIdx >= 0 && (
-            <>
-              {t("cycles_peak_day")}: <b className="text-primary">{t(WEEKDAY_KEYS[weeklyCycle.peakIdx] as never)}</b>
-              {" · "}
-            </>
-          )}
-          {weeklyCycle.lowIdx >= 0 && (
-            <>
-              {t("cycles_low_day")}: <b>{t(WEEKDAY_KEYS[weeklyCycle.lowIdx] as never)}</b>
-            </>
-          )}
-          {weeklyCycle.peakIdx < 0 && weeklyCycle.lowIdx < 0 && t("cycles_no_data")}
-        </p>
+        {farts.length === 0 ? (
+          <p className="py-6 text-center text-sm text-muted-foreground">{t("cycles_need_week")}</p>
+        ) : (
+          <>
+            <div className="flex h-32 items-end justify-between gap-1.5">
+              {weeklyCycle.counts.map((c, i) => {
+                const heightPct = weeklyCycle.max > 0 ? (c / weeklyCycle.max) * 100 : 0;
+                return (
+                  <div key={i} className="flex flex-1 flex-col items-center gap-1">
+                    <div className="flex w-full flex-1 items-end">
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: `${heightPct}%` }}
+                        transition={{ delay: i * 0.05, type: "spring", stiffness: 200, damping: 20 }}
+                        className="w-full rounded-t-md bg-primary min-h-[2px]"
+                        style={{ minHeight: c > 0 ? 4 : 2 }}
+                      />
+                    </div>
+                    <span className="text-[9px] font-medium text-muted-foreground">{t(WEEKDAY_KEYS[i] as never)}</span>
+                    <span className="text-[10px] font-bold tabular-nums">{c}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              {weeklyCycle.peakIdx >= 0 && (
+                <>
+                  {t("cycles_peak_day")}: <b className="text-primary">{t(WEEKDAY_KEYS[weeklyCycle.peakIdx] as never)}</b>
+                  {" · "}
+                </>
+              )}
+              {weeklyCycle.lowIdx >= 0 && weeklyCycle.lowIdx !== weeklyCycle.peakIdx && (
+                <>
+                  {t("cycles_low_day")}: <b>{t(WEEKDAY_KEYS[weeklyCycle.lowIdx] as never)}</b>
+                </>
+              )}
+              {weeklyCycle.peakIdx < 0 && t("cycles_need_week")}
+            </p>
+          </>
+        )}
       </Card>
 
       {/* Monthly trend */}
