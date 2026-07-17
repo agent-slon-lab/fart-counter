@@ -29,12 +29,20 @@ export function InsightsScreen() {
 
   useEffect(() => {
     if (!settings.weatherEnabled) return;
+    
+    // If weather already fetched today, don't show loading
+    const todayW = weather.find((w) => w.date === dateKey(new Date()));
+    if (todayW) {
+      setWeatherLoading(false);
+      return;
+    }
+    
     let cancelled = false;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     async function fetchWeatherByCoords(lat: number, lon: number) {
       try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,pressure,relative_humidity,weather_code`;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,pressure_msl,weather_code`;
         const res = await fetch(url);
         if (!res.ok) throw new Error("Weather API error");
         const data = await res.json();
@@ -43,8 +51,8 @@ export function InsightsScreen() {
         const snap = {
           date: dateKey(new Date()),
           tempC: Math.round(c.temperature_2m),
-          pressureHpa: Math.round(c.pressure),
-          humidity: Math.round(c.relative_humidity),
+          pressureHpa: Math.round(c.pressure_msl),
+          humidity: Math.round(c.relative_humidity_2m),
           condition: String(c.weather_code),
         };
         recordWeather(snap);
@@ -58,11 +66,11 @@ export function InsightsScreen() {
     }
 
     async function tryIPGeolocation() {
-      // Try multiple IP geolocation services (some may be blocked by ad blockers)
+      // Try multiple IP geolocation services (some may be blocked by ad blockers/CORS)
       const services = [
-        "https://ipapi.co/json/",
+        "https://geolocation-db.com/json/",  // CORS-friendly, most reliable from browser
         "https://ipwho.is/",
-        "https://geolocation-db.com/json/",
+        "https://ipapi.co/json/",
       ];
       for (const url of services) {
         try {
@@ -144,9 +152,12 @@ export function InsightsScreen() {
   // ===== Weekly cycle =====
   const weeklyCycle = useMemo(() => {
     const counts = [0, 0, 0, 0, 0, 0, 0];
+    const seenDays = new Set<string>();
     for (const f of farts) {
-      const day = new Date(f.ts).getDay();
+      const d = new Date(f.ts);
+      const day = d.getDay();
       counts[day]++;
+      seenDays.add(dateKey(d));
     }
     // reorder Mon-Sun
     const ordered = [...counts.slice(1), counts[0]];
@@ -155,7 +166,7 @@ export function InsightsScreen() {
     // peak: day with max count; if all zero, peak = -1 (no peak)
     const peakIdx = max > 0 ? ordered.indexOf(max) : -1;
     const lowIdx = min < max ? ordered.indexOf(min) : -1;
-    return { counts: ordered, max, peakIdx, lowIdx };
+    return { counts: ordered, max, peakIdx, lowIdx, daysTracked: seenDays.size };
   }, [farts]);
 
   // ===== Monthly trend =====
@@ -284,7 +295,7 @@ export function InsightsScreen() {
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-xs uppercase tracking-widest text-muted-foreground">{t("cycles_weekly")}</span>
         </div>
-        {farts.length === 0 ? (
+        {weeklyCycle.daysTracked < 7 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">{t("cycles_need_week")}</p>
         ) : (
           <>
