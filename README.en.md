@@ -12,7 +12,7 @@
 
 Open the app on your phone and add to home screen:
 
-**🌐 Link:** [fart-counter.vercel.app](https://fart-counter.vercel.app)
+**🌐 Link:** [fart-counter-lake.vercel.app](https://fart-counter-lake.vercel.app/)
 
 - 🤖 **Android (Chrome):** open link → menu (⋮) → "Install app"
 - 🍎 **iPhone (Safari):** open link → Share → "Add to Home Screen"
