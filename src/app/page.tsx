@@ -14,6 +14,7 @@ import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { UpdateBanner } from "@/components/pwa/update-banner";
 import { EveningReminderBanner } from "@/components/pwa/evening-reminder-banner";
 import { Onboarding, hasCompletedOnboarding } from "@/components/pwa/onboarding";
+import { WelcomePopup } from "@/components/pwa/welcome-popup";
 import { useT } from "@/hooks/use-t";
 import { useStore } from "@/lib/store";
 import type { Language } from "@/lib/i18n";
@@ -132,6 +133,7 @@ export default function Home() {
       <InstallPrompt />
       <UpdateBanner />
       <EveningReminderBanner />
+      <WelcomePopup />
     </div>
   );
 }

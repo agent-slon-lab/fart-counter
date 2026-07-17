@@ -2,7 +2,7 @@
 
 > **Free offline PWA for tracking your farts.** Humor, stats, 23 achievements, food diary, weather, world map. No ads, no tracking.
 
-**Version: 1.1.1**
+**Version: 1.2.0**
 
 🇷🇺 **Русская версия:** [README.md](./README.md)
 

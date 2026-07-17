@@ -30,38 +30,70 @@ export function InsightsScreen() {
   useEffect(() => {
     if (!settings.weatherEnabled) return;
     let cancelled = false;
+    async function fetchWeatherByCoords(lat: number, lon: number) {
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,pressure,relative_humidity,weather_code`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Weather API error");
+        const data = await res.json();
+        if (cancelled) return;
+        const c = data.current;
+        const snap = {
+          date: dateKey(new Date()),
+          tempC: Math.round(c.temperature_2m),
+          pressureHpa: Math.round(c.pressure),
+          humidity: Math.round(c.relative_humidity),
+          condition: String(c.weather_code),
+        };
+        recordWeather(snap);
+        setWeatherErr(null);
+      } catch {
+        if (!cancelled) setWeatherErr(t("weather_error"));
+      } finally {
+        if (!cancelled) setWeatherLoading(false);
+      }
+    }
+
     async function fetchWeather() {
-      if (!navigator.geolocation) { setWeatherErr(t("weather_error")); return; }
       setWeatherLoading(true);
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          try {
-            // Free open-meteo API, no key needed
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current=temperature_2m,pressure,relative_humidity,weather_code`;
-            const res = await fetch(url);
-            const data = await res.json();
-            if (cancelled) return;
-            const c = data.current;
-            const snap = {
-              date: dateKey(new Date()),
-              tempC: Math.round(c.temperature_2m),
-              pressureHpa: Math.round(c.pressure),
-              humidity: Math.round(c.relative_humidity),
-              condition: String(c.weather_code),
-            };
-            recordWeather(snap);
-            setWeatherErr(null);
-          } catch {
-            if (!cancelled) setWeatherErr(t("weather_error"));
-          } finally {
-            if (!cancelled) setWeatherLoading(false);
+      // Try GPS first
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude),
+          async () => {
+            // GPS failed/denied — fallback to IP geolocation (ipapi.co, no key)
+            try {
+              const res = await fetch("https://ipapi.co/json/");
+              if (!res.ok) throw new Error();
+              const data = await res.json();
+              if (cancelled) return;
+              if (data.latitude && data.longitude) {
+                fetchWeatherByCoords(data.latitude, data.longitude);
+              } else {
+                throw new Error();
+              }
+            } catch {
+              if (!cancelled) { setWeatherErr(t("weather_error")); setWeatherLoading(false); }
+            }
+          },
+          { timeout: 5000, maximumAge: 30 * 60 * 1000 }
+        );
+      } else {
+        // No GPS API — use IP geolocation directly
+        try {
+          const res = await fetch("https://ipapi.co/json/");
+          if (!res.ok) throw new Error();
+          const data = await res.json();
+          if (cancelled) return;
+          if (data.latitude && data.longitude) {
+            fetchWeatherByCoords(data.latitude, data.longitude);
+          } else {
+            throw new Error();
           }
-        },
-        () => {
+        } catch {
           if (!cancelled) { setWeatherErr(t("weather_error")); setWeatherLoading(false); }
-        },
-        { timeout: 5000, maximumAge: 30 * 60 * 1000 }
-      );
+        }
+      }
     }
     fetchWeather();
     return () => { cancelled = true; };
@@ -229,18 +261,24 @@ export function InsightsScreen() {
           <span className="text-xs uppercase tracking-widest text-muted-foreground">{t("cycles_weekly")}</span>
         </div>
         <div className="flex h-32 items-end justify-between gap-1.5">
-          {weeklyCycle.counts.map((c, i) => (
-            <div key={i} className="flex flex-1 flex-col items-center gap-1">
-              <motion.div
-                initial={{ height: 0 }}
-                animate={{ height: `${(c / weeklyCycle.max) * 100}%` }}
-                className="w-full rounded-t-md bg-primary"
-                style={{ minHeight: 2 }}
-              />
-              <span className="text-[9px] font-medium text-muted-foreground">{t(WEEKDAY_KEYS[i] as never)}</span>
-              <span className="text-[10px] font-bold tabular-nums">{c}</span>
-            </div>
-          ))}
+          {weeklyCycle.counts.map((c, i) => {
+            const heightPct = weeklyCycle.max > 0 ? (c / weeklyCycle.max) * 100 : 0;
+            return (
+              <div key={i} className="flex flex-1 flex-col items-center gap-1">
+                <div className="flex w-full flex-1 items-end">
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: `${heightPct}%` }}
+                    transition={{ delay: i * 0.05, type: "spring", stiffness: 200, damping: 20 }}
+                    className="w-full rounded-t-md bg-primary min-h-[2px]"
+                    style={{ minHeight: c > 0 ? 4 : 2 }}
+                  />
+                </div>
+                <span className="text-[9px] font-medium text-muted-foreground">{t(WEEKDAY_KEYS[i] as never)}</span>
+                <span className="text-[10px] font-bold tabular-nums">{c}</span>
+              </div>
+            );
+          })}
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
           {weeklyCycle.peakIdx >= 0 && (
