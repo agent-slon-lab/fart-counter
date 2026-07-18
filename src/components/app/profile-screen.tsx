@@ -60,6 +60,7 @@ import { dateKey } from "@/lib/store";
 import { qrToDataURL } from "@/lib/qr";
 import { APP_VERSION, forceUpdate } from "@/lib/version";
 import { useManualUpdateCheck } from "@/components/pwa/update-banner";
+import { InstallButton } from "@/components/pwa/install-button";
 import { AchievementsList } from "./achievements-list";
 import { ShareCardDialog } from "./share-card-dialog";
 
@@ -387,6 +388,10 @@ export function ProfileScreen() {
         )}
         <p className="text-xs leading-relaxed text-muted-foreground">{t("about_text")}</p>
         <p className="mt-2 rounded-md bg-primary/10 px-2 py-1.5 text-[11px] text-primary/90">{t("medical_disclaimer")}</p>
+
+        {/* Install App button */}
+        <InstallButton />
+
         {/* GitHub link */}
         <a
           href="https://github.com/agent-slon-lab/fart-counter"
