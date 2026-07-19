@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { useStore, getMoodToday, type MoodDay } from "@/lib/store";
+import { useStore, getMoodToday, useProfileFarts, useProfileMoods, type MoodDay } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 import { toast } from "sonner";
 
@@ -17,8 +17,8 @@ const MOODS: { mood: MoodDay["mood"]; emoji: string; color: string; labelKey: st
 
 export function MoodScreen() {
   const { t } = useT();
-  const moods = useStore((s) => s.moods);
-  const farts = useStore((s) => s.farts);
+  const moods = useProfileMoods();
+  const farts = useProfileFarts();
   const setMood = useStore((s) => s.setMood);
 
   const todayMood = getMoodToday(moods);

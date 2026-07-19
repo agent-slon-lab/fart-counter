@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useStore } from "@/lib/store";
+import { useStore, useProfileFarts, useProfileFood, useProfileMoods } from "@/lib/store";
 import {
   ACHIEVEMENTS,
   checkAchievements,
@@ -14,14 +14,13 @@ import { useT } from "@/hooks/use-t";
 import { AchievementPopup } from "./achievement-popup";
 
 /**
- * Watches the fart records and triggers a popup whenever a NEW achievement
- * becomes unlockable. The popup shows one achievement at a time; if multiple
- * unlock at once they are queued.
+ * OPTIMIZED: Only re-checks achievements when fart/food/mood COUNT changes,
+ * not on every re-render. Uses refs to track previous counts.
  */
 export function AchievementWatcher() {
-  const farts = useStore((s) => s.farts);
-  const food = useStore((s) => s.food);
-  const moods = useStore((s) => s.moods);
+  const farts = useProfileFarts();
+  const food = useProfileFood();
+  const moods = useProfileMoods();
   const unlocked = useStore((s) => s.unlockedAchievements);
   const unlockAchievement = useStore((s) => s.unlockAchievement);
   const soundEnabled = useStore((s) => s.settings.soundEnabled);
@@ -32,20 +31,27 @@ export function AchievementWatcher() {
   const [queue, setQueue] = useState<AchievementDef[]>([]);
   const [current, setCurrent] = useState<AchievementDef | null>(null);
   const seenRef = useRef<Set<string>>(new Set(unlocked));
+  const prevCountRef = useRef({ farts: -1, food: -1, moods: -1 });
 
-  // Initialize seen set from already-unlocked (so we don't re-pop on first load)
+  // Only check achievements when COUNT changes (not on every render)
   useEffect(() => {
-    seenRef.current = new Set(unlocked);
-  }, [unlocked]);
+    const fartsCount = farts.length;
+    const foodCount = food.length;
+    const moodsCount = moods.length;
+    const prev = prevCountRef.current;
 
-  useEffect(() => {
+    // Skip if counts haven't changed (initial load sets refs)
+    if (prev.farts === fartsCount && prev.food === foodCount && prev.moods === moodsCount) {
+      return;
+    }
+    prevCountRef.current = { farts: fartsCount, food: foodCount, moods: moodsCount };
+
     const shouldUnlock = checkAchievements(farts, food, moods);
     const newly: AchievementDef[] = [];
     for (const id of shouldUnlock) {
       if (!seenRef.current.has(id)) {
         seenRef.current.add(id);
         const wasUnlocked = unlocked.includes(id);
-        // Only show popup if it wasn't already unlocked in storage
         if (!wasUnlocked) {
           const def = ACHIEVEMENTS.find((a) => a.id === id);
           if (def) {
@@ -68,7 +74,12 @@ export function AchievementWatcher() {
         );
       }
     }
-  }, [farts, food, moods, unlocked, unlockAchievement, soundEnabled, vibEnabled, notifEnabled, t, lang]);
+  }, [farts.length, food.length, moods.length]);
+
+  // Initialize seen set from already-unlocked
+  useEffect(() => {
+    seenRef.current = new Set(unlocked);
+  }, [unlocked]);
 
   // Show next popup when none is shown
   useEffect(() => {

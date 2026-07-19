@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useStore, dateKey, getTodayCount, getWaterToday } from "@/lib/store";
+import { useStore, dateKey, getTodayCount, getWaterToday, useProfileFarts, useProfileWater } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 
 const WELCOME_KEY_PREFIX = "fart-counter-welcome-shown-";
@@ -26,8 +26,8 @@ const WELCOME_KEY_PREFIX = "fart-counter-welcome-shown-";
  */
 export function WelcomePopup() {
   const { t } = useT();
-  const farts = useStore((s) => s.farts);
-  const water = useStore((s) => s.water);
+  const farts = useProfileFarts();
+  const water = useProfileWater();
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [emoji, setEmoji] = useState<string>("💨");
@@ -38,6 +38,7 @@ export function WelcomePopup() {
     const key = WELCOME_KEY_PREFIX + today;
     if (localStorage.getItem(key) === "1") return;
 
+    // OPTIMIZED: Read data ONCE on mount, don't re-run when farts change
     const now = new Date();
     const hour = now.getHours();
     const todayCount = getTodayCount(farts);
@@ -60,13 +61,10 @@ export function WelcomePopup() {
       defaultEmoji = "🌙";
     }
 
-    // Pick a message — prioritize special conditions
     let msgKey: string;
     let msgEmoji: string = defaultEmoji;
 
-    // Priority 1: special stats conditions
     if (todayCount === 0 && hour >= 11) {
-      // No farts at all (only after morning — morning itself is ok)
       msgKey = `welcome_zero_farts`;
       msgEmoji = "🤔";
     } else if (todayCount >= 10 && todayCount <= 20) {
@@ -79,12 +77,10 @@ export function WelcomePopup() {
       msgKey = `welcome_no_water`;
       msgEmoji = "💧";
     } else if (todayCount > 0 && todayCount < 10) {
-      // Few farts — time-based greeting
       const variants = [1, 2, 3, 4];
       const pick = variants[Math.floor(Math.random() * variants.length)];
       msgKey = `welcome_${category}_${pick}`;
     } else {
-      // Default: time-based greeting
       const variants = [1, 2, 3, 4];
       const pick = variants[Math.floor(Math.random() * variants.length)];
       msgKey = `welcome_${category}_${pick}`;
@@ -99,7 +95,7 @@ export function WelcomePopup() {
       setVisible(true);
     }, 1000);
     return () => clearTimeout(timer);
-  }, [farts, water, t]);
+  }, []); // OPTIMIZED: Empty deps — run ONCE on mount
 
   function handleDismiss() {
     const today = dateKey(new Date());

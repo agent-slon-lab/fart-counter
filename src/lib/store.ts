@@ -48,12 +48,16 @@ export interface FartRecord {
   lng?: number;
   /** Country code (set when geo is captured) */
   country?: string;
+  /** Profile ID this record belongs to */
+  profileId?: string;
 }
 
 export interface WaterDay {
   /** YYYY-MM-DD */
   date: string;
   count: number;
+  /** Profile ID */
+  profileId?: string;
 }
 
 export interface FoodEntry {
@@ -61,12 +65,16 @@ export interface FoodEntry {
   ts: string;
   /** food key (beans, cabbage, ...) or custom text */
   name: string;
+  /** Profile ID */
+  profileId?: string;
 }
 
 export interface MoodDay {
   /** YYYY-MM-DD */
   date: string;
   mood: "happy" | "neutral" | "sad" | "angry" | "tired";
+  /** Profile ID */
+  profileId?: string;
 }
 
 export interface WeatherSnapshot {
@@ -76,6 +84,14 @@ export interface WeatherSnapshot {
   pressureHpa?: number;
   humidity?: number;
   condition?: string;
+}
+
+export interface Profile {
+  id: string;
+  name: string;
+  type: "adult" | "baby";
+  avatar: string;
+  age?: number;
 }
 
 export type AccentColor = "green" | "pink" | "blue" | "gold";
@@ -98,6 +114,8 @@ export interface AppSettings {
   geoEnabled: boolean;
   /** Enable weather correlation */
   weatherEnabled: boolean;
+  /** Active profile ID */
+  activeProfileId: string;
 }
 
 export interface AppState {
@@ -109,6 +127,8 @@ export interface AppState {
   weather: WeatherSnapshot[];
   /** Anonymous world-ranking contribution: country code → count */
   worldRank: Record<string, number>;
+  /** User profiles (multi-profile support) */
+  profiles: Profile[];
 
   // Settings
   settings: AppSettings;
@@ -140,6 +160,12 @@ export interface AppState {
   // Actions — World rank
   contributeToRank: (country: string, count?: number) => void;
   setWorldRank: (rank: Record<string, number>) => void;
+
+  // Actions — Profiles
+  addProfile: (profile: Omit<Profile, "id">) => void;
+  updateProfile: (id: string, updates: Partial<Profile>) => void;
+  deleteProfile: (id: string) => void;
+  setActiveProfile: (id: string) => void;
 
   // Actions — Settings
   setLanguage: (lang: Language) => void;
@@ -184,6 +210,7 @@ export const useStore = create<AppState>()(
       moods: [],
       weather: [],
       worldRank: {},
+      profiles: [{ id: "me", name: "Me", type: "adult", avatar: "💨" }],
 
       settings: {
         language: "en",
@@ -199,15 +226,18 @@ export const useStore = create<AppState>()(
         fartSound: "classic",
         geoEnabled: false,
         weatherEnabled: false,
+        activeProfileId: "me",
       },
       unlockedAchievements: [],
 
       addFart: (opts) => {
+        const activeProfileId = get().settings.activeProfileId;
         const rec: FartRecord = {
           id: uid(),
           ts: new Date().toISOString(),
           tags: opts?.tags ?? [],
           sound: opts?.sound,
+          profileId: activeProfileId,
         };
         if (opts?.geo) {
           rec.lat = opts.geo.lat;
@@ -220,9 +250,10 @@ export const useStore = create<AppState>()(
 
       removeLastFartToday: () => {
         const tk = todayKey();
+        const activeProfileId = get().settings.activeProfileId;
         const farts = get().farts;
         for (let i = farts.length - 1; i >= 0; i--) {
-          if (dateKey(new Date(farts[i].ts)) === tk) {
+          if (dateKey(new Date(farts[i].ts)) === tk && (farts[i].profileId || "me") === activeProfileId) {
             const next = [...farts];
             next.splice(i, 1);
             set({ farts: next });
@@ -268,9 +299,10 @@ export const useStore = create<AppState>()(
 
       addWater: () => {
         const tk = todayKey();
+        const pid = get().settings.activeProfileId;
         set((s) => {
-          const idx = s.water.findIndex((w) => w.date === tk);
-          if (idx === -1) return { water: [...s.water, { date: tk, count: 1 }] };
+          const idx = s.water.findIndex((w) => w.date === tk && (w.profileId || "me") === pid);
+          if (idx === -1) return { water: [...s.water, { date: tk, count: 1, profileId: pid }] };
           const next = [...s.water];
           next[idx] = { ...next[idx], count: next[idx].count + 1 };
           return { water: next };
@@ -279,8 +311,9 @@ export const useStore = create<AppState>()(
 
       removeWater: () => {
         const tk = todayKey();
+        const pid = get().settings.activeProfileId;
         set((s) => {
-          const idx = s.water.findIndex((w) => w.date === tk);
+          const idx = s.water.findIndex((w) => w.date === tk && (w.profileId || "me") === pid);
           if (idx === -1) return s;
           const next = [...s.water];
           if (next[idx].count <= 1) next.splice(idx, 1);
@@ -290,7 +323,8 @@ export const useStore = create<AppState>()(
       },
 
       addFood: (name) => {
-        const rec: FoodEntry = { id: uid(), ts: new Date().toISOString(), name };
+        const pid = get().settings.activeProfileId;
+        const rec: FoodEntry = { id: uid(), ts: new Date().toISOString(), name, profileId: pid };
         set((s) => ({ food: [...s.food, rec] }));
       },
 
@@ -298,9 +332,10 @@ export const useStore = create<AppState>()(
 
       setMood: (mood) => {
         const tk = todayKey();
+        const pid = get().settings.activeProfileId;
         set((s) => {
-          const others = s.moods.filter((m) => m.date !== tk);
-          return { moods: [...others, { date: tk, mood }] };
+          const others = s.moods.filter((m) => !(m.date === tk && (m.profileId || "me") === pid));
+          return { moods: [...others, { date: tk, mood, profileId: pid }] };
         });
       },
 
@@ -322,6 +357,33 @@ export const useStore = create<AppState>()(
       },
 
       setWorldRank: (rank) => set({ worldRank: rank }),
+
+      // ===== Profile actions =====
+      addProfile: (profile) => {
+        const id = uid();
+        const newProfile: Profile = { ...profile, id };
+        set((s) => ({ profiles: [...s.profiles, newProfile] }));
+      },
+
+      updateProfile: (id, updates) => {
+        set((s) => ({
+          profiles: s.profiles.map((p) => (p.id === id ? { ...p, ...updates } : p)),
+        }));
+      },
+
+      deleteProfile: (id) => {
+        if (id === "me") return; // Can't delete default profile
+        set((s) => {
+          const profiles = s.profiles.filter((p) => p.id !== id);
+          // If active profile was deleted, switch to "me"
+          const activeProfileId = s.settings.activeProfileId === id ? "me" : s.settings.activeProfileId;
+          return { profiles, settings: { ...s.settings, activeProfileId } };
+        });
+      },
+
+      setActiveProfile: (id) => {
+        set((s) => ({ settings: { ...s.settings, activeProfileId: id } }));
+      },
 
       setLanguage: (language) => set((s) => ({ settings: { ...s.settings, language } })),
       setTheme: (theme) => set((s) => ({ settings: { ...s.settings, theme } })),
@@ -371,21 +433,19 @@ export const useStore = create<AppState>()(
     {
       name: "fart-counter-store-v2",
       storage: createJSONStorage(() => localStorage),
-      version: 2,
+      version: 3,
       skipHydration: true,
-      // Migrate from v1 (old store) — pull in farts/water/settings/unlockedAchievements
       migrate: (persisted: any, version: number) => {
         if (!persisted) return persisted;
         if (version < 2) {
-          // best effort: keep what we can
-          return {
+          persisted = {
             ...persisted,
             food: [],
             moods: [],
             weather: [],
             worldRank: {},
             settings: {
-              language: persisted.settings?.language ?? "ru",
+              language: persisted.settings?.language ?? "en",
               theme: persisted.settings?.theme ?? "system",
               accent: persisted.settings?.accent ?? "green",
               soundEnabled: persisted.settings?.soundEnabled ?? true,
@@ -398,8 +458,28 @@ export const useStore = create<AppState>()(
               fartSound: "classic",
               geoEnabled: false,
               weatherEnabled: false,
+              activeProfileId: "me",
             },
           };
+        }
+        if (version < 3) {
+          // v2 → v3: Add profileId to all records + profiles array
+          if (persisted.farts) {
+            persisted.farts = persisted.farts.map((f: any) => ({ ...f, profileId: f.profileId || "me" }));
+          }
+          if (persisted.water) {
+            persisted.water = persisted.water.map((w: any) => ({ ...w, profileId: w.profileId || "me" }));
+          }
+          if (persisted.food) {
+            persisted.food = persisted.food.map((f: any) => ({ ...f, profileId: f.profileId || "me" }));
+          }
+          if (persisted.moods) {
+            persisted.moods = persisted.moods.map((m: any) => ({ ...m, profileId: m.profileId || "me" }));
+          }
+          persisted.profiles = persisted.profiles || [{ id: "me", name: "Me", type: "adult", avatar: "💨" }];
+          if (persisted.settings) {
+            persisted.settings.activeProfileId = persisted.settings.activeProfileId || "me";
+          }
         }
         return persisted;
       },
@@ -439,4 +519,30 @@ export function getMoodToday(moods: MoodDay[]): MoodDay["mood"] | null {
 export function getFoodToday(food: FoodEntry[]): FoodEntry[] {
   const tk = todayKey();
   return food.filter((f) => dateKey(new Date(f.ts)) === tk);
+}
+
+// ===== Profile-aware selectors (filter by activeProfileId) =====
+
+export function useProfileFarts(): FartRecord[] {
+  const farts = useStore((s) => s.farts);
+  const pid = useStore((s) => s.settings.activeProfileId);
+  return farts.filter((f) => (f.profileId || "me") === pid);
+}
+
+export function useProfileWater(): WaterDay[] {
+  const water = useStore((s) => s.water);
+  const pid = useStore((s) => s.settings.activeProfileId);
+  return water.filter((w) => (w.profileId || "me") === pid);
+}
+
+export function useProfileFood(): FoodEntry[] {
+  const food = useStore((s) => s.food);
+  const pid = useStore((s) => s.settings.activeProfileId);
+  return food.filter((f) => (f.profileId || "me") === pid);
+}
+
+export function useProfileMoods(): MoodDay[] {
+  const moods = useStore((s) => s.moods);
+  const pid = useStore((s) => s.settings.activeProfileId);
+  return moods.filter((m) => (m.profileId || "me") === pid);
 }

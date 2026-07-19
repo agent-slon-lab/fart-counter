@@ -3,13 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Minus, Droplets, Droplet, Wind, Volume2, Lightbulb, Shuffle } from "lucide-react";
-import {
-  useStore,
-  getTodayCount,
-  getWaterToday,
-  type FartTag,
-  type FartSound,
-} from "@/lib/store";
+import { useStore, getTodayCount, getWaterToday, useProfileFarts, useProfileWater, type FartTag, type FartSound } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 import { playFartSound, playWaterSound, primeAudio } from "@/lib/sounds";
 import { vibrateFart, vibrateWater } from "@/lib/haptics";
@@ -87,8 +81,8 @@ function resolveTagSound(tag: FartTag): FartSound {
 
 export function HomeScreen() {
   const { t, lang } = useT();
-  const farts = useStore((s) => s.farts);
-  const water = useStore((s) => s.water);
+  const farts = useProfileFarts();
+  const water = useProfileWater();
   const addFart = useStore((s) => s.addFart);
   const removeLastFartToday = useStore((s) => s.removeLastFartToday);
   const addWater = useStore((s) => s.addWater);
