@@ -25,7 +25,13 @@ interface Puff {
   color: string;
 }
 
-function getZone(count: number): "low" | "normal" | "high" {
+// Zone thresholds: adults 10-20, babies 15-40
+function getZone(count: number, isBaby: boolean): "low" | "normal" | "high" {
+  if (isBaby) {
+    if (count < 15) return "low";
+    if (count <= 40) return "normal";
+    return "high";
+  }
   if (count < 10) return "low";
   if (count <= 20) return "normal";
   return "high";
@@ -83,6 +89,10 @@ export function HomeScreen() {
   const { t, lang } = useT();
   const farts = useProfileFarts();
   const water = useProfileWater();
+  const profiles = useStore((s) => s.profiles);
+  const activeProfileId = useStore((s) => s.settings.activeProfileId);
+  const activeProfile = profiles.find((p) => p.id === activeProfileId);
+  const isBaby = activeProfile?.type === "baby";
   const addFart = useStore((s) => s.addFart);
   const removeLastFartToday = useStore((s) => s.removeLastFartToday);
   const addWater = useStore((s) => s.addWater);
@@ -96,7 +106,7 @@ export function HomeScreen() {
 
   const count = getTodayCount(farts);
   const waterCount = getWaterToday(water);
-  const zone = getZone(count);
+  const zone = getZone(count, isBaby);
 
   const [popping, setPopping] = useState(false);
   const [puffs, setPuffs] = useState<Puff[]>([]);
@@ -342,7 +352,9 @@ export function HomeScreen() {
         {t("cancel_fart")}
       </Button>
 
-      <p className="text-center text-[11px] text-muted-foreground">{t("normal_range_hint")}</p>
+      <p className="text-center text-[11px] text-muted-foreground">
+        {isBaby ? t("profile_baby_hint") : t("normal_range_hint")}
+      </p>
 
       {/* Water tracker */}
       <Card className="p-4">
