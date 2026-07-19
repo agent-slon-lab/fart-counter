@@ -27,12 +27,12 @@ export function UpdateBanner() {
   const [newVersion, setNewVersion] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
 
-  // Check on launch + background (once per 24h)
+  // Check AFTER app is fully loaded — non-blocking
   useEffect(() => {
     let cancelled = false;
     async function check() {
-      // Wait 2s after launch to not block initial render
-      await new Promise((r) => setTimeout(r, 2000));
+      // Wait 3s after launch — let app render first, then check in background
+      await new Promise((r) => setTimeout(r, 3000));
       if (cancelled) return;
       // Skip if we already checked today (background throttle)
       if (!shouldCheckInBackground()) return;

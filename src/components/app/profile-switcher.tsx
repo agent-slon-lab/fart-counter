@@ -26,7 +26,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const AVATAR_OPTIONS = ["💨", "👨", "👩", "👦", "👧", "👶", "🧑", "👴", "👵", "🐕", "🦊", "🐸"];
+const AVATAR_OPTIONS_ADULT = ["💨", "👨", "👩", "👦", "👧", "🧑", "👴", "👵", "🐕", "🦊", "🐸", "🦉"];
+const AVATAR_OPTIONS_BABY = ["👶", "🍼", "🧸", "🐥", "🐰", "🐝", "🦁", "🐼", "🦄", "⭐", "🌙", "🌈"];
+
+function getProfileDescription(name: string, type: "adult" | "baby", t: (k: string) => string): string {
+  const lower = name.toLowerCase();
+  if (type === "baby") return t("profile_desc_baby");
+  // Funny descriptions based on name
+  if (lower.includes("муж") || lower.includes("husband") || lower.includes("мужа")) return t("profile_desc_husband");
+  if (lower.includes("жен") || lower.includes("wife") || lower.includes("жена")) return t("profile_desc_wife");
+  if (lower.includes("сын") || lower.includes("kid") || lower.includes("kid") || lower.includes("ребен")) return t("profile_desc_kid");
+  if (lower.includes("me") || lower.includes("я") || lower === "me") return t("profile_desc_me");
+  return t("profile_desc_other");
+}
 
 export function ProfileSwitcher() {
   const { t } = useT();
@@ -97,10 +109,10 @@ export function ProfileSwitcher() {
                   className="flex flex-1 items-center gap-3 text-left"
                 >
                   <span className="text-2xl">{p.avatar}</span>
-                  <div>
-                    <p className="text-sm font-bold">{p.name}</p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {p.type === "baby" ? t("profile_type_baby") : t("profile_type_adult")}
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold truncate">{p.name}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {getProfileDescription(p.name, p.type, t)}
                     </p>
                   </div>
                 </button>
@@ -150,7 +162,10 @@ export function ProfileSwitcher() {
               <Label>{t("profile_type")}</Label>
               <div className="mt-1.5 grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => setNewType("adult")}
+                  onClick={() => {
+                    setNewType("adult");
+                    setNewAvatar("💨");
+                  }}
                   className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-2.5 text-sm font-semibold transition-all ${
                     newType === "adult" ? "border-primary bg-primary/10" : "border-border"
                   }`}
@@ -158,7 +173,10 @@ export function ProfileSwitcher() {
                   💨 {t("profile_type_adult")}
                 </button>
                 <button
-                  onClick={() => setNewType("baby")}
+                  onClick={() => {
+                    setNewType("baby");
+                    setNewAvatar("👶");
+                  }}
                   className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-2.5 text-sm font-semibold transition-all ${
                     newType === "baby" ? "border-primary bg-primary/10" : "border-border"
                   }`}
@@ -170,7 +188,7 @@ export function ProfileSwitcher() {
             <div>
               <Label>{t("profile_avatar")}</Label>
               <div className="mt-1.5 grid grid-cols-6 gap-1.5">
-                {AVATAR_OPTIONS.map((a) => (
+                {(newType === "baby" ? AVATAR_OPTIONS_BABY : AVATAR_OPTIONS_ADULT).map((a) => (
                   <button
                     key={a}
                     onClick={() => setNewAvatar(a)}
@@ -182,6 +200,11 @@ export function ProfileSwitcher() {
                   </button>
                 ))}
               </div>
+              {newType === "baby" && (
+                <p className="mt-2 rounded-md bg-blue-500/10 px-2 py-1 text-[10px] text-blue-600 dark:text-blue-400">
+                  {t("profile_baby_hint")}
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>

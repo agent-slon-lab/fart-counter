@@ -1,6 +1,6 @@
-// Service Worker for Fart Counter PWA — offline-first cache.
-// Version is bumped on each release to invalidate old caches.
-const CACHE = "fart-counter-v1.4.0";
+// Service Worker for Fart Counter PWA — CACHE-FIRST strategy for max speed.
+// Version bumped on each release to invalidate old caches.
+const CACHE = "fart-counter-v1.4.4";
 const PRECACHE = [
   "/",
   "/manifest.json",
@@ -12,9 +12,7 @@ const PRECACHE = [
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE).then((cache) =>
-      cache.addAll(PRECACHE).catch(() => {
-        // ignore individual failures
-      })
+      cache.addAll(PRECACHE).catch(() => {})
     )
   );
   self.skipWaiting();
@@ -36,35 +34,34 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
-  // Only handle same-origin requests
   if (url.origin !== self.location.origin) return;
 
-  // Network-first for navigation, fall back to cached "/"
+  // Navigation requests: cache-first for instant load, update in background
   if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req)
-        .then((res) => {
+      caches.match(req).then((cached) => {
+        // Serve from cache immediately (instant!)
+        const networkFetch = fetch(req).then((res) => {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
           return res;
-        })
-        .catch(() => caches.match(req).then((r) => r || caches.match("/")))
+        }).catch(() => cached || caches.match("/"));
+        return cached || networkFetch;
+      })
     );
     return;
   }
 
-  // Cache-first for static assets, with runtime caching
+  // Static assets: CACHE-FIRST (fastest for repeat visits)
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
-      return fetch(req)
-        .then((res) => {
-          if (!res || res.status !== 200 || res.type === "opaque") return res;
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
-          return res;
-        })
-        .catch(() => cached);
+      return fetch(req).then((res) => {
+        if (!res || res.status !== 200 || res.type === "opaque") return res;
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+        return res;
+      }).catch(() => cached);
     })
   );
 });

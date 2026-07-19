@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Utensils, TrendingUp, Lightbulb } from "lucide-react";
+import { Plus, Trash2, Utensils, TrendingUp, Lightbulb, Clock, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +13,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useStore, dateKey, getFoodToday, useProfileFarts, useProfileFood, type FoodEntry, type FartRecord } from "@/lib/store";
+import { useStore, dateKey, getFoodToday, type FoodEntry, type FartRecord, useProfileFood, useProfileFarts } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 import { toast } from "sonner";
+
+const FOOD_LIFESPAN_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 const PRESET_FOODS: { key: string; icon: string }[] = [
   { key: "food_beans", icon: "🫘" },
@@ -30,6 +32,24 @@ const PRESET_FOODS: { key: string; icon: string }[] = [
   { key: "food_fastfood", icon: "🍔" },
 ];
 
+function getFoodAge(ts: string): number {
+  return Date.now() - new Date(ts).getTime();
+}
+
+function isExpired(ts: string): boolean {
+  return getFoodAge(ts) > FOOD_LIFESPAN_MS;
+}
+
+function isExpiringSoon(ts: string): boolean {
+  const age = getFoodAge(ts);
+  return age > FOOD_LIFESPAN_MS * 0.75 && age <= FOOD_LIFESPAN_MS;
+}
+
+function hoursLeft(ts: string): number {
+  const left = FOOD_LIFESPAN_MS - getFoodAge(ts);
+  return Math.max(0, Math.ceil(left / (60 * 60 * 1000)));
+}
+
 export function FoodScreen() {
   const { t, lang } = useT();
   const food = useProfileFood();
@@ -40,12 +60,19 @@ export function FoodScreen() {
   const [addOpen, setAddOpen] = useState(false);
   const [customName, setCustomName] = useState("");
 
-  const todayFood = useMemo(() => getFoodToday(food), [food]);
+  // Only show non-expired food for today's list
+  const todayFood = useMemo(() => {
+    return getFoodToday(food).filter((f) => !isExpired(f.ts));
+  }, [food]);
 
-  // Correlation: for each food name, compute avg farts in the 24h after eating
+  // Expired food count
+  const expiredCount = useMemo(() => {
+    return getFoodToday(food).filter((f) => isExpired(f.ts)).length;
+  }, [food]);
+
+  // Correlation: ONLY use non-expired food (within 24h window)
   const correlation = useMemo(() => computeCorrelation(food, farts), [food, farts]);
 
-  // Top trigger
   const topTrigger = correlation.length > 0 ? correlation[0] : null;
 
   function handleAddPreset(key: string) {
@@ -62,6 +89,12 @@ export function FoodScreen() {
     setAddOpen(false);
   }
 
+  function handleClearExpired() {
+    const expired = getFoodToday(food).filter((f) => isExpired(f.ts));
+    expired.forEach((f) => removeFood(f.id));
+    toast(`${expired.length} ${t("food_expired").toLowerCase()}`, { icon: "🧹" });
+  }
+
   const locale = lang === "ru" ? "ru-RU" : "en-US";
 
   return (
@@ -74,11 +107,25 @@ export function FoodScreen() {
         </Button>
       </div>
 
-      {/* Today's food */}
+      {/* Lifespan hint */}
+      <div className="flex items-center gap-2 rounded-lg bg-blue-500/10 px-3 py-2 text-xs text-blue-600 dark:text-blue-400">
+        <Clock className="h-3.5 w-3.5 shrink-0" />
+        <span>{t("food_lifespan")}</span>
+      </div>
+
+      {/* Today's food (only fresh) */}
       <Card className="p-4">
-        <p className="mb-2 text-xs uppercase tracking-widest text-muted-foreground">
-          {t("food_added_today")} · {todayFood.length}
-        </p>
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">
+            {t("food_added_today")} · {todayFood.length}
+          </p>
+          {expiredCount > 0 && (
+            <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={handleClearExpired}>
+              <Trash2 className="mr-1 h-3 w-3" />
+              {t("food_clear_expired")} ({expiredCount})
+            </Button>
+          )}
+        </div>
         {todayFood.length === 0 ? (
           <p className="py-4 text-center text-sm text-muted-foreground">{t("no_records")}</p>
         ) : (
@@ -191,16 +238,31 @@ function FoodChip({
   t: (k: never) => string;
 }) {
   const time = new Date(entry.ts).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  const expiringSoon = isExpiringSoon(entry.ts);
+  const left = hoursLeft(entry.ts);
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8 }}
-      className="flex items-center gap-1.5 rounded-full border border-border bg-muted/50 py-1 pl-3 pr-1.5 text-xs"
+      className={`flex items-center gap-1.5 rounded-full border py-1 pl-3 pr-1.5 text-xs ${
+        expiringSoon
+          ? "border-orange-400/50 bg-orange-400/10"
+          : "border-border bg-muted/50"
+      }`}
     >
       <span className="font-medium">{entry.name}</span>
       <span className="text-muted-foreground">{time}</span>
+      {expiringSoon ? (
+        <span className="flex items-center gap-0.5 text-[9px] font-semibold text-orange-500">
+          <AlertCircle className="h-2.5 w-2.5" />
+          {left}h
+        </span>
+      ) : (
+        <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+      )}
       <button
         onClick={onRemove}
         className="ml-1 flex h-5 w-5 items-center justify-center rounded-full hover:bg-destructive/20"
@@ -212,15 +274,18 @@ function FoodChip({
   );
 }
 
-/** For each food name, count farts in the 24h after eating each instance, then average. */
+/** For each food name, count farts in the 24h after eating each instance, then average.
+ *  ONLY uses non-expired food entries (within 24h window). */
 function computeCorrelation(
   food: FoodEntry[],
   farts: FartRecord[]
 ): { name: string; avgFarts: number; times: number }[] {
   const byName = new Map<string, { sum: number; times: number }>();
   for (const f of food) {
+    // Skip expired food — it shouldn't influence correlation
+    if (isExpired(f.ts)) continue;
     const start = new Date(f.ts).getTime();
-    const end = start + 24 * 3600 * 1000;
+    const end = start + FOOD_LIFESPAN_MS;
     const count = farts.filter((fr) => {
       const t = new Date(fr.ts).getTime();
       return t >= start && t <= end;

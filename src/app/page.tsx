@@ -35,21 +35,19 @@ function detectBrowserLanguage(): Language {
 export default function Home() {
   const { t } = useT();
   const [tab, setTab] = useState<TabId>("home");
-  const [hydrated, setHydrated] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const primeAudioOnce = useRef(false);
   const mainRef = useRef<HTMLDivElement>(null);
   const setLanguage = useStore((s) => s.setLanguage);
 
+  // NON-BLOCKING: Run after mount, doesn't block rendering
   useEffect(() => {
-    // 1. Rehydrate store from localStorage (was skipped during SSR)
-    useStore.persist.rehydrate();
-
-    // 2. Check if this is a first-time visitor (no persisted data)
+    // Check if this is a first-time visitor (no persisted data)
     const storeKey = "fart-counter-store-v2";
     const hasPersisted = localStorage.getItem(storeKey) !== null;
 
-    // 3. If first visit, detect browser language
+    // If first visit, detect browser language
     if (!hasPersisted) {
       const detected = detectBrowserLanguage();
       if (detected !== "en") {
@@ -57,10 +55,9 @@ export default function Home() {
       }
     }
 
-    // 4. Mark as hydrated
-    setHydrated(true);
+    setMounted(true);
 
-    // 5. Check onboarding
+    // Check onboarding
     if (!hasCompletedOnboarding()) {
       setShowOnboarding(true);
     }
@@ -83,19 +80,12 @@ export default function Home() {
     mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, [tab]);
 
-  // Full-screen loading until hydrated (prevents SSR/client mismatch)
-  if (!hydrated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
-  }
-
+  // INSTANT RENDER — no loading screen!
+  // suppressHydrationWarning on header text to avoid SSR mismatch
   return (
     <div className="relative mx-auto flex min-h-screen max-w-[480px] flex-col bg-background">
       {/* Onboarding (shown only once) */}
-      {showOnboarding && (
+      {mounted && showOnboarding && (
         <Onboarding onComplete={() => setShowOnboarding(false)} />
       )}
 
@@ -103,12 +93,12 @@ export default function Home() {
       <header className="safe-top sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/95 px-4 py-2 backdrop-blur-md">
         <div className="flex items-center gap-2">
           <span className="text-xl">💨</span>
-          <div className="leading-none">
-            <p className="text-sm font-black">{t("app_name")}</p>
-            <p className="text-[10px] text-muted-foreground">{t("app_tagline")}</p>
+          <div className="leading-none" suppressHydrationWarning>
+            <p className="text-sm font-black" suppressHydrationWarning>{t("app_name")}</p>
+            <p className="text-[10px] text-muted-foreground" suppressHydrationWarning>{t("app_tagline")}</p>
           </div>
         </div>
-        <ProfileSwitcher />
+        {mounted && <ProfileSwitcher />}
       </header>
 
       {/* Screen content */}
@@ -119,7 +109,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
             className="pt-3"
           >
             {tab === "home" && <HomeScreen />}
