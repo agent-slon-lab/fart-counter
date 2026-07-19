@@ -434,7 +434,7 @@ export const useStore = create<AppState>()(
       name: "fart-counter-store-v2",
       storage: createJSONStorage(() => localStorage),
       version: 3,
-      skipHydration: true,
+      // NO skipHydration — let Zustand hydrate synchronously from localStorage (instant)
       migrate: (persisted: any, version: number) => {
         if (!persisted) return persisted;
         if (version < 2) {
