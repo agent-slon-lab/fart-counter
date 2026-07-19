@@ -21,7 +21,6 @@ type Platform = "installed" | "android" | "ios-safari" | "ios-other" | "desktop"
 
 function detectPlatform(): Platform {
   if (typeof window === "undefined") return "other";
-  // Check if already installed (standalone mode)
   const isStandalone =
     window.matchMedia("(display-mode: standalone)").matches ||
     (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
@@ -42,12 +41,6 @@ function detectPlatform(): Platform {
   return "other";
 }
 
-/**
- * Install App button — shows in Profile.
- * - Hidden if PWA already installed
- * - On Android/Desktop Chrome: triggers native install prompt
- * - On iOS: shows instructions dialog
- */
 export function InstallButton() {
   const { t } = useT();
   const [platform, setPlatform] = useState<Platform>("other");
@@ -66,7 +59,6 @@ export function InstallButton() {
     return () => window.removeEventListener("beforeinstallprompt", onBIP);
   }, []);
 
-  // Don't render if already installed
   if (platform === "installed") {
     return (
       <div className="mt-2 flex items-center justify-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 py-2 text-xs font-medium text-green-600 dark:text-green-400">
@@ -77,7 +69,6 @@ export function InstallButton() {
   }
 
   async function handleClick() {
-    // If we have a native prompt (Android/Desktop Chrome) — use it
     if (deferredPrompt) {
       await deferredPrompt.prompt();
       const choice = await deferredPrompt.userChoice;
@@ -85,8 +76,19 @@ export function InstallButton() {
         setDeferredPrompt(null);
       }
     } else {
-      // No native prompt (iOS or unsupported) — show instructions dialog
       setDialogOpen(true);
+    }
+  }
+
+  // Button to trigger native install prompt (inside the dialog)
+  async function handleNativeInstall() {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === "accepted") {
+        setDeferredPrompt(null);
+        setDialogOpen(false);
+      }
     }
   }
 
@@ -100,7 +102,13 @@ export function InstallButton() {
         {t("install_app")}
       </button>
 
-      <InstallDialog open={dialogOpen} onOpenChange={setDialogOpen} platform={platform} />
+      <InstallDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        platform={platform}
+        deferredPrompt={deferredPrompt}
+        onNativeInstall={handleNativeInstall}
+      />
     </>
   );
 }
@@ -109,16 +117,21 @@ function InstallDialog({
   open,
   onOpenChange,
   platform,
+  deferredPrompt,
+  onNativeInstall,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   platform: Platform;
+  deferredPrompt: BeforeInstallPromptEvent | null;
+  onNativeInstall: () => void;
 }) {
   const { t } = useT();
 
-  // Determine which platform instructions to show
-  // If platform is "other", default to showing all 3 tabs
   const showPlatform = platform === "ios-other" ? "ios-other" : platform === "ios-safari" ? "ios-safari" : platform;
+
+  // Show native install button if we have a deferred prompt (Android/Desktop Chrome)
+  const showNativeButton = !!deferredPrompt;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -137,55 +150,7 @@ function InstallDialog({
 
         {/* iOS Safari instructions */}
         {showPlatform === "ios-safari" && (
-          <InstallSteps
-            icon={<Apple className="h-5 w-5" />}
-            title={t("install_iphone_title")}
-            steps={[
-              t("install_iphone_step1"),
-              t("install_iphone_step2"),
-              t("install_iphone_step3"),
-            ]}
-          />
-        )}
-
-        {/* Android instructions (fallback if no native prompt) */}
-        {showPlatform === "android" && (
-          <InstallSteps
-            icon={<Smartphone className="h-5 w-5" />}
-            title={t("install_android_title")}
-            steps={[
-              t("install_android_step1"),
-              t("install_android_step2"),
-              t("install_android_step3"),
-            ]}
-          />
-        )}
-
-        {/* Desktop instructions */}
-        {showPlatform === "desktop" && (
-          <InstallSteps
-            icon={<Monitor className="h-5 w-5" />}
-            title={t("install_desktop_title")}
-            steps={[
-              t("install_desktop_step1"),
-              t("install_desktop_step2"),
-              t("install_desktop_step3"),
-            ]}
-          />
-        )}
-
-        {/* Other — show all 3 */}
-        {showPlatform === "other" && (
-          <div className="space-y-3">
-            <InstallSteps
-              icon={<Smartphone className="h-5 w-5" />}
-              title={t("install_android_title")}
-              steps={[
-                t("install_android_step1"),
-                t("install_android_step2"),
-                t("install_android_step3"),
-              ]}
-            />
+          <>
             <InstallSteps
               icon={<Apple className="h-5 w-5" />}
               title={t("install_iphone_title")}
@@ -195,6 +160,33 @@ function InstallDialog({
                 t("install_iphone_step3"),
               ]}
             />
+          </>
+        )}
+
+        {/* Android instructions + native button */}
+        {showPlatform === "android" && (
+          <>
+            <InstallSteps
+              icon={<Smartphone className="h-5 w-5" />}
+              title={t("install_android_title")}
+              steps={[
+                t("install_android_step1"),
+                t("install_android_step2"),
+                t("install_android_step3"),
+              ]}
+            />
+            {showNativeButton && (
+              <Button onClick={onNativeInstall} size="lg" className="w-full text-base font-bold">
+                <Download className="mr-2 h-4 w-4" />
+                {t("install_button_native")}
+              </Button>
+            )}
+          </>
+        )}
+
+        {/* Desktop instructions + native button */}
+        {showPlatform === "desktop" && (
+          <>
             <InstallSteps
               icon={<Monitor className="h-5 w-5" />}
               title={t("install_desktop_title")}
@@ -204,7 +196,54 @@ function InstallDialog({
                 t("install_desktop_step3"),
               ]}
             />
-          </div>
+            {showNativeButton && (
+              <Button onClick={onNativeInstall} size="lg" className="w-full text-base font-bold">
+                <Download className="mr-2 h-4 w-4" />
+                {t("install_button_native")}
+              </Button>
+            )}
+          </>
+        )}
+
+        {/* Other — show all 3 + native button if available */}
+        {showPlatform === "other" && (
+          <>
+            <div className="space-y-3">
+              <InstallSteps
+                icon={<Smartphone className="h-5 w-5" />}
+                title={t("install_android_title")}
+                steps={[
+                  t("install_android_step1"),
+                  t("install_android_step2"),
+                  t("install_android_step3"),
+                ]}
+              />
+              <InstallSteps
+                icon={<Apple className="h-5 w-5" />}
+                title={t("install_iphone_title")}
+                steps={[
+                  t("install_iphone_step1"),
+                  t("install_iphone_step2"),
+                  t("install_iphone_step3"),
+                ]}
+              />
+              <InstallSteps
+                icon={<Monitor className="h-5 w-5" />}
+                title={t("install_desktop_title")}
+                steps={[
+                  t("install_desktop_step1"),
+                  t("install_desktop_step2"),
+                  t("install_desktop_step3"),
+                ]}
+              />
+            </div>
+            {showNativeButton && (
+              <Button onClick={onNativeInstall} size="lg" className="w-full text-base font-bold">
+                <Download className="mr-2 h-4 w-4" />
+                {t("install_button_native")}
+              </Button>
+            )}
+          </>
         )}
       </DialogContent>
     </Dialog>
