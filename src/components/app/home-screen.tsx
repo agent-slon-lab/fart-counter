@@ -152,7 +152,9 @@ export function HomeScreen() {
     setPopping(true);
     setTimeout(() => setPopping(false), 320);
 
-    const colors = ["#84cc16", "#facc15", "#f97316", "#a855f7", "#ec4899"];
+    const colors = isBaby
+      ? ["#93c5fd", "#a5f3fc", "#c4b5fd", "#fbcfe8", "#bbf7d0"]
+      : ["#84cc16", "#facc15", "#f97316", "#a855f7", "#ec4899"];
     const newPuffs: Puff[] = Array.from({ length: 4 }).map(() => ({
       id: ++puffIdRef.current,
       dx: (Math.random() - 0.5) * 120,
@@ -163,14 +165,14 @@ export function HomeScreen() {
       setPuffs((p) => p.filter((x) => !newPuffs.find((n) => n.id === x.id)));
     }, 950);
 
-    toast(t("toast_fart_added"), { duration: 1200, icon: "💨" });
+    toast(bt("toast_fart_added", "baby_toast_added"), { duration: 1200, icon: isBaby ? "👶" : "💨" });
   }
 
   function handleUndo() {
     if (count === 0) return;
     removeLastFartToday();
     if (vibEnabled) vibrateFart();
-    toast(t("toast_fart_removed"), { duration: 1200, icon: "↩️" });
+    toast(bt("toast_fart_removed", "baby_toast_removed"), { duration: 1200, icon: "↩️" });
   }
 
   function handleWaterAdd() {
@@ -193,26 +195,29 @@ export function HomeScreen() {
     playFartSound(s);
   }
 
+  // Baby Mode helper: returns baby text if active
+  const bt = (adultKey: string, babyKey: string): string => t(isBaby ? babyKey : adultKey);
+
   const zoneStyles = {
     low: {
       bg: "bg-yellow-500/10",
       border: "border-yellow-500/30",
       text: "text-yellow-600 dark:text-yellow-400",
-      label: t("below_norm"),
+      label: bt("below_norm", "baby_below_norm"),
       glow: "shadow-yellow-500/20",
     },
     normal: {
       bg: "bg-green-500/10",
       border: "border-green-500/30",
       text: "text-green-600 dark:text-green-400",
-      label: t("in_norm"),
+      label: bt("in_norm", "baby_in_norm"),
       glow: "shadow-green-500/30",
     },
     high: {
       bg: "bg-red-500/10",
       border: "border-red-500/30",
       text: "text-red-600 dark:text-red-400",
-      label: t("danger_zone"),
+      label: bt("danger_zone", "baby_danger_zone"),
       glow: "shadow-red-500/30",
     },
   }[zone];
@@ -261,7 +266,7 @@ export function HomeScreen() {
             {count}
           </motion.div>
           <p className="mt-1 text-sm font-medium text-muted-foreground">
-            {t("farts_today")}
+            {bt("farts_today", "baby_farts_today")}
           </p>
           <div
             className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${zoneStyles.bg} ${zoneStyles.text}`}
@@ -296,14 +301,18 @@ export function HomeScreen() {
           className={`relative flex h-52 w-52 flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-2xl transition-shadow ${
             popping ? "animate-fart-pop shadow-primary/50" : "shadow-primary/30"
           }`}
-          aria-label={t("add_fart")}
+          aria-label={bt("add_fart", "baby_add_fart")}
         >
           <span className="pointer-events-none absolute inset-0 rounded-full ring-4 ring-primary/30" />
           <span className="pointer-events-none absolute inset-2 rounded-full ring-2 ring-primary-foreground/20" />
-          <Wind className="mb-1 h-12 w-12" strokeWidth={2.5} />
+          {isBaby ? (
+            <span className="mb-1 text-5xl">👶</span>
+          ) : (
+            <Wind className="mb-1 h-12 w-12" strokeWidth={2.5} />
+          )}
           <span className="text-3xl font-black leading-none">+1</span>
           <span className="mt-1 text-xs font-semibold uppercase tracking-widest opacity-90">
-            {t("add_fart")}
+            {bt("add_fart", "baby_add_fart")}
           </span>
         </motion.button>
       </div>
@@ -349,7 +358,7 @@ export function HomeScreen() {
       {/* Undo */}
       <Button variant="ghost" size="sm" onClick={handleUndo} disabled={count === 0} className="text-muted-foreground">
         <Minus className="mr-1 h-4 w-4" />
-        {t("cancel_fart")}
+        {bt("cancel_fart", "baby_cancel_fart")}
       </Button>
 
       <p className="text-center text-[11px] text-muted-foreground">
@@ -361,7 +370,7 @@ export function HomeScreen() {
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Droplets className="h-5 w-5 text-blue-500" />
-            <span className="text-sm font-semibold">{t("water_tracker")}</span>
+            <span className="text-sm font-semibold">{bt("water_tracker", "baby_water_tracker")}</span>
           </div>
           <span className="text-sm font-bold tabular-nums">
             {waterCount} {t("water_glasses")}
@@ -389,7 +398,7 @@ export function HomeScreen() {
             className="bg-blue-500 text-white hover:bg-blue-600"
           >
             <Droplet className="mr-1 h-4 w-4" />
-            {t("drink_glass")}
+            {bt("drink_glass", "baby_drink_glass")}
           </Button>
           <Button variant="outline" size="sm" onClick={handleWaterRemove} disabled={waterCount === 0}>
             <span className="mr-1 text-base leading-none">−</span>
