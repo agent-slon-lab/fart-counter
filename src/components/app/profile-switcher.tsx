@@ -75,14 +75,14 @@ export function ProfileSwitcher() {
 
   return (
     <>
-      {/* Switcher button */}
+      {/* Switcher button — bright and prominent */}
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1 text-xs font-semibold hover:bg-muted transition-colors"
+        className="flex items-center gap-2 rounded-full bg-primary/15 border-2 border-primary/40 px-3 py-1.5 text-xs font-bold hover:bg-primary/25 transition-colors min-w-[80px] justify-center"
       >
-        <span className="text-base">{activeProfile?.avatar ?? "💨"}</span>
-        <span className="max-w-[60px] truncate">{activeProfile?.name ?? "Me"}</span>
-        <ChevronDown className="h-3 w-3 opacity-60" />
+        <span className="text-lg">{activeProfile?.avatar ?? "💨"}</span>
+        <span className="max-w-[70px] truncate text-primary">{activeProfile?.name ?? "Me"}</span>
+        <ChevronDown className="h-3 w-3 text-primary opacity-70" />
       </button>
 
       {/* Profile selection dialog */}
