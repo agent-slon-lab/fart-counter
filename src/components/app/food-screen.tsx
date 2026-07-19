@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useStore, dateKey, getFoodToday, type FoodEntry, type FartRecord } from "@/lib/store";
+import { useStore, dateKey, getFoodToday, useProfileFarts, useProfileFood, type FoodEntry, type FartRecord } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 import { toast } from "sonner";
 
@@ -32,8 +32,8 @@ const PRESET_FOODS: { key: string; icon: string }[] = [
 
 export function FoodScreen() {
   const { t, lang } = useT();
-  const food = useStore((s) => s.food);
-  const farts = useStore((s) => s.farts);
+  const food = useProfileFood();
+  const farts = useProfileFarts();
   const addFood = useStore((s) => s.addFood);
   const removeFood = useStore((s) => s.removeFood);
 

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Share2, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useStore, dateKey, getTotalAllTime } from "@/lib/store";
+import { useStore, dateKey, getTotalAllTime, useProfileFarts } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 import { getWindinessLevel } from "@/lib/achievements";
 import { toast } from "sonner";
@@ -20,7 +20,7 @@ const CARD_H = 640;
 
 export function ShareCardDialog({ open, onOpenChange }: Props) {
   const { t, lang } = useT();
-  const farts = useStore((s) => s.farts);
+  const farts = useProfileFarts();
   const cardRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
 

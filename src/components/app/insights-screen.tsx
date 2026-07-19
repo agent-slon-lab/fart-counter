@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Globe, MapPin, TrendingUp, Calendar, CloudSun, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useStore, dateKey, type FartRecord } from "@/lib/store";
+import { useStore, dateKey, useProfileFarts, useProfileMoods, useProfileFood, type FartRecord } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 import { toast } from "sonner";
 
@@ -13,9 +13,9 @@ const WEEKDAY_KEYS = ["weekday_mon", "weekday_tue", "weekday_wed", "weekday_thu"
 
 export function InsightsScreen() {
   const { t, lang } = useT();
-  const farts = useStore((s) => s.farts);
-  const moods = useStore((s) => s.moods);
-  const food = useStore((s) => s.food);
+  const farts = useProfileFarts();
+  const moods = useProfileMoods();
+  const food = useProfileFood();
   const weather = useStore((s) => s.weather);
   const worldRank = useStore((s) => s.worldRank);
   const settings = useStore((s) => s.settings);

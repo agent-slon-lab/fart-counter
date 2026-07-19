@@ -26,14 +26,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useStore, dateKey, getFartsForDate, getCountForDate, type FartRecord } from "@/lib/store";
+import { useStore, dateKey, getFartsForDate, getCountForDate, useProfileFarts, type FartRecord } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 import { toast } from "sonner";
 import { dateKey as dk } from "@/lib/store";
 
 export function HistoryScreen() {
   const { t, lang } = useT();
-  const farts = useStore((s) => s.farts);
+  const farts = useProfileFarts();
   const deleteFart = useStore((s) => s.deleteFart);
   const setFartCountForDay = useStore((s) => s.setFartCountForDay);
   const addManualFart = useStore((s) => s.addManualFart);

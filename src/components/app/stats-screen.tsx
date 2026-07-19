@@ -15,7 +15,7 @@ import { Download, FileJson, FileSpreadsheet, TrendingUp, Trophy, Activity, Cale
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useStore, dateKey, type FartRecord } from "@/lib/store";
+import { useStore, dateKey, useProfileFarts, useProfileWater, type FartRecord } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 import { toast } from "sonner";
 import { buildCSV, buildExportPayload, downloadText } from "@/lib/export";
@@ -24,8 +24,8 @@ type Period = "week" | "month" | "year";
 
 export function StatsScreen() {
   const { t, lang } = useT();
-  const farts = useStore((s) => s.farts);
-  const water = useStore((s) => s.water);
+  const farts = useProfileFarts();
+  const water = useProfileWater();
   const unlocked = useStore((s) => s.unlockedAchievements);
   const settings = useStore((s) => s.settings);
   const [period, setPeriod] = useState<Period>("week");

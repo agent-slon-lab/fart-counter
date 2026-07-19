@@ -1,6 +1,6 @@
 // Service Worker for Fart Counter PWA — offline-first cache.
 // Version is bumped on each release to invalidate old caches.
-const CACHE = "fart-counter-v1.3.1";
+const CACHE = "fart-counter-v1.4.0";
 const PRECACHE = [
   "/",
   "/manifest.json",

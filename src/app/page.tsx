@@ -1,23 +1,26 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BottomNav, type TabId } from "@/components/app/bottom-nav";
 import { HomeScreen } from "@/components/app/home-screen";
-import { HistoryScreen } from "@/components/app/history-screen";
-import { StatsScreen } from "@/components/app/stats-screen";
-import { ProfileScreen } from "@/components/app/profile-screen";
-import { FoodScreen } from "@/components/app/food-screen";
-import { InsightsScreen } from "@/components/app/insights-screen";
 import { AchievementWatcher } from "@/components/app/achievement-watcher";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { UpdateBanner } from "@/components/pwa/update-banner";
 import { EveningReminderBanner } from "@/components/pwa/evening-reminder-banner";
 import { Onboarding, hasCompletedOnboarding } from "@/components/pwa/onboarding";
 import { WelcomePopup } from "@/components/pwa/welcome-popup";
+import { ProfileSwitcher } from "@/components/app/profile-switcher";
 import { useT } from "@/hooks/use-t";
 import { useStore } from "@/lib/store";
 import type { Language } from "@/lib/i18n";
+
+// CODE SPLITTING: Lazy load non-home screens for faster initial load
+const HistoryScreen = lazy(() => import("@/components/app/history-screen").then(m => ({ default: m.HistoryScreen })));
+const StatsScreen = lazy(() => import("@/components/app/stats-screen").then(m => ({ default: m.StatsScreen })));
+const ProfileScreen = lazy(() => import("@/components/app/profile-screen").then(m => ({ default: m.ProfileScreen })));
+const FoodScreen = lazy(() => import("@/components/app/food-screen").then(m => ({ default: m.FoodScreen })));
+const InsightsScreen = lazy(() => import("@/components/app/insights-screen").then(m => ({ default: m.InsightsScreen })));
 
 const SUPPORTED_LANGS: Language[] = ["ru", "en", "es", "pt", "de", "fr", "hi"];
 
@@ -105,6 +108,7 @@ export default function Home() {
             <p className="text-[10px] text-muted-foreground">{t("app_tagline")}</p>
           </div>
         </div>
+        <ProfileSwitcher />
       </header>
 
       {/* Screen content */}
@@ -119,11 +123,15 @@ export default function Home() {
             className="pt-3"
           >
             {tab === "home" && <HomeScreen />}
-            {tab === "history" && <HistoryScreen />}
-            {tab === "food" && <FoodScreen />}
-            {tab === "insights" && <InsightsScreen />}
-            {tab === "stats" && <StatsScreen />}
-            {tab === "profile" && <ProfileScreen />}
+            {tab !== "home" && (
+              <Suspense fallback={<div className="flex h-40 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>}>
+                {tab === "history" && <HistoryScreen />}
+                {tab === "food" && <FoodScreen />}
+                {tab === "insights" && <InsightsScreen />}
+                {tab === "stats" && <StatsScreen />}
+                {tab === "profile" && <ProfileScreen />}
+              </Suspense>
+            )}
           </motion.div>
         </AnimatePresence>
       </main>

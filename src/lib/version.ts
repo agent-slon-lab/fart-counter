@@ -1,6 +1,6 @@
 // Version checking logic for Fart Counter PWA
 
-export const APP_VERSION = "1.3.1";
+export const APP_VERSION = "1.4.0";
 
 export interface VersionInfo {
   version: string;
