@@ -9,12 +9,14 @@ import { StatsScreen } from "@/components/app/stats-screen";
 import { ProfileScreen } from "@/components/app/profile-screen";
 import { FoodScreen } from "@/components/app/food-screen";
 import { InsightsScreen } from "@/components/app/insights-screen";
+import { ShopScreen } from "@/components/app/shop-screen";
 import { AchievementWatcher } from "@/components/app/achievement-watcher";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { UpdateBanner } from "@/components/pwa/update-banner";
 import { EveningReminderBanner } from "@/components/pwa/evening-reminder-banner";
 import { Onboarding, hasCompletedOnboarding } from "@/components/pwa/onboarding";
 import { WelcomePopup } from "@/components/pwa/welcome-popup";
+import { DailyBonusPopup } from "@/components/pwa/daily-bonus";
 import { ProfileSwitcher } from "@/components/app/profile-switcher";
 import { useT } from "@/hooks/use-t";
 import { useStore } from "@/lib/store";
@@ -104,6 +106,7 @@ export default function Home() {
             {tab === "food" && <FoodScreen />}
             {tab === "insights" && <InsightsScreen />}
             {tab === "stats" && <StatsScreen />}
+            {tab === "shop" && <ShopScreen />}
             {tab === "profile" && <ProfileScreen />}
           </motion.div>
         </AnimatePresence>
@@ -115,6 +118,7 @@ export default function Home() {
       <UpdateBanner />
       <EveningReminderBanner />
       <WelcomePopup />
+      <DailyBonusPopup />
     </div>
   );
 }
