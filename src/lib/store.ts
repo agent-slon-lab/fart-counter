@@ -312,7 +312,14 @@ export const useStore = create<AppState>()(
           if (dateKey(new Date(farts[i].ts)) === tk && (farts[i].profileId || "me") === activeProfileId) {
             const next = [...farts];
             next.splice(i, 1);
-            set({ farts: next });
+            const state = get();
+            // XP ROLLBACK (Approach B): deduct 10 XP if this fart earned XP
+            const xpDeduct = state.fartsTodayForXP > 0 ? 10 : 0;
+            set({
+              farts: next,
+              xp: Math.max(0, state.xp - xpDeduct),
+              fartsTodayForXP: Math.max(0, state.fartsTodayForXP - 1),
+            });
             return;
           }
         }

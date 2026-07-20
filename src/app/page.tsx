@@ -102,10 +102,14 @@ export default function Home() {
             className="pt-3"
           >
             {tab === "home" && <HomeScreen />}
-            {tab === "history" && <HistoryScreen />}
+            {tab === "history" && (
+              <>
+                <HistoryScreen />
+                <StatsScreen />
+              </>
+            )}
             {tab === "food" && <FoodScreen />}
             {tab === "insights" && <InsightsScreen />}
-            {tab === "stats" && <StatsScreen />}
             {tab === "shop" && <ShopScreen />}
             {tab === "profile" && <ProfileScreen />}
           </motion.div>
