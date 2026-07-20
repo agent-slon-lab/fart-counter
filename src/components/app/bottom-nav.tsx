@@ -1,10 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Home, History, BarChart3, Settings, Utensils, Sparkles, ShoppingBag } from "lucide-react";
+import { Home, History, Settings, Utensils, Sparkles, ShoppingBag } from "lucide-react";
 import { useT } from "@/hooks/use-t";
 
-export type TabId = "home" | "history" | "food" | "insights" | "stats" | "shop" | "profile";
+export type TabId = "home" | "history" | "food" | "insights" | "shop" | "profile";
 
 interface Props {
   active: TabId;
@@ -18,7 +18,6 @@ export function BottomNav({ active, onChange }: Props) {
     { id: "history", label: t("tab_history"), icon: History },
     { id: "food", label: t("tab_food"), icon: Utensils },
     { id: "insights", label: t("tab_insights"), icon: Sparkles },
-    { id: "stats", label: t("tab_stats"), icon: BarChart3 },
     { id: "shop", label: t("shop_title"), icon: ShoppingBag },
     { id: "profile", label: t("tab_profile"), icon: Settings },
   ];

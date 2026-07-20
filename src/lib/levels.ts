@@ -9,17 +9,17 @@ export interface LevelDef {
 
 export const LEVELS: LevelDef[] = [
   { level: 1, nameKey: "level_1_name", emoji: "🌱", minXp: 0 },
-  { level: 2, nameKey: "level_2_name", emoji: "🍃", minXp: 100 },
-  { level: 3, nameKey: "level_3_name", emoji: "💨", minXp: 300 },
-  { level: 4, nameKey: "level_4_name", emoji: "🌬️", minXp: 600 },
-  { level: 5, nameKey: "level_5_name", emoji: "🌪️", minXp: 1000 },
-  { level: 6, nameKey: "level_6_name", emoji: "⚡", minXp: 1500 },
-  { level: 7, nameKey: "level_7_name", emoji: "🔥", minXp: 2200 },
-  { level: 8, nameKey: "level_8_name", emoji: "⭐", minXp: 3000 },
-  { level: 9, nameKey: "level_9_name", emoji: "🌟", minXp: 4000 },
-  { level: 10, nameKey: "level_10_name", emoji: "👑", minXp: 5500 },
-  { level: 15, nameKey: "level_15_name", emoji: "💎", minXp: 12000 },
-  { level: 20, nameKey: "level_20_name", emoji: "🚀", minXp: 25000 },
+  { level: 2, nameKey: "level_2_name", emoji: "🍃", minXp: 500 },
+  { level: 3, nameKey: "level_3_name", emoji: "💨", minXp: 1500 },
+  { level: 4, nameKey: "level_4_name", emoji: "🌬️", minXp: 3000 },
+  { level: 5, nameKey: "level_5_name", emoji: "🌪️", minXp: 6000 },
+  { level: 6, nameKey: "level_6_name", emoji: "⚡", minXp: 10000 },
+  { level: 7, nameKey: "level_7_name", emoji: "🔥", minXp: 18000 },
+  { level: 8, nameKey: "level_8_name", emoji: "⭐", minXp: 30000 },
+  { level: 9, nameKey: "level_9_name", emoji: "🌟", minXp: 50000 },
+  { level: 10, nameKey: "level_10_name", emoji: "👑", minXp: 80000 },
+  { level: 15, nameKey: "level_15_name", emoji: "💎", minXp: 200000 },
+  { level: 20, nameKey: "level_20_name", emoji: "🚀", minXp: 500000 },
 ];
 
 export function getLevel(xp: number): LevelDef {
