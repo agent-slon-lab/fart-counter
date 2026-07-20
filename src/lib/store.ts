@@ -130,6 +130,14 @@ export interface AppState {
   /** User profiles (multi-profile support) */
   profiles: Profile[];
 
+  // Gamification
+  xp: number;
+  streak: number;
+  lastFartDay: string | null;
+  lastBonusDay: string | null;
+  purchasedItems: string[];
+  fartsTodayForXP: number; // tracks farts today for XP cap
+
   // Settings
   settings: AppSettings;
 
@@ -166,6 +174,12 @@ export interface AppState {
   updateProfile: (id: string, updates: Partial<Profile>) => void;
   deleteProfile: (id: string) => void;
   setActiveProfile: (id: string) => void;
+
+  // Actions — Gamification
+  addXP: (amount: number) => void;
+  claimDailyBonus: () => number;
+  purchaseItem: (itemId: string, cost: number) => boolean;
+  resetDailyXPCounter: () => void;
 
   // Actions — Settings
   setLanguage: (lang: Language) => void;
@@ -212,6 +226,14 @@ export const useStore = create<AppState>()(
       worldRank: {},
       profiles: [{ id: "me", name: "Me", type: "adult", avatar: "💨" }],
 
+      // Gamification
+      xp: 0,
+      streak: 0,
+      lastFartDay: null,
+      lastBonusDay: null,
+      purchasedItems: [],
+      fartsTodayForXP: 0,
+
       settings: {
         language: "en",
         theme: "system",
@@ -244,7 +266,41 @@ export const useStore = create<AppState>()(
           rec.lng = opts.geo.lng;
           rec.country = opts.geo.country;
         }
-        set((s) => ({ farts: [...s.farts, rec] }));
+        const today = todayKey();
+        const state = get();
+
+        // XP: +10 per fart, but capped at 30 farts/day (max 300 XP/day)
+        const MAX_XP_FARTS = 30;
+        const fartsTodayForXP = state.lastFartDay === today ? state.fartsTodayForXP : 0;
+        const xpGain = fartsTodayForXP < MAX_XP_FARTS ? 10 : 0;
+
+        // Streak: check if this is the first fart today
+        let newStreak = state.streak;
+        if (state.lastFartDay !== today) {
+          // Check if yesterday had farts (or grace period)
+          const yesterday = dateKey(new Date(Date.now() - 86400000));
+          if (state.lastFartDay === yesterday) {
+            newStreak = state.streak + 1;
+          } else if (state.lastFartDay === null) {
+            newStreak = 1;
+          } else {
+            // Streak broken, but grace period: if 2 days ago had farts, keep streak
+            const twoDaysAgo = dateKey(new Date(Date.now() - 2 * 86400000));
+            if (state.lastFartDay === twoDaysAgo) {
+              newStreak = state.streak + 1; // grace period
+            } else {
+              newStreak = 1; // reset
+            }
+          }
+        }
+
+        set((s) => ({
+          farts: [...s.farts, rec],
+          xp: s.xp + xpGain,
+          streak: newStreak,
+          lastFartDay: today,
+          fartsTodayForXP: fartsTodayForXP + 1,
+        }));
         return rec.id;
       },
 
@@ -385,6 +441,39 @@ export const useStore = create<AppState>()(
         set((s) => ({ settings: { ...s.settings, activeProfileId: id } }));
       },
 
+      // ===== Gamification actions =====
+      addXP: (amount) => {
+        set((s) => ({ xp: s.xp + amount }));
+      },
+
+      claimDailyBonus: () => {
+        const today = todayKey();
+        const state = get();
+        if (state.lastBonusDay === today) return 0; // Already claimed
+
+        // Bonus = 50 XP + streak * 10 (max +200 from streak)
+        const streakBonus = Math.min(state.streak * 10, 200);
+        const total = 50 + streakBonus;
+
+        set((s) => ({ xp: s.xp + total, lastBonusDay: today }));
+        return total;
+      },
+
+      purchaseItem: (itemId, cost) => {
+        const state = get();
+        if (state.xp < cost) return false;
+        if (state.purchasedItems.includes(itemId)) return false;
+        set((s) => ({
+          xp: s.xp - cost,
+          purchasedItems: [...s.purchasedItems, itemId],
+        }));
+        return true;
+      },
+
+      resetDailyXPCounter: () => {
+        set({ fartsTodayForXP: 0 });
+      },
+
       setLanguage: (language) => set((s) => ({ settings: { ...s.settings, language } })),
       setTheme: (theme) => set((s) => ({ settings: { ...s.settings, theme } })),
       setAccent: (accent) => set((s) => ({ settings: { ...s.settings, accent } })),
@@ -433,7 +522,7 @@ export const useStore = create<AppState>()(
     {
       name: "fart-counter-store-v2",
       storage: createJSONStorage(() => localStorage),
-      version: 3,
+      version: 4,
       // NO skipHydration — let Zustand hydrate synchronously from localStorage (instant)
       migrate: (persisted: any, version: number) => {
         if (!persisted) return persisted;
@@ -463,7 +552,6 @@ export const useStore = create<AppState>()(
           };
         }
         if (version < 3) {
-          // v2 → v3: Add profileId to all records + profiles array
           if (persisted.farts) {
             persisted.farts = persisted.farts.map((f: any) => ({ ...f, profileId: f.profileId || "me" }));
           }
@@ -480,6 +568,15 @@ export const useStore = create<AppState>()(
           if (persisted.settings) {
             persisted.settings.activeProfileId = persisted.settings.activeProfileId || "me";
           }
+        }
+        if (version < 4) {
+          // v3 → v4: Add gamification fields
+          persisted.xp = persisted.xp || 0;
+          persisted.streak = persisted.streak || 0;
+          persisted.lastFartDay = persisted.lastFartDay || null;
+          persisted.lastBonusDay = persisted.lastBonusDay || null;
+          persisted.purchasedItems = persisted.purchasedItems || [];
+          persisted.fartsTodayForXP = persisted.fartsTodayForXP || 0;
         }
         return persisted;
       },

@@ -8,6 +8,7 @@ import { useT } from "@/hooks/use-t";
 import { playFartSound, playWaterSound, primeAudio } from "@/lib/sounds";
 import { vibrateFart, vibrateWater } from "@/lib/haptics";
 import { getFactOfDay, getRandomFact } from "@/lib/facts";
+import { GamificationBar } from "./gamification-bar";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -253,6 +254,9 @@ export function HomeScreen() {
           <span className="hidden sm:inline">{soundLabel(fartSound)}</span>
         </Button>
       </div>
+
+      {/* Gamification: Streak + Level + XP + Health */}
+      <GamificationBar />
 
       {/* Counter card */}
       <Card
