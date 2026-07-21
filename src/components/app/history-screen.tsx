@@ -391,7 +391,7 @@ export function HistoryScreen() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Import / Export — moved from Profile */}
+      {/* Backup — simple save/load */}
       <Card className="p-4">
         <div className="mb-3 flex items-center gap-2 text-muted-foreground">
           <Download className="h-4 w-4" />
@@ -400,11 +400,11 @@ export function HistoryScreen() {
         <div className="grid grid-cols-2 gap-2">
           <Button variant="outline" size="sm" onClick={handleExportAll}>
             <Download className="mr-1.5 h-4 w-4" />
-            {t("export_data")}
+            {t("save_data")}
           </Button>
           <Button variant="outline" size="sm" onClick={handleImportClick}>
             <Upload className="mr-1.5 h-4 w-4" />
-            {t("import_data")}
+            {t("load_data")}
           </Button>
         </div>
         <input ref={fileInputRef} type="file" accept="application/json,.json" onChange={handleImportFile} className="hidden" />
