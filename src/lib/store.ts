@@ -227,7 +227,7 @@ export const useStore = create<AppState>()(
       profiles: [{ id: "me", name: "Me", type: "adult", avatar: "🧑" }],
 
       // Gamification
-      xp: 999999, // SANDBOX: max XP for testing shop
+      xp: 0,
       streak: 0,
       lastFartDay: null,
       lastBonusDay: null,
@@ -527,9 +527,9 @@ export const useStore = create<AppState>()(
         }),
     }),
     {
-      name: "fart-counter-store-v2",
+      name: "fart-counter-store-v3",
       storage: createJSONStorage(() => localStorage),
-      version: 4,
+      version: 5,
       // NO skipHydration — let Zustand hydrate synchronously from localStorage (instant)
       migrate: (persisted: any, version: number) => {
         if (!persisted) return persisted;
@@ -590,6 +590,16 @@ export const useStore = create<AppState>()(
               if (p.id === "me" && p.avatar === "💨") {
                 return { ...p, avatar: "🧑" };
               }
+              return p;
+            });
+          }
+        }
+        if (version < 5) {
+          // v4 → v5: Force 999999 XP for sandbox testing + new store key
+          persisted.xp = persisted.xp || 0;
+          if (persisted.profiles) {
+            persisted.profiles = persisted.profiles.map((p: any) => {
+              if (p.id === "me" && p.avatar === "💨") return { ...p, avatar: "🧑" };
               return p;
             });
           }
