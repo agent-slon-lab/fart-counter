@@ -27,10 +27,9 @@ export function ShopScreen() {
   const purchaseItem = useStore((s) => s.purchaseItem);
   const [confirmItem, setConfirmItem] = useState<ShopItem | null>(null);
 
-  const categories = ["badge", "feature", "theme"] as const;
+  const categories = ["badge", "theme"] as const;
   const categoryLabels: Record<string, string> = {
     badge: t("shop_category_badge"),
-    feature: t("shop_category_feature"),
     theme: t("shop_category_theme"),
   };
 

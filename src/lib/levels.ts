@@ -64,10 +64,11 @@ export interface ShopItem {
   descKey: string;
   icon: string;
   cost: number;
-  category: "theme" | "badge" | "feature";
+  category: "theme" | "badge";
 }
 
 export const SHOP_ITEMS: ShopItem[] = [
+  // Badges
   {
     id: "badge_supporter",
     nameKey: "shop_badge_supporter",
@@ -93,27 +94,60 @@ export const SHOP_ITEMS: ShopItem[] = [
     category: "badge",
   },
   {
-    id: "feature_stats",
-    nameKey: "shop_feature_stats",
-    descKey: "shop_feature_stats_desc",
-    icon: "📊",
-    cost: 400,
-    category: "feature",
+    id: "badge_ninja",
+    nameKey: "shop_badge_ninja",
+    descKey: "shop_badge_ninja_desc",
+    icon: "🥷",
+    cost: 800,
+    category: "badge",
   },
   {
-    id: "feature_export",
-    nameKey: "shop_feature_export",
-    descKey: "shop_feature_export_desc",
-    icon: "📤",
-    cost: 300,
-    category: "feature",
+    id: "badge_scientist",
+    nameKey: "shop_badge_scientist",
+    descKey: "shop_badge_scientist_desc",
+    icon: "🧪",
+    cost: 1200,
+    category: "badge",
   },
+  {
+    id: "badge_chef",
+    nameKey: "shop_badge_chef",
+    descKey: "shop_badge_chef_desc",
+    icon: "👨‍🍳",
+    cost: 600,
+    category: "badge",
+  },
+  // Themes
   {
     id: "theme_rainbow",
     nameKey: "shop_theme_rainbow",
     descKey: "shop_theme_rainbow_desc",
     icon: "🌈",
     cost: 1000,
+    category: "theme",
+  },
+  {
+    id: "theme_sunset",
+    nameKey: "shop_theme_sunset",
+    descKey: "shop_theme_sunset_desc",
+    icon: "🌅",
+    cost: 700,
+    category: "theme",
+  },
+  {
+    id: "theme_ocean",
+    nameKey: "shop_theme_ocean",
+    descKey: "shop_theme_ocean_desc",
+    icon: "🌊",
+    cost: 700,
+    category: "theme",
+  },
+  {
+    id: "theme_galaxy",
+    nameKey: "shop_theme_galaxy",
+    descKey: "shop_theme_galaxy_desc",
+    icon: "🌌",
+    cost: 1500,
     category: "theme",
   },
 ];

@@ -82,7 +82,7 @@ export default function Home() {
 
       <header className="safe-top sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/95 px-4 py-2 backdrop-blur-md">
         <div className="flex items-center gap-2">
-          <span className="text-xl">💨</span>
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-base shadow-sm">💨</span>
           <div className="leading-none" suppressHydrationWarning>
             <p className="text-sm font-black" suppressHydrationWarning>{t("app_name")}</p>
             <p className="text-[10px] text-muted-foreground" suppressHydrationWarning>{t("app_tagline")}</p>

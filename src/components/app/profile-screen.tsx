@@ -64,11 +64,18 @@ import { InstallButton } from "@/components/pwa/install-button";
 import { AchievementsList } from "./achievements-list";
 import { ShareCardDialog } from "./share-card-dialog";
 
-const ACCENTS: { id: AccentColor; color: string; key: "accent_green" | "accent_pink" | "accent_blue" | "accent_gold" }[] = [
+const ACCENTS: { id: AccentColor; color: string; key: string; purchased?: boolean }[] = [
   { id: "green", color: "#84cc16", key: "accent_green" },
   { id: "pink", color: "#ec4899", key: "accent_pink" },
   { id: "blue", color: "#3b82f6", key: "accent_blue" },
   { id: "gold", color: "#f59e0b", key: "accent_gold" },
+];
+
+const PURCHASED_THEMES: { id: AccentColor; color: string; key: string; shopId: string; icon: string }[] = [
+  { id: "rainbow" as AccentColor, color: "linear-gradient(135deg,#84cc16,#ec4899,#3b82f6,#f59e0b,#a855f7)", key: "shop_theme_rainbow", shopId: "theme_rainbow", icon: "🌈" },
+  { id: "sunset" as AccentColor, color: "#f97316", key: "shop_theme_sunset", shopId: "theme_sunset", icon: "🌅" },
+  { id: "ocean" as AccentColor, color: "#0ea5e9", key: "shop_theme_ocean", shopId: "theme_ocean", icon: "🌊" },
+  { id: "galaxy" as AccentColor, color: "#a855f7", key: "shop_theme_galaxy", shopId: "theme_galaxy", icon: "🌌" },
 ];
 
 export function ProfileScreen() {
@@ -85,6 +92,7 @@ export function ProfileScreen() {
   const food = useStore((s) => s.food);
   const moods = useStore((s) => s.moods);
   const unlocked = useStore((s) => s.unlockedAchievements);
+  const purchasedItems = useStore((s) => s.purchasedItems);
 
   const [achOpen, setAchOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -301,6 +309,37 @@ export function ProfileScreen() {
             </button>
           ))}
         </div>
+
+        {/* Purchased themes (only show if bought) */}
+        {purchasedItems.length > 0 && PURCHASED_THEMES.some((th) => purchasedItems.includes(th.shopId)) && (
+          <>
+            <p className="mb-2 mt-3 text-[10px] font-bold uppercase tracking-widest text-primary">
+              🛒 {t("shop_category_theme")}
+            </p>
+            <div className="grid grid-cols-4 gap-2">
+              {PURCHASED_THEMES.filter((th) => purchasedItems.includes(th.shopId)).map((th) => (
+                <button
+                  key={th.id}
+                  onClick={() => setAccent(th.id)}
+                  aria-label={t(th.key)}
+                  className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-2 transition-all ${
+                    settings.accent === th.id ? "border-foreground scale-105" : "border-transparent hover:border-border"
+                  }`}
+                >
+                  <span
+                    className="h-8 w-8 rounded-full shadow-md flex items-center justify-center text-sm"
+                    style={th.id === "rainbow" ? { background: th.color } : { backgroundColor: th.color }}
+                  >
+                    {th.icon}
+                  </span>
+                  <span className="text-[9px] font-medium leading-tight text-center text-muted-foreground">
+                    {t(th.key)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </SectionCard>
 
       {/* Sound & Vibration */}
