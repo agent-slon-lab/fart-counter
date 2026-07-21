@@ -370,20 +370,9 @@ export function ProfileScreen() {
         </p>
       </SectionCard>
 
-      {/* Data */}
+      {/* Data — only reset here, export/import moved to History */}
       <SectionCard icon={<Database className="h-4 w-4" />} title={t("data_section")}>
-        <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm" onClick={handleExportAll}>
-            <Download className="mr-1.5 h-4 w-4" />
-            {t("export_data")}
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleImportClick}>
-            <Upload className="mr-1.5 h-4 w-4" />
-            {t("import_data")}
-          </Button>
-        </div>
-        <input ref={fileInputRef} type="file" accept="application/json,.json" onChange={handleImportFile} className="hidden" />
-        <Button variant="ghost" size="sm" onClick={() => setResetOpen(true)} className="mt-2 w-full text-destructive hover:text-destructive">
+        <Button variant="ghost" size="sm" onClick={() => setResetOpen(true)} className="w-full text-destructive hover:text-destructive">
           <Trash2 className="mr-1.5 h-4 w-4" />
           {t("reset_data")}
         </Button>

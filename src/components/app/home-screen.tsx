@@ -241,7 +241,7 @@ export function HomeScreen() {
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
             {t("today")}
           </p>
-          <p className="text-xs text-foreground/80">{dateStr}</p>
+          <p className="text-xs text-foreground/80" suppressHydrationWarning>{dateStr}</p>
         </div>
         <Button
           variant="ghost"

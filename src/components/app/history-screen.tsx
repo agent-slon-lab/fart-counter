@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Trash2, Plus, Pencil, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash2, Plus, Pencil, Clock, Download, Upload } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ import { useStore, dateKey, getFartsForDate, getCountForDate, useProfileFarts, t
 import { useT } from "@/hooks/use-t";
 import { toast } from "sonner";
 import { dateKey as dk } from "@/lib/store";
+import { buildExportPayload, downloadText, readFileAsText } from "@/lib/export";
 
 export function HistoryScreen() {
   const { t, lang } = useT();
@@ -45,6 +46,43 @@ export function HistoryScreen() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [manualValue, setManualValue] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Import/Export handlers
+  const allFarts = useStore((s) => s.farts);
+  const allWater = useStore((s) => s.water);
+  const allFood = useStore((s) => s.food);
+  const allMoods = useStore((s) => s.moods);
+  const allSettings = useStore((s) => s.settings);
+  const allUnlocked = useStore((s) => s.unlockedAchievements);
+  const importData = useStore((s) => s.importData);
+
+  function handleExportAll() {
+    const payload = buildExportPayload(allFarts, allWater, allSettings, allUnlocked);
+    (payload as any).food = allFood;
+    (payload as any).moods = allMoods;
+    const json = JSON.stringify(payload, null, 2);
+    const filename = `fart-counter-backup-${dateKey(new Date())}.json`;
+    const ok = downloadText(filename, json, "application/json");
+    toast(ok ? t("toast_data_exported") : t("export_failed"), { icon: ok ? "✅" : "⚠️" });
+  }
+
+  function handleImportClick() {
+    fileInputRef.current?.click();
+  }
+
+  async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await readFileAsText(file);
+      const ok = importData(text);
+      toast(ok ? t("toast_data_imported") : t("toast_import_failed"), { icon: ok ? "✅" : "⚠️" });
+    } catch {
+      toast(t("toast_import_failed"), { icon: "⚠️" });
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
   // Days with records (for calendar highlighting)
   const daysWithRecords = useMemo(() => {
@@ -352,6 +390,25 @@ export function HistoryScreen() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Import / Export — moved from Profile */}
+      <Card className="p-4">
+        <div className="mb-3 flex items-center gap-2 text-muted-foreground">
+          <Download className="h-4 w-4" />
+          <span className="text-xs font-semibold uppercase tracking-widest">{t("data_section")}</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="outline" size="sm" onClick={handleExportAll}>
+            <Download className="mr-1.5 h-4 w-4" />
+            {t("export_data")}
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleImportClick}>
+            <Upload className="mr-1.5 h-4 w-4" />
+            {t("import_data")}
+          </Button>
+        </div>
+        <input ref={fileInputRef} type="file" accept="application/json,.json" onChange={handleImportFile} className="hidden" />
+      </Card>
     </div>
   );
 }

@@ -224,10 +224,10 @@ export const useStore = create<AppState>()(
       moods: [],
       weather: [],
       worldRank: {},
-      profiles: [{ id: "me", name: "Me", type: "adult", avatar: "💨" }],
+      profiles: [{ id: "me", name: "Me", type: "adult", avatar: "🧑" }],
 
       // Gamification
-      xp: 0,
+      xp: 999999, // SANDBOX: max XP for testing shop
       streak: 0,
       lastFartDay: null,
       lastBonusDay: null,
@@ -577,13 +577,22 @@ export const useStore = create<AppState>()(
           }
         }
         if (version < 4) {
-          // v3 → v4: Add gamification fields
+          // v3 → v4: Add gamification fields + update default avatar
           persisted.xp = persisted.xp || 0;
           persisted.streak = persisted.streak || 0;
           persisted.lastFartDay = persisted.lastFartDay || null;
           persisted.lastBonusDay = persisted.lastBonusDay || null;
           persisted.purchasedItems = persisted.purchasedItems || [];
           persisted.fartsTodayForXP = persisted.fartsTodayForXP || 0;
+          // Update default "Me" avatar from 💨 to 🧑
+          if (persisted.profiles) {
+            persisted.profiles = persisted.profiles.map((p: any) => {
+              if (p.id === "me" && p.avatar === "💨") {
+                return { ...p, avatar: "🧑" };
+              }
+              return p;
+            });
+          }
         }
         return persisted;
       },
