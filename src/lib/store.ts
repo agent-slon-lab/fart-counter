@@ -227,7 +227,7 @@ export const useStore = create<AppState>()(
       profiles: [{ id: "me", name: "Me", type: "adult", avatar: "🧑" }],
 
       // Gamification
-      xp: 999999, // SANDBOX: max XP for testing shop
+      xp: 0,
       streak: 0,
       lastFartDay: null,
       lastBonusDay: null,
@@ -596,7 +596,7 @@ export const useStore = create<AppState>()(
         }
         if (version < 5) {
           // v4 → v5: Force 999999 XP for sandbox testing + new store key
-          persisted.xp = 999999;
+          persisted.xp = persisted.xp || 0;
           if (persisted.profiles) {
             persisted.profiles = persisted.profiles.map((p: any) => {
               if (p.id === "me" && p.avatar === "💨") return { ...p, avatar: "🧑" };
