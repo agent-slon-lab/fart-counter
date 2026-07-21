@@ -31,8 +31,8 @@ export function UpdateBanner() {
   useEffect(() => {
     let cancelled = false;
     async function check() {
-      // Wait 3s after launch — let app render first, then check in background
-      await new Promise((r) => setTimeout(r, 3000));
+      // Wait 10s after launch — let app fully render first, then check in background
+      await new Promise((r) => setTimeout(r, 10000));
       if (cancelled) return;
       // Skip if we already checked today (background throttle)
       if (!shouldCheckInBackground()) return;

@@ -1,6 +1,6 @@
-// Service Worker for Fart Counter PWA — CACHE-FIRST strategy for max speed.
+// Service Worker for Fart Counter PWA — CACHE-FIRST for instant load.
 // Version bumped on each release to invalidate old caches.
-const CACHE = "fart-counter-v1.5.2";
+const CACHE = "fart-counter-v1.5.3";
 const PRECACHE = [
   "/",
   "/manifest.json",
@@ -36,17 +36,25 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // Navigation requests: cache-first for instant load, update in background
+  // Navigation: CACHE-FIRST (instant!) + update in background
   if (req.mode === "navigate") {
     event.respondWith(
       caches.match(req).then((cached) => {
-        // Serve from cache immediately (instant!)
-        const networkFetch = fetch(req).then((res) => {
+        // Serve from cache INSTANTLY if available
+        if (cached) {
+          // Update cache in background (stale-while-revalidate)
+          fetch(req).then((res) => {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+          }).catch(() => {});
+          return cached;
+        }
+        // No cache — try network, fallback to "/"
+        return fetch(req).then((res) => {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
           return res;
-        }).catch(() => cached || caches.match("/"));
-        return cached || networkFetch;
+        }).catch(() => caches.match("/"));
       })
     );
     return;
