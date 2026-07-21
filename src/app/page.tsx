@@ -71,7 +71,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    mainRef.current?.scrollTo({ top: 0, behavior: "auto" });
   }, [tab]);
 
   return (

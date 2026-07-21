@@ -224,22 +224,6 @@ export function StatsScreen() {
         )}
       </Card>
 
-      {/* Export */}
-      <Card className="p-4">
-        <p className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
-          {t("export_csv")}
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm" onClick={handleExportCSV}>
-            <FileSpreadsheet className="mr-1.5 h-4 w-4" />
-            {t("export_csv")}
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleExportJSON}>
-            <FileJson className="mr-1.5 h-4 w-4" />
-            {t("export_json")}
-          </Button>
-        </div>
-      </Card>
     </div>
   );
 }
