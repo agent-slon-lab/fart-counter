@@ -94,7 +94,7 @@ export interface Profile {
   age?: number;
 }
 
-export type AccentColor = "green" | "pink" | "blue" | "gold";
+export type AccentColor = "green" | "pink" | "blue" | "gold" | "rainbow" | "sunset" | "ocean" | "galaxy";
 export type ThemeMode = "light" | "dark" | "system";
 
 export interface AppSettings {
