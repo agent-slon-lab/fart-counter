@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Plus, Trash2, Check } from "lucide-react";
 import { useStore, type Profile } from "@/lib/store";
+import { SHOP_ITEMS } from "@/lib/levels";
 import { useT } from "@/hooks/use-t";
 import {
   Dialog,
@@ -47,6 +48,12 @@ export function ProfileSwitcher() {
   const setActiveProfile = useStore((s) => s.setActiveProfile);
   const addProfile = useStore((s) => s.addProfile);
   const deleteProfile = useStore((s) => s.deleteProfile);
+  const purchasedItems = useStore((s) => s.purchasedItems);
+
+  // Get purchased badge icons
+  const purchasedBadges = SHOP_ITEMS.filter(
+    (item) => item.category === "badge" && purchasedItems.includes(item.id)
+  );
 
   const [open, setOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
@@ -80,8 +87,15 @@ export function ProfileSwitcher() {
         onClick={() => setOpen(true)}
         className="flex items-center gap-2 rounded-full bg-primary/15 border-2 border-primary/40 px-3 py-1.5 text-xs font-bold hover:bg-primary/25 transition-colors min-w-[80px] justify-center"
       >
-        <span className="text-lg">{activeProfile?.avatar ?? "💨"}</span>
+        <span className="text-lg">{activeProfile?.avatar ?? "🧑"}</span>
         <span className="max-w-[70px] truncate text-primary">{activeProfile?.name ?? "Me"}</span>
+        {purchasedBadges.length > 0 && (
+          <span className="flex gap-0.5">
+            {purchasedBadges.slice(0, 2).map((b) => (
+              <span key={b.id} className="text-xs">{b.icon}</span>
+            ))}
+          </span>
+        )}
         <ChevronDown className="h-3 w-3 text-primary opacity-70" />
       </button>
 
@@ -110,7 +124,16 @@ export function ProfileSwitcher() {
                 >
                   <span className="text-2xl">{p.avatar}</span>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold truncate">{p.name}</p>
+                    <div className="flex items-center gap-1">
+                      <p className="text-sm font-bold truncate">{p.name}</p>
+                      {p.id === activeProfileId && purchasedBadges.length > 0 && (
+                        <span className="flex gap-0.5">
+                          {purchasedBadges.slice(0, 3).map((b) => (
+                            <span key={b.id} className="text-xs">{b.icon}</span>
+                          ))}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[10px] text-muted-foreground truncate">
                       {getProfileDescription(p.name, p.type, t)}
                     </p>
