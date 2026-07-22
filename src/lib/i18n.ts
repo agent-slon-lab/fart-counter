@@ -24,7 +24,7 @@ const extra: Record<Exclude<Language, "ru" | "en">, Dict> = extraRaw as Record<
 
 const ru: Dict = {
   // App
-  app_name: "Пуки Beta",
+  app_name: "Счётчик Пуков",
   app_tagline: "Отслеживай свою ветреность 🌬️",
 
   // Tabs
@@ -266,6 +266,9 @@ const ru: Dict = {
   food_clear_expired: "Очистить просроченное",
   food_no_expired: "Нет просроченной еды",
   food_lifespan: "Срок влияния еды: 24 часа",
+  food_xp_entry: "+5 XP за запись еды!",
+  food_xp_bonus: "🎉 +20 XP за 3 разных продукта!",
+  food_xp_diary: "📝 +10 XP за заполнение дневника!",
 
   // Gamification: Streak, XP, Levels, Shop, Health
   streak_title: "Серия дней",
@@ -628,7 +631,7 @@ const ru: Dict = {
 
 const en: Dict = {
   // App
-  app_name: "Fart Beta",
+  app_name: "Fart Counter",
   app_tagline: "Track your windiness 🌬️",
 
   // Tabs
@@ -870,6 +873,9 @@ const en: Dict = {
   food_clear_expired: "Clear expired",
   food_no_expired: "No expired food",
   food_lifespan: "Food influence window: 24 hours",
+  food_xp_entry: "+5 XP for food entry!",
+  food_xp_bonus: "🎉 +20 XP for 3 different foods!",
+  food_xp_diary: "📝 +10 XP for filling the diary!",
 
   // Gamification: Streak, XP, Levels, Shop, Health
   streak_title: "Day Streak",
