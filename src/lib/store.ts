@@ -227,11 +227,11 @@ export const useStore = create<AppState>()(
       profiles: [{ id: "me", name: "Me", type: "adult", avatar: "🧑" }],
 
       // Gamification
-      xp: 0,
+      xp: 999999, // BETA: all shop unlocked
       streak: 0,
       lastFartDay: null,
       lastBonusDay: null,
-      purchasedItems: [],
+      purchasedItems: ["badge_supporter","badge_windbreaker","badge_legend","badge_ninja","badge_scientist","badge_chef","theme_rainbow","theme_sunset","theme_ocean","theme_galaxy"],
       fartsTodayForXP: 0,
 
       settings: {
@@ -527,7 +527,7 @@ export const useStore = create<AppState>()(
         }),
     }),
     {
-      name: "fart-counter-store-v2",
+      name: "fart-counter-beta-store",
       storage: createJSONStorage(() => localStorage),
       version: 4,
       // NO skipHydration — let Zustand hydrate synchronously from localStorage (instant)

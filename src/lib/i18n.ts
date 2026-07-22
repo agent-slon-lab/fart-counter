@@ -24,7 +24,7 @@ const extra: Record<Exclude<Language, "ru" | "en">, Dict> = extraRaw as Record<
 
 const ru: Dict = {
   // App
-  app_name: "Счётчик Пуков",
+  app_name: "Пуки Beta",
   app_tagline: "Отслеживай свою ветреность 🌬️",
 
   // Tabs
@@ -626,7 +626,7 @@ const ru: Dict = {
 
 const en: Dict = {
   // App
-  app_name: "Fart Counter",
+  app_name: "Fart Beta",
   app_tagline: "Track your windiness 🌬️",
 
   // Tabs
