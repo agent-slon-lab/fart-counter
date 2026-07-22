@@ -137,6 +137,7 @@ export interface AppState {
   lastBonusDay: string | null;
   purchasedItems: string[];
   fartsTodayForXP: number; // tracks farts today for XP cap
+  activeBadge: string | null; // currently equipped badge
 
   // Settings
   settings: AppSettings;
@@ -180,6 +181,7 @@ export interface AppState {
   claimDailyBonus: () => number;
   purchaseItem: (itemId: string, cost: number) => boolean;
   resetDailyXPCounter: () => void;
+  setActiveBadge: (badgeId: string | null) => void;
 
   // Actions — Settings
   setLanguage: (lang: Language) => void;
@@ -227,12 +229,13 @@ export const useStore = create<AppState>()(
       profiles: [{ id: "me", name: "Me", type: "adult", avatar: "🧑" }],
 
       // Gamification
-      xp: 999999, // BETA: all shop unlocked
+      xp: 1000059, // BETA: testing XP
       streak: 0,
       lastFartDay: null,
       lastBonusDay: null,
-      purchasedItems: ["badge_supporter","badge_windbreaker","badge_legend","badge_ninja","badge_scientist","badge_chef","theme_rainbow","theme_sunset","theme_ocean","theme_galaxy"],
+      purchasedItems: [],
       fartsTodayForXP: 0,
+      activeBadge: null,
 
       settings: {
         language: "en",
@@ -479,6 +482,10 @@ export const useStore = create<AppState>()(
 
       resetDailyXPCounter: () => {
         set({ fartsTodayForXP: 0 });
+      },
+
+      setActiveBadge: (badgeId) => {
+        set((s) => ({ activeBadge: s.activeBadge === badgeId ? null : badgeId }));
       },
 
       setLanguage: (language) => set((s) => ({ settings: { ...s.settings, language } })),

@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useStore } from "@/lib/store";
+import { useStore, type AccentColor } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 import { SHOP_ITEMS, type ShopItem } from "@/lib/levels";
 import { toast } from "sonner";
@@ -25,6 +25,10 @@ export function ShopScreen() {
   const xp = useStore((s) => s.xp);
   const purchasedItems = useStore((s) => s.purchasedItems);
   const purchaseItem = useStore((s) => s.purchaseItem);
+  const activeBadge = useStore((s) => s.activeBadge);
+  const setActiveBadge = useStore((s) => s.setActiveBadge);
+  const setAccent = useStore((s) => s.setAccent);
+  const settings = useStore((s) => s.settings);
   const [confirmItem, setConfirmItem] = useState<ShopItem | null>(null);
 
   const categories = ["badge", "theme"] as const;
@@ -82,11 +86,14 @@ export function ShopScreen() {
             {SHOP_ITEMS.filter((item) => item.category === cat).map((item) => {
               const purchased = purchasedItems.includes(item.id);
               const canAfford = xp >= item.cost;
+              const isBadgeEquipped = item.category === "badge" && activeBadge === item.id;
+              const isThemeActive = item.category === "theme" && settings.accent === item.id.replace("theme_", "");
+              const isApplied = isBadgeEquipped || isThemeActive;
               return (
                 <Card
                   key={item.id}
                   className={`relative p-3 transition-all ${
-                    purchased ? "opacity-60" : canAfford ? "border-primary/40" : ""
+                    purchased && !isApplied ? "" : isApplied ? "border-primary/40 bg-primary/5" : canAfford ? "border-primary/40" : ""
                   }`}
                 >
                   <div className="mb-2 text-center">
@@ -98,10 +105,22 @@ export function ShopScreen() {
                   </p>
                   <div className="mt-2 flex items-center justify-center gap-1">
                     {purchased ? (
-                      <span className="flex items-center gap-1 text-xs font-bold text-green-500">
-                        <Check className="h-3 w-3" />
-                        {t("shop_purchased")}
-                      </span>
+                      <Button
+                        size="sm"
+                        variant={isApplied ? "default" : "outline"}
+                        className="h-7 px-2 text-[11px]"
+                        onClick={() => {
+                          if (item.category === "badge") {
+                            setActiveBadge(item.id);
+                          } else if (item.category === "theme") {
+                            const accentId = item.id.replace("theme_", "") as AccentColor;
+                            setAccent(accentId);
+                          }
+                          toast(isApplied ? "✓" : `${item.icon} ${t("shop_applied")}`, { duration: 800 });
+                        }}
+                      >
+                        {isApplied ? t("shop_applied") : t("shop_apply")}
+                      </Button>
                     ) : (
                       <Button
                         size="sm"
