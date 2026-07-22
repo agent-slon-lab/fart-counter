@@ -71,7 +71,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    mainRef.current?.scrollTo({ top: 0, behavior: "auto" });
+    // Scroll to top INSTANTLY when tab changes (after DOM updates)
+    requestAnimationFrame(() => {
+      mainRef.current?.scrollTo({ top: 0, behavior: "auto" });
+    });
   }, [tab]);
 
   return (

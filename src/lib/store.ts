@@ -137,6 +137,7 @@ export interface AppState {
   lastBonusDay: string | null;
   purchasedItems: string[];
   fartsTodayForXP: number; // tracks farts today for XP cap
+  activeBadge: string | null; // currently equipped badge
 
   // Settings
   settings: AppSettings;
@@ -180,6 +181,7 @@ export interface AppState {
   claimDailyBonus: () => number;
   purchaseItem: (itemId: string, cost: number) => boolean;
   resetDailyXPCounter: () => void;
+  setActiveBadge: (badgeId: string | null) => void;
 
   // Actions — Settings
   setLanguage: (lang: Language) => void;
@@ -233,6 +235,7 @@ export const useStore = create<AppState>()(
       lastBonusDay: null,
       purchasedItems: [],
       fartsTodayForXP: 0,
+      activeBadge: null,
 
       settings: {
         language: "en",
@@ -388,7 +391,31 @@ export const useStore = create<AppState>()(
       addFood: (name) => {
         const pid = get().settings.activeProfileId;
         const rec: FoodEntry = { id: uid(), ts: new Date().toISOString(), name, profileId: pid };
-        set((s) => ({ food: [...s.food, rec] }));
+
+        // XP for food: +5 XP per entry (max 10/day = 50 XP)
+        const today = todayKey();
+        const todayFood = get().food.filter((f) => dateKey(new Date(f.ts)) === today && (f.profileId || "me") === pid);
+        const foodXpGain = todayFood.length < 10 ? 5 : 0;
+
+        // Bonus: +20 XP for 3+ different foods (check after this entry)
+        let bonusXp = 0;
+        if (todayFood.length === 2) {
+          // This will be the 3rd entry → bonus
+          const uniqueNames = new Set([...todayFood.map((f) => f.name), name]);
+          if (uniqueNames.size >= 3) bonusXp = 20;
+        }
+
+        // Daily diary bonus: +10 XP (once per day)
+        const diaryBonusKey = "fart-counter-food-diary-bonus-" + today + "-" + pid;
+        let diaryBonus = 0;
+        if (typeof localStorage !== "undefined" && !localStorage.getItem(diaryBonusKey)) {
+          diaryBonus = 10;
+          try { localStorage.setItem(diaryBonusKey, "1"); } catch {}
+        }
+
+        const totalXp = foodXpGain + bonusXp + diaryBonus;
+
+        set((s) => ({ food: [...s.food, rec], xp: s.xp + totalXp }));
       },
 
       removeFood: (id) => set((s) => ({ food: s.food.filter((f) => f.id !== id) })),
@@ -479,6 +506,10 @@ export const useStore = create<AppState>()(
 
       resetDailyXPCounter: () => {
         set({ fartsTodayForXP: 0 });
+      },
+
+      setActiveBadge: (badgeId) => {
+        set((s) => ({ activeBadge: s.activeBadge === badgeId ? null : badgeId }));
       },
 
       setLanguage: (language) => set((s) => ({ settings: { ...s.settings, language } })),

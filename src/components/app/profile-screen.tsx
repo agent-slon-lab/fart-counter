@@ -290,7 +290,7 @@ export function ProfileScreen() {
         </div>
       </SectionCard>
 
-      {/* Accent */}
+      {/* Accent — only base colors, purchased themes applied from Shop */}
       <SectionCard icon={<Palette className="h-4 w-4" />} title={t("accent_section")}>
         <div className="grid grid-cols-4 gap-2">
           {ACCENTS.map((a) => (
@@ -309,37 +309,6 @@ export function ProfileScreen() {
             </button>
           ))}
         </div>
-
-        {/* Purchased themes (only show if bought) */}
-        {purchasedItems.length > 0 && PURCHASED_THEMES.some((th) => purchasedItems.includes(th.shopId)) && (
-          <>
-            <p className="mb-2 mt-3 text-[10px] font-bold uppercase tracking-widest text-primary">
-              🛒 {t("shop_category_theme")}
-            </p>
-            <div className="grid grid-cols-4 gap-2">
-              {PURCHASED_THEMES.filter((th) => purchasedItems.includes(th.shopId)).map((th) => (
-                <button
-                  key={th.id}
-                  onClick={() => setAccent(th.id)}
-                  aria-label={t(th.key)}
-                  className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-2 transition-all ${
-                    settings.accent === th.id ? "border-foreground scale-105" : "border-transparent hover:border-border"
-                  }`}
-                >
-                  <span
-                    className="h-8 w-8 rounded-full shadow-md flex items-center justify-center text-sm"
-                    style={th.id === "rainbow" ? { background: th.color } : { backgroundColor: th.color }}
-                  >
-                    {th.icon}
-                  </span>
-                  <span className="text-[9px] font-medium leading-tight text-center text-muted-foreground">
-                    {t(th.key)}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
       </SectionCard>
 
       {/* Sound & Vibration */}

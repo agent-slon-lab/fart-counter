@@ -49,11 +49,10 @@ export function ProfileSwitcher() {
   const addProfile = useStore((s) => s.addProfile);
   const deleteProfile = useStore((s) => s.deleteProfile);
   const purchasedItems = useStore((s) => s.purchasedItems);
+  const activeBadge = useStore((s) => s.activeBadge);
 
-  // Get purchased badge icons
-  const purchasedBadges = SHOP_ITEMS.filter(
-    (item) => item.category === "badge" && purchasedItems.includes(item.id)
-  );
+  // Get the active badge icon (only 1 shown at a time)
+  const activeBadgeItem = activeBadge ? SHOP_ITEMS.find((item) => item.id === activeBadge) : null;
 
   const [open, setOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
@@ -89,12 +88,8 @@ export function ProfileSwitcher() {
       >
         <span className="text-lg">{activeProfile?.avatar ?? "🧑"}</span>
         <span className="max-w-[70px] truncate text-primary">{activeProfile?.name ?? "Me"}</span>
-        {purchasedBadges.length > 0 && (
-          <span className="flex gap-0.5">
-            {purchasedBadges.slice(0, 2).map((b) => (
-              <span key={b.id} className="text-xs">{b.icon}</span>
-            ))}
-          </span>
+        {activeBadgeItem && (
+          <span className="text-xs">{activeBadgeItem.icon}</span>
         )}
         <ChevronDown className="h-3 w-3 text-primary opacity-70" />
       </button>
@@ -126,12 +121,8 @@ export function ProfileSwitcher() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-1">
                       <p className="text-sm font-bold truncate">{p.name}</p>
-                      {p.id === activeProfileId && purchasedBadges.length > 0 && (
-                        <span className="flex gap-0.5">
-                          {purchasedBadges.slice(0, 3).map((b) => (
-                            <span key={b.id} className="text-xs">{b.icon}</span>
-                          ))}
-                        </span>
+                      {p.id === activeProfileId && activeBadgeItem && (
+                        <span className="text-xs">{activeBadgeItem.icon}</span>
                       )}
                     </div>
                     <p className="text-[10px] text-muted-foreground truncate">

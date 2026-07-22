@@ -77,7 +77,7 @@ export function FoodScreen() {
 
   function handleAddPreset(key: string) {
     addFood(t(key as never));
-    toast(t("toast_food_added"), { icon: "✅", duration: 1000 });
+    showFoodXP();
     setAddOpen(false);
   }
 
@@ -85,8 +85,25 @@ export function FoodScreen() {
     if (!customName.trim()) return;
     addFood(customName.trim());
     setCustomName("");
-    toast(t("toast_food_added"), { icon: "✅", duration: 1000 });
+    showFoodXP();
     setAddOpen(false);
+  }
+
+  function showFoodXP() {
+    const today = dateKey(new Date());
+    const pid = useStore.getState().settings.activeProfileId;
+    const todayFood = getFoodToday(useStore.getState().food).filter((f) => (f.profileId || "me") === pid);
+    const diaryKey = "fart-counter-food-diary-bonus-" + today + "-" + pid;
+    const hadDiaryBonus = typeof localStorage !== "undefined" && localStorage.getItem(diaryKey) === "1";
+
+    // Show appropriate toast
+    if (todayFood.length === 3) {
+      toast(t("food_xp_bonus"), { icon: "🎉", duration: 2000 });
+    } else if (hadDiaryBonus && todayFood.length === 1) {
+      toast(t("food_xp_diary"), { icon: "📝", duration: 2000 });
+    } else {
+      toast(t("food_xp_entry"), { icon: "✅", duration: 1500 });
+    }
   }
 
   function handleClearExpired() {
