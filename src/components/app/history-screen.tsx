@@ -46,6 +46,7 @@ export function HistoryScreen() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [manualValue, setManualValue] = useState("");
+  const [resetOpen, setResetOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Import/Export handlers
@@ -56,6 +57,7 @@ export function HistoryScreen() {
   const allSettings = useStore((s) => s.settings);
   const allUnlocked = useStore((s) => s.unlockedAchievements);
   const importData = useStore((s) => s.importData);
+  const resetAllData = useStore((s) => s.resetAllData);
 
   function handleExportAll() {
     const payload = buildExportPayload(allFarts, allWater, allSettings, allUnlocked);
@@ -82,6 +84,12 @@ export function HistoryScreen() {
       toast(t("toast_import_failed"), { icon: "⚠️" });
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function confirmReset() {
+    resetAllData();
+    setResetOpen(false);
+    toast(t("toast_data_reset"), { icon: "🗑️" });
   }
 
   // Days with records (for calendar highlighting)
@@ -391,7 +399,7 @@ export function HistoryScreen() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Backup — simple save/load */}
+      {/* Backup — save / load / reset */}
       <Card className="p-4">
         <div className="mb-3 flex items-center gap-2 text-muted-foreground">
           <Download className="h-4 w-4" />
@@ -408,7 +416,27 @@ export function HistoryScreen() {
           </Button>
         </div>
         <input ref={fileInputRef} type="file" accept="application/json,.json" onChange={handleImportFile} className="hidden" />
+        <Button variant="ghost" size="sm" onClick={() => setResetOpen(true)} className="mt-2 w-full text-destructive hover:text-destructive">
+          <Trash2 className="mr-1.5 h-4 w-4" />
+          {t("reset_data")}
+        </Button>
       </Card>
+
+      {/* Reset confirm */}
+      <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("reset_data")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("confirm_reset")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmReset} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
