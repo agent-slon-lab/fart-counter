@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
 import { BottomNav, type TabId } from "@/components/app/bottom-nav";
 import { HomeScreen } from "@/components/app/home-screen";
 import { HistoryScreen } from "@/components/app/history-screen";
@@ -69,19 +69,26 @@ export default function Home() {
     return () => window.removeEventListener("pointerdown", handler);
   }, []);
 
-  // SCROLL TO TOP: Direct handler, no useEffect, no animation delay
-  const handleTabChange = useCallback((newTab: TabId) => {
-    setTab(newTab);
-    // Scroll INSTANTLY — before new content even renders
+  // SCROLL TO TOP: useLayoutEffect fires AFTER DOM update, BEFORE paint
+  // This guarantees the user NEVER sees the old scroll position
+  useLayoutEffect(() => {
     if (mainRef.current) {
       mainRef.current.scrollTop = 0;
     }
-    // Also scroll after a tick (in case content is taller)
-    setTimeout(() => {
-      if (mainRef.current) {
-        mainRef.current.scrollTop = 0;
-      }
-    }, 0);
+    // Also try window scroll (some browsers scroll the window, not the element)
+    if (typeof window !== "undefined") {
+      window.scrollTo(0, 0);
+    }
+  }, [tab]);
+
+  // SCROLL TO TOP: Direct handler — scroll immediately on click
+  const handleTabChange = useCallback((newTab: TabId) => {
+    // Scroll BEFORE changing tab (clears old position)
+    if (mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+    setTab(newTab);
+    // useLayoutEffect will fire after render and scroll again
   }, []);
 
   return (
