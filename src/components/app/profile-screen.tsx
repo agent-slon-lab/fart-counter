@@ -86,7 +86,6 @@ export function ProfileScreen() {
   const setTheme = useStore((s) => s.setTheme);
   const setAccent = useStore((s) => s.setAccent);
   const importData = useStore((s) => s.importData);
-  const resetAllData = useStore((s) => s.resetAllData);
   const farts = useStore((s) => s.farts);
   const water = useStore((s) => s.water);
   const food = useStore((s) => s.food);
@@ -97,7 +96,6 @@ export function ProfileScreen() {
   const [achOpen, setAchOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
-  const [resetOpen, setResetOpen] = useState(false);
   const [qrData, setQrData] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateCheck = useManualUpdateCheck();
@@ -177,11 +175,6 @@ export function ProfileScreen() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
-  function handleReset() {
-    resetAllData();
-    setResetOpen(false);
-    toast(t("toast_data_reset"), { icon: "🗑️" });
-  }
 
   async function handleCopyLink() {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -339,14 +332,6 @@ export function ProfileScreen() {
         </p>
       </SectionCard>
 
-      {/* Data — only reset here, export/import moved to History */}
-      <SectionCard icon={<Database className="h-4 w-4" />} title={t("data_section")}>
-        <Button variant="ghost" size="sm" onClick={() => setResetOpen(true)} className="w-full text-destructive hover:text-destructive">
-          <Trash2 className="mr-1.5 h-4 w-4" />
-          {t("reset_data")}
-        </Button>
-      </SectionCard>
-
       {/* About */}
       <SectionCard icon={<Info className="h-4 w-4" />} title={t("about_section")}>
         {/* Version info */}
@@ -436,22 +421,6 @@ export function ProfileScreen() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Reset confirm */}
-      <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("reset_data")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("confirm_reset")}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleReset} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {t("delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

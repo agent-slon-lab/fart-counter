@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { BottomNav, type TabId } from "@/components/app/bottom-nav";
 import { HomeScreen } from "@/components/app/home-screen";
 import { HistoryScreen } from "@/components/app/history-screen";
@@ -70,12 +69,20 @@ export default function Home() {
     return () => window.removeEventListener("pointerdown", handler);
   }, []);
 
-  useEffect(() => {
-    // Scroll to top INSTANTLY when tab changes (after DOM updates)
-    requestAnimationFrame(() => {
-      mainRef.current?.scrollTo({ top: 0, behavior: "auto" });
-    });
-  }, [tab]);
+  // SCROLL TO TOP: Direct handler, no useEffect, no animation delay
+  const handleTabChange = useCallback((newTab: TabId) => {
+    setTab(newTab);
+    // Scroll INSTANTLY — before new content even renders
+    if (mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+    // Also scroll after a tick (in case content is taller)
+    setTimeout(() => {
+      if (mainRef.current) {
+        mainRef.current.scrollTop = 0;
+      }
+    }, 0);
+  }, []);
 
   return (
     <div className="relative mx-auto flex min-h-screen max-w-[480px] flex-col bg-background">
@@ -94,32 +101,24 @@ export default function Home() {
         {mounted && <ProfileSwitcher />}
       </header>
 
+      {/* NO AnimatePresence — direct render for instant scroll */}
       <main ref={mainRef} className="flex-1 overflow-y-auto overflow-x-hidden pb-24 thin-scroll">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={tab}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.1 }}
-            className="pt-3"
-          >
-            {tab === "home" && <HomeScreen />}
-            {tab === "history" && (
-              <>
-                <HistoryScreen />
-                <StatsScreen />
-              </>
-            )}
-            {tab === "food" && <FoodScreen />}
-            {tab === "insights" && <InsightsScreen />}
-            {tab === "shop" && <ShopScreen />}
-            {tab === "profile" && <ProfileScreen />}
-          </motion.div>
-        </AnimatePresence>
+        <div key={tab} className="pt-3">
+          {tab === "home" && <HomeScreen />}
+          {tab === "history" && (
+            <>
+              <HistoryScreen />
+              <StatsScreen />
+            </>
+          )}
+          {tab === "food" && <FoodScreen />}
+          {tab === "insights" && <InsightsScreen />}
+          {tab === "shop" && <ShopScreen />}
+          {tab === "profile" && <ProfileScreen />}
+        </div>
       </main>
 
-      <BottomNav active={tab} onChange={setTab} />
+      <BottomNav active={tab} onChange={handleTabChange} />
       <AchievementWatcher />
       <InstallPrompt />
       <UpdateBanner />
