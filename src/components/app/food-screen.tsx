@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Utensils, TrendingUp, Lightbulb, Clock, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Utensils, TrendingUp, Lightbulb, Clock, AlertCircle, Star, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { toast } from "sonner";
 
 const FOOD_LIFESPAN_MS = 24 * 60 * 60 * 1000; // 24 hours
 
+// Expanded preset list — beans, cabbage, etc + nuts, fish, porridge and many more
 const PRESET_FOODS: { key: string; icon: string }[] = [
   { key: "food_beans", icon: "🫘" },
   { key: "food_cabbage", icon: "🥬" },
@@ -30,6 +31,24 @@ const PRESET_FOODS: { key: string; icon: string }[] = [
   { key: "food_egg", icon: "🥚" },
   { key: "food_bread", icon: "🍞" },
   { key: "food_fastfood", icon: "🍔" },
+  { key: "food_nuts", icon: "🥜" },
+  { key: "food_fish", icon: "🐟" },
+  { key: "food_porridge", icon: "🥣" },
+  { key: "food_rice", icon: "🍚" },
+  { key: "food_apple", icon: "🍎" },
+  { key: "food_banana", icon: "🍌" },
+  { key: "food_corn", icon: "🌽" },
+  { key: "food_mushroom", icon: "🍄" },
+  { key: "food_meat", icon: "🥩" },
+  { key: "food_soup", icon: "🍲" },
+  { key: "food_cheese", icon: "🧀" },
+  { key: "food_potato", icon: "🥔" },
+  { key: "food_carrot", icon: "🥕" },
+  { key: "food_coffee", icon: "☕" },
+  { key: "food_beer", icon: "🍺" },
+  { key: "food_garlic", icon: "🧄" },
+  { key: "food_pepper", icon: "🌶️" },
+  { key: "food_sweets", icon: "🍬" },
 ];
 
 function getFoodAge(ts: string): number {
@@ -56,9 +75,14 @@ export function FoodScreen() {
   const farts = useProfileFarts();
   const addFood = useStore((s) => s.addFood);
   const removeFood = useStore((s) => s.removeFood);
+  const customFoods = useStore((s) => s.customFoods);
+  const addCustomFood = useStore((s) => s.addCustomFood);
+  const removeCustomFood = useStore((s) => s.removeCustomFood);
 
   const [addOpen, setAddOpen] = useState(false);
   const [customName, setCustomName] = useState("");
+  // Pending food that triggered a warning — needs confirmation
+  const [warnPending, setWarnPending] = useState<{ name: string; avgFarts: number; times: number } | null>(null);
 
   // Only show non-expired food for today's list
   const todayFood = useMemo(() => {
@@ -72,21 +96,54 @@ export function FoodScreen() {
 
   // Correlation: ONLY use non-expired food (within 24h window)
   const correlation = useMemo(() => computeCorrelation(food, farts), [food, farts]);
+  // Lookup map for quick warning check: name (lowercased) -> { avgFarts, times }
+  const correlationMap = useMemo(() => {
+    const m = new Map<string, { avgFarts: number; times: number }>();
+    for (const c of correlation) m.set(c.name.toLowerCase(), { avgFarts: c.avgFarts, times: c.times });
+    return m;
+  }, [correlation]);
 
   const topTrigger = correlation.length > 0 ? correlation[0] : null;
 
-  function handleAddPreset(key: string) {
-    addFood(t(key as never));
+  /**
+   * Core logic: before adding food, check history.
+   * If this food was eaten >=2 times before AND averaged >=3 farts in 24h → show funny warning.
+   * User can confirm or cancel.
+   */
+  function tryAddFood(name: string) {
+    const stats = correlationMap.get(name.toLowerCase());
+    if (stats && stats.times >= 2 && stats.avgFarts >= 3) {
+      // Risky! Show warning dialog
+      setWarnPending({ name, avgFarts: stats.avgFarts, times: stats.times });
+      return;
+    }
+    commitAddFood(name);
+  }
+
+  function commitAddFood(name: string) {
+    addFood(name);
     showFoodXP();
     setAddOpen(false);
+    setCustomName("");
+    setWarnPending(null);
+  }
+
+  function handleAddPreset(key: string) {
+    const name = t(key as never);
+    tryAddFood(name);
   }
 
   function handleAddCustom() {
-    if (!customName.trim()) return;
-    addFood(customName.trim());
-    setCustomName("");
-    showFoodXP();
-    setAddOpen(false);
+    const name = customName.trim();
+    if (!name) return;
+    // Save to custom foods list for quick re-add later
+    addCustomFood(name);
+    tryAddFood(name);
+    toast(t("food_custom_saved" as never), { icon: "⭐", duration: 1500 });
+  }
+
+  function handleAddCustomQuick(name: string) {
+    tryAddFood(name);
   }
 
   function showFoodXP() {
@@ -154,6 +211,44 @@ export function FoodScreen() {
         )}
       </Card>
 
+      {/* My Foods (saved custom foods for quick re-add) */}
+      {customFoods.length > 0 && (
+        <Card className="p-4">
+          <div className="mb-2 flex items-center gap-2">
+            <Star className="h-4 w-4 text-amber-500" />
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">
+              {t("food_my_foods")}
+            </span>
+          </div>
+          <p className="mb-2 text-xs text-muted-foreground">{t("food_my_foods_hint")}</p>
+          <div className="flex flex-wrap gap-2">
+            {customFoods.map((name) => (
+              <div
+                key={name}
+                className="group flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-400/10 py-1 pl-3 pr-1.5 text-xs"
+              >
+                <button
+                  onClick={() => handleAddCustomQuick(name)}
+                  className="font-medium hover:text-primary"
+                >
+                  {name}
+                </button>
+                <button
+                  onClick={() => {
+                    removeCustomFood(name);
+                    toast(t("food_delete_my_food" as never), { icon: "🗑️", duration: 1200 });
+                  }}
+                  className="flex h-5 w-5 items-center justify-center rounded-full hover:bg-destructive/20"
+                  aria-label={t("food_delete_my_food" as never)}
+                >
+                  <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
       {/* Top trigger insight */}
       {topTrigger && topTrigger.times >= 2 && (
         <Card className="border-primary/40 bg-primary/5 p-4">
@@ -202,7 +297,7 @@ export function FoodScreen() {
 
       {/* Add food dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent className="max-w-[360px]">
+        <DialogContent className="max-h-[85vh] overflow-y-auto max-w-[360px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Utensils className="h-4 w-4" />
@@ -239,6 +334,14 @@ export function FoodScreen() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Funny warning dialog */}
+      <WarningDialog
+        pending={warnPending}
+        t={t}
+        onCancel={() => setWarnPending(null)}
+        onConfirm={() => warnPending && commitAddFood(warnPending.name)}
+      />
     </div>
   );
 }
@@ -288,6 +391,79 @@ function FoodChip({
         <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
       </button>
     </motion.div>
+  );
+}
+
+/**
+ * Funny warning dialog — shows when user tries to add a food that historically
+ * caused many farts (>=3 avg in 24h, eaten >=2 times before).
+ * Picks a random funny message, scales intensity by fart count.
+ */
+function WarningDialog({
+  pending,
+  t,
+  onCancel,
+  onConfirm,
+}: {
+  pending: { name: string; avgFarts: number; times: number } | null;
+  t: (k: never) => string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  // Pick a random warning message (1-12) — stable per open via useMemo on pending
+  const warnIdx = useMemo(() => {
+    if (!pending) return 1;
+    return 1 + Math.floor(Math.random() * 12);
+  }, [pending]);
+
+  if (!pending) return null;
+
+  // Intensity label by avg fart count
+  const intensityKey: never =
+    pending.avgFarts >= 10 ? ("food_warning_high" as never) : pending.avgFarts >= 6 ? ("food_warning_mid" as never) : ("food_warning_low" as never);
+
+  // Emoji scales with severity
+  const emoji = pending.avgFarts >= 10 ? "💥" : pending.avgFarts >= 6 ? "🔥" : "💨";
+  const bgClass =
+    pending.avgFarts >= 10
+      ? "border-red-500/50 bg-red-500/10"
+      : pending.avgFarts >= 6
+      ? "border-orange-500/50 bg-orange-500/10"
+      : "border-amber-500/50 bg-amber-500/10";
+
+  const subtitle = t("food_warning_subtitle" as never)
+    .replace("{food}", pending.name)
+    .replace("{n}", String(pending.avgFarts))
+    .replace("{times}", String(pending.times));
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onCancel()}>
+      <DialogContent className="max-w-[360px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-center justify-center">
+            <span className="text-2xl">{emoji}</span>
+            {t("food_warning_title" as never)}
+          </DialogTitle>
+        </DialogHeader>
+        <div className={`rounded-xl border-2 p-4 text-center ${bgClass}`}>
+          <p className="text-sm font-medium">{subtitle}</p>
+          <p className="mt-3 text-base font-black leading-snug">
+            {t(`food_warn_${warnIdx}` as never)}
+          </p>
+          <p className="mt-2 text-xs italic text-muted-foreground">
+            {t(intensityKey)}
+          </p>
+        </div>
+        <DialogFooter className="flex-row gap-2 sm:flex-row">
+          <Button variant="ghost" className="flex-1" onClick={onCancel}>
+            {t("food_chicken_out" as never)}
+          </Button>
+          <Button variant="destructive" className="flex-1" onClick={onConfirm}>
+            {t("food_add_anyway" as never)}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
