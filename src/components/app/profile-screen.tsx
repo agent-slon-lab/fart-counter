@@ -48,7 +48,7 @@ import {
 } from "@/components/ui/dialog";
 import { useStore, type AccentColor, type ThemeMode } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
-import { LANGUAGES, translations } from "@/lib/i18n";
+import { LANGUAGES, getDict } from "@/lib/i18n";
 import { toast } from "sonner";
 import {
   installNotifications,
@@ -290,14 +290,14 @@ export function ProfileScreen() {
             <button
               key={a.id}
               onClick={() => setAccent(a.id)}
-              aria-label={translations[lang][a.key] ?? translations.en[a.key]}
+              aria-label={getDict(lang)[a.key]}
               className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-2 transition-all ${
                 settings.accent === a.id ? "border-foreground scale-105" : "border-transparent hover:border-border"
               }`}
             >
               <span className="h-8 w-8 rounded-full shadow-md" style={{ backgroundColor: a.color }} />
               <span className="text-[9px] font-medium leading-tight text-center text-muted-foreground">
-                {translations[lang][a.key] ?? translations.en[a.key]}
+                {getDict(lang)[a.key]}
               </span>
             </button>
           ))}

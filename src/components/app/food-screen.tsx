@@ -275,7 +275,7 @@ export function FoodScreen() {
           <p className="py-3 text-center text-sm text-muted-foreground">{t("food_no_data")}</p>
         ) : (
           <div className="space-y-2">
-            {correlation.slice(0, 10).map((c) => (
+            {correlation.slice(0, 20).map((c) => (
               <div key={c.name}>
                 <div className="mb-1 flex items-center justify-between text-xs">
                   <span className="font-medium">{c.name}</span>

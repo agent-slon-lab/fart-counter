@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Moon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore, dateKey, getTodayCount } from "@/lib/store";
@@ -40,10 +39,10 @@ export function EveningReminderBanner() {
     // Show if user has fewer than 5 farts today
     if (todayCount >= 5) return;
 
-    // Delay 1.5s after launch to not overlap with other banners
+    // Delay 2s after launch — let first paint finish
     const timer = setTimeout(() => {
       setVisible(true);
-    }, 1500);
+    }, 2000);
     return () => clearTimeout(timer);
   }, [farts, eveningReminder]);
 
@@ -60,42 +59,36 @@ export function EveningReminderBanner() {
   }
 
   return (
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          initial={{ y: -100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -100, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="fixed left-0 right-0 top-0 z-[55] mx-auto max-w-[480px] safe-top"
-        >
-          <div className="m-2 flex items-center gap-2 rounded-2xl border-2 border-indigo-500/50 bg-background p-2 shadow-2xl">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500/15">
-              <Moon className="h-4 w-4 text-indigo-500" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold leading-tight">{t("evening_banner_title")}</p>
-              <p className="text-[10px] text-muted-foreground leading-snug">{t("evening_banner_body")}</p>
-            </div>
-            <Button
-              size="sm"
-              onClick={handleCountNow}
-              className="h-8 shrink-0 px-3"
-            >
-              {t("evening_banner_count_now")}
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8 shrink-0"
-              onClick={handleDismiss}
-              aria-label={t("evening_banner_dismiss")}
-            >
-              <X className="h-3.5 w-3.5" />
-            </Button>
+    visible && (
+      <div
+        className="fixed left-0 right-0 top-0 z-[55] mx-auto max-w-[480px] safe-top animate-[slideDown_0.3s_cubic-bezier(0.34,1.56,0.64,1)]"
+      >
+        <div className="m-2 flex items-center gap-2 rounded-2xl border-2 border-indigo-500/50 bg-background p-2 shadow-2xl">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500/15">
+            <Moon className="h-4 w-4 text-indigo-500" />
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold leading-tight">{t("evening_banner_title")}</p>
+            <p className="text-[10px] text-muted-foreground leading-snug">{t("evening_banner_body")}</p>
+          </div>
+          <Button
+            size="sm"
+            onClick={handleCountNow}
+            className="h-8 shrink-0 px-3"
+          >
+            {t("evening_banner_count_now")}
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 shrink-0"
+            onClick={handleDismiss}
+            aria-label={t("evening_banner_dismiss")}
+          >
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+    )
   );
 }

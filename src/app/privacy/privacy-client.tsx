@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { Shield, Database, Globe, Wifi, Eye, Trash2, Github, ArrowLeft } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { translations } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n";
 import Link from "next/link";
 
 export function PrivacyClient() {
   const language = useStore((s) => s.settings.language);
-  const dict = translations[language] ?? translations.en;
+  const dict = getDict(language);
   const t = (k: string) => dict[k] ?? translations.en[k] ?? translations.ru[k] ?? k;
   const isRu = language === "ru";
 
