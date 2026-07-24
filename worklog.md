@@ -340,3 +340,25 @@ Stage Summary:
 - SW now has bulletproof offline fallback (cached "/" + offline HTML page)
 - Version bumped to 1.6.0 with SW cache update
 - Release zip at /home/z/my-project/download/fart-counter-v1.6.0.zip
+
+---
+Task ID: cleanup-duplicate-i18n
+Agent: main (Z.ai Code)
+Task: User noticed ZIP grew from ~400KB to 615KB. Found and removed duplicate i18n-extra.json
+
+Work Log:
+- Investigated ZIP size growth: v1.5.7 (496KB) → v1.5.9 (614KB) → v1.6.0 (615KB)
+- Found root cause: src/lib/i18n-extra.json (183KB) was NO LONGER IMPORTED (since v1.5.9 lazy i18n refactor) but still existed in src/ and got bundled into ZIP as dead weight
+- Verified i18n-extra.json is not imported anywhere (grep returned empty)
+- Deleted src/lib/i18n-extra.json
+- Rebuilt /home/z/my-project/download/fart-counter-v1.6.0.zip: 615KB → 547KB (-68KB)
+- Final ZIP breakdown:
+  - public/locales/*.json (184KB) — needed for lazy i18n, fetched on demand
+  - New code: insights-screen.tsx + food-screen.tsx + i18n.ts (~127KB) — new features
+  - Icons/images: og-image.png (110KB), icon-512.png (106KB) — unchanged
+  - Everything else: ~120KB
+
+Stage Summary:
+- ZIP reduced from 615KB to 547KB by removing dead i18n-extra.json duplicate
+- Important distinction: ZIP size (all project files) vs Initial JS bundle (what browser downloads)
+- Initial JS bundle actually DECREASED ~80KB since v1.5.7 because i18n-extra.json is no longer bundled inline
