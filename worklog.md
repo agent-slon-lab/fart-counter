@@ -303,3 +303,40 @@ Stage Summary:
 - Translations work: RU/EN instant (inline), ES/PT/DE/FR/HI lazy-fetched + SW-cached for offline
 - All popup animations preserved visually via CSS keyframes
 - Release zip v1.5.9 at /home/z/my-project/download/fart-counter-v1.5.9.zip
+
+---
+Task ID: fixes-v1.6.0
+Agent: main (Z.ai Code)
+Task: Fix getDict error, remove skeleton (restore direct imports), increase food correlation to 20, fix offline fallback, bump to v1.6.0
+
+Work Log:
+- Fixed `getDict is not defined` in src/components/app/profile-screen.tsx:
+  - Bug: sed replaced `translations[lang][a.key]` with `getDict(lang)[a.key]` but kept `import { translations }` (missing getDict import)
+  - Fix: changed import to `import { LANGUAGES, getDict } from "@/lib/i18n"`
+- Removed lazy-load + skeleton in src/app/page.tsx:
+  - Removed `import dynamic from "next/dynamic"`
+  - Removed 7 dynamic() calls for HomeScreen/HistoryScreen/StatsScreen/ProfileScreen/FoodScreen/InsightsScreen/ShopScreen
+  - Removed ScreenSkeleton component
+  - Restored direct imports (like v1.5.8) — screens render instantly, no skeleton
+- Increased food-fart correlation limit from 10 to 20 in src/components/app/food-screen.tsx (line 278: `slice(0, 10)` → `slice(0, 20)`)
+- Bumped version: src/lib/version.ts APP_VERSION 1.5.9 → 1.6.0, public/version.json, public/sw.js CACHE → fart-counter-v1.6.0
+- Rewrote Service Worker (public/sw.js) for reliable offline:
+  - PRECACHE: `cache.addAll` → `Promise.allSettled(PRECACHE.map(url => cache.add(url)))` (one failed resource doesn't break install)
+  - Navigation fallback: if network fails AND no cache → return cached "/" OR offline HTML page with reload button (no more blank screen)
+  - _next/static/* fallback: if network fails AND no cache → return 504 Response (not undefined)
+  - /locales/*.json fallback: if network fails AND no cache → return empty JSON {} (app falls back to EN)
+- Lint: clean (0 errors)
+- Agent Browser verified:
+  - Profile screen renders without errors ✅ (getDict fix confirmed)
+  - Accent color buttons render correctly ✅
+  - No skeleton — screens render instantly ✅
+  - Food correlation shows 15 items (was capped at 10) ✅
+  - No console errors
+- Rebuilt /home/z/my-project/download/fart-counter-v1.6.0.zip (615 KB)
+
+Stage Summary:
+- 3 bugs fixed: getDict undefined, blank screen on offline, skeleton UX issue
+- Food correlation expanded to 20 items
+- SW now has bulletproof offline fallback (cached "/" + offline HTML page)
+- Version bumped to 1.6.0 with SW cache update
+- Release zip at /home/z/my-project/download/fart-counter-v1.6.0.zip

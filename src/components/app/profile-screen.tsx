@@ -48,7 +48,7 @@ import {
 } from "@/components/ui/dialog";
 import { useStore, type AccentColor, type ThemeMode } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
-import { LANGUAGES, translations } from "@/lib/i18n";
+import { LANGUAGES, getDict } from "@/lib/i18n";
 import { toast } from "sonner";
 import {
   installNotifications,

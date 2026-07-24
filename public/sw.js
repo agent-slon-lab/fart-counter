@@ -1,6 +1,6 @@
 // Service Worker for Fart Counter PWA — CACHE-FIRST for instant load + FULL OFFLINE.
 // Version bumped on each release to invalidate old caches.
-const CACHE = "fart-counter-v1.5.9";
+const CACHE = "fart-counter-v1.6.0";
 const PRECACHE = [
   "/",
   "/manifest.json",
@@ -13,9 +13,10 @@ const PRECACHE = [
 ];
 
 self.addEventListener("install", (event) => {
+  // Use allSettled so one failed resource doesn't break the whole install
   event.waitUntil(
     caches.open(CACHE).then((cache) =>
-      cache.addAll(PRECACHE).catch(() => {})
+      Promise.allSettled(PRECACHE.map((url) => cache.add(url)))
     )
   );
   self.skipWaiting();
@@ -37,7 +38,6 @@ self.addEventListener("activate", (event) => {
 /**
  * Prefetch all _next/static/* chunks in background after activation.
  * This makes the app fully offline-capable after first successful load.
- * Runs asynchronously — does NOT block activation.
  */
 async function prefetchBuildChunks() {
   try {
@@ -53,16 +53,10 @@ async function prefetchBuildChunks() {
     while ((match = regex.exec(html)) !== null) {
       chunkUrls.add(match[0]);
     }
-    // Also prefetch /_next/static/chunks/* and /_next/static/css/* patterns
-    // Cache each chunk (ignore failures — some may 404)
     const urls = Array.from(chunkUrls);
-    await Promise.all(
-      urls.map((url) =>
-        cache.add(url).catch(() => {})
-      )
-    );
+    await Promise.allSettled(urls.map((url) => cache.add(url)));
   } catch {
-    // Prefetch failed — app still works online, just not fully offline yet
+    // Prefetch failed — app still works online
   }
 }
 
@@ -86,12 +80,21 @@ self.addEventListener("fetch", (event) => {
           }).catch(() => {});
           return cached;
         }
-        // No cache — try network, fallback to "/"
+        // No cache — try network, fallback to cached "/" (offline support)
         return fetch(req).then((res) => {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
           return res;
-        }).catch(() => caches.match("/"));
+        }).catch(async () => {
+          // Network failed — serve cached "/" (the app shell)
+          const fallback = await caches.match("/");
+          if (fallback) return fallback;
+          // Last resort: return a basic offline page
+          return new Response(
+            '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Офлайн</title></head><body style="font-family:sans-serif;text-align:center;padding:2rem"><h2>📴 Офлайн</h2><p>Приложение загружается. Проверьте соединение.</p><button onclick="location.reload()">🔄 Перезагрузить</button></body></html>',
+            { headers: { "Content-Type": "text/html; charset=utf-8" } }
+          );
+        });
       })
     );
     return;
@@ -107,38 +110,35 @@ self.addEventListener("fetch", (event) => {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
           return res;
-        }).catch(() => cached);
+        }).catch(() => cached || new Response("", { status: 504 }));
       })
     );
     return;
   }
 
-  // /locales/*.json: CACHE-FIRST with background update (translation files)
+  // /locales/*.json: CACHE-FIRST with background update
   if (url.pathname.startsWith("/locales/") && url.pathname.endsWith(".json")) {
     event.respondWith(
       caches.match(req).then((cached) => {
-        // Serve from cache instantly
         if (cached) {
-          // Update in background
           fetch(req).then((res) => {
             const copy = res.clone();
             caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
           }).catch(() => {});
           return cached;
         }
-        // No cache — fetch and cache
         return fetch(req).then((res) => {
           if (!res || res.status !== 200) return res;
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
           return res;
-        }).catch(() => cached);
+        }).catch(() => cached || new Response("{}", { status: 200, headers: { "Content-Type": "application/json" } }));
       })
     );
     return;
   }
 
-  // Static assets: CACHE-FIRST (fastest for repeat visits)
+  // Static assets: CACHE-FIRST
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
