@@ -204,3 +204,43 @@ Stage Summary:
 - Welcome popup (including "no water" hydration reminder) now respects store language reactively — no more English for Russian users
 - Language detection uses 3 strategies: browser languages array → browser language → timezone hint (covers 7 languages × 50+ timezones)
 - Release zip v1.5.8 updated at /home/z/my-project/download/fart-counter-v1.5.8.zip
+
+---
+Task ID: perf-lazy-antifarm-v1.5.9
+Agent: main (Z.ai Code)
+Task: Fix slow load (lazy-load screens + SW precache), fix XP farming via secondary profiles, bump to v1.5.9
+
+Work Log:
+- Bumped version 1.5.8 → 1.5.9 (src/lib/version.ts, public/version.json)
+- Lazy-load all 7 screens via next/dynamic in src/app/page.tsx:
+  - HomeScreen, HistoryScreen, StatsScreen, ProfileScreen, FoodScreen, InsightsScreen, ShopScreen
+  - Each loads its own JS chunk only when tab is activated
+  - ScreenSkeleton component shows during chunk download (animate-pulse gray placeholders)
+- Service Worker (public/sw.js) rewritten:
+  - Cache version: fart-counter-v1.5.7 → fart-counter-v1.5.9
+  - NEW prefetchBuildChunks() runs after activation: fetches HTML, extracts /_next/static/* URLs, caches them in background → full offline after first visit
+  - NEW: /_next/static/* chunks get cache-first (immutable hashed assets)
+  - Existing: navigation cache-first + stale-while-revalidate, static assets cache-first
+- Anti-farm: XP/streak/achievements only on primary profile (id === "me"):
+  - store.ts addFart: xpGain = isPrimary && fartsTodayForXP < MAX ? 10 : 0; streak only updated if isPrimary; lastFartDay/fartsTodayForXP only updated on primary
+  - store.ts removeLastFartToday: XP rollback only if isPrimary
+  - store.ts addFood: foodXpGain/bonusXp/diaryBonus all gated by isPrimary (food still tracked for correlation on all profiles)
+  - achievement-watcher.tsx: useEffect early-returns if activeProfileId !== "me" (no achievement checks on secondary profiles)
+- Profile UI: added "Основной" / "Без XP" badges in ProfileSwitcher, secondary profile hint when >1 profile exists
+- Added 3 new i18n keys (RU+EN): profile_primary_badge, profile_secondary_badge, profile_secondary_hint
+- Lint: clean (0 errors)
+- Agent Browser verified end-to-end:
+  - Fresh visit: onboarding → RU selected → home loaded → Insights tab loaded its chunk → content rendered ✅
+  - XP test on primary (Me): 50 → 60 (+10 XP) on fart ✅
+  - Created secondary profile "Жена" → showed "Без XP" badge ✅
+  - XP test on secondary (Жена): 60 → 60 (+0 XP), fart recorded on wife profile, fartsTodayForXP unchanged ✅
+  - Switched back to Me: 60 → 70 (+10 XP) ✅
+  - Profile switcher shows "Основной" badge on Me, "Без XP" on Жена ✅
+- Rebuilt /home/z/my-project/download/fart-counter-v1.5.9.zip (556 KB)
+
+Stage Summary:
+- App loads faster: only Home screen JS chunk loads on startup (was all 7 screens), skeleton shown during chunk load
+- Full offline support after first visit: SW precaches all /_next/static/* chunks in background
+- XP farming closed: secondary profiles track farts/food for correlation but don't earn XP/streak/achievements
+- Primary profile visually distinguished with "Основной" badge; secondary profiles show "Без XP"
+- Release zip v1.5.9 at /home/z/my-project/download/fart-counter-v1.5.9.zip

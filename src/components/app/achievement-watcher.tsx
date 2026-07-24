@@ -26,6 +26,7 @@ export function AchievementWatcher() {
   const soundEnabled = useStore((s) => s.settings.soundEnabled);
   const vibEnabled = useStore((s) => s.settings.vibrationEnabled);
   const notifEnabled = useStore((s) => s.settings.notificationsEnabled);
+  const activeProfileId = useStore((s) => s.settings.activeProfileId);
   const { t, lang } = useT();
 
   const [queue, setQueue] = useState<AchievementDef[]>([]);
@@ -34,7 +35,14 @@ export function AchievementWatcher() {
   const prevCountRef = useRef({ farts: -1, food: -1, moods: -1 });
 
   // Only check achievements when COUNT changes (not on every render)
+  // AND only on the PRIMARY profile ("me") — secondary profiles don't unlock achievements
   useEffect(() => {
+    // Skip achievement checks on secondary profiles (no XP farming)
+    if (activeProfileId !== "me") {
+      prevCountRef.current = { farts: farts.length, food: food.length, moods: moods.length };
+      return;
+    }
+
     const fartsCount = farts.length;
     const foodCount = food.length;
     const moodsCount = moods.length;
@@ -74,7 +82,7 @@ export function AchievementWatcher() {
         );
       }
     }
-  }, [farts.length, food.length, moods.length]);
+  }, [farts.length, food.length, moods.length, activeProfileId]);
 
   // Initialize seen set from already-unlocked
   useEffect(() => {

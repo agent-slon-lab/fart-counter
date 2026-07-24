@@ -277,14 +277,18 @@ export const useStore = create<AppState>()(
         const today = todayKey();
         const state = get();
 
+        // Gamification (XP/streak) is ONLY awarded on the PRIMARY profile ("me").
+        // Secondary profiles (family members, babies) track farts but don't farm XP.
+        const isPrimary = activeProfileId === "me";
+
         // XP: +10 per fart, but capped at 30 farts/day (max 300 XP/day)
         const MAX_XP_FARTS = 30;
         const fartsTodayForXP = state.lastFartDay === today ? state.fartsTodayForXP : 0;
-        const xpGain = fartsTodayForXP < MAX_XP_FARTS ? 10 : 0;
+        const xpGain = isPrimary && fartsTodayForXP < MAX_XP_FARTS ? 10 : 0;
 
-        // Streak: check if this is the first fart today
+        // Streak: check if this is the first fart today (primary profile only)
         let newStreak = state.streak;
-        if (state.lastFartDay !== today) {
+        if (isPrimary && state.lastFartDay !== today) {
           // Check if yesterday had farts (or grace period)
           const yesterday = dateKey(new Date(Date.now() - 86400000));
           if (state.lastFartDay === yesterday) {
@@ -306,8 +310,8 @@ export const useStore = create<AppState>()(
           farts: [...s.farts, rec],
           xp: s.xp + xpGain,
           streak: newStreak,
-          lastFartDay: today,
-          fartsTodayForXP: fartsTodayForXP + 1,
+          lastFartDay: isPrimary ? today : s.lastFartDay,
+          fartsTodayForXP: isPrimary ? fartsTodayForXP + 1 : s.fartsTodayForXP,
         }));
         return rec.id;
       },
@@ -321,12 +325,13 @@ export const useStore = create<AppState>()(
             const next = [...farts];
             next.splice(i, 1);
             const state = get();
-            // XP ROLLBACK (Approach B): deduct 10 XP if this fart earned XP
-            const xpDeduct = state.fartsTodayForXP > 0 ? 10 : 0;
+            // XP ROLLBACK only on primary profile
+            const isPrimary = activeProfileId === "me";
+            const xpDeduct = isPrimary && state.fartsTodayForXP > 0 ? 10 : 0;
             set({
               farts: next,
               xp: Math.max(0, state.xp - xpDeduct),
-              fartsTodayForXP: Math.max(0, state.fartsTodayForXP - 1),
+              fartsTodayForXP: Math.max(0, state.fartsTodayForXP - (isPrimary ? 1 : 0)),
             });
             return;
           }
@@ -397,23 +402,27 @@ export const useStore = create<AppState>()(
         const pid = get().settings.activeProfileId;
         const rec: FoodEntry = { id: uid(), ts: new Date().toISOString(), name, profileId: pid };
 
+        // Gamification (XP) is ONLY awarded on the PRIMARY profile ("me").
+        // Secondary profiles track food for correlation but don't farm XP.
+        const isPrimary = pid === "me";
+
         // XP for food: +5 XP per entry (max 10/day = 50 XP)
         const today = todayKey();
         const todayFood = get().food.filter((f) => dateKey(new Date(f.ts)) === today && (f.profileId || "me") === pid);
-        const foodXpGain = todayFood.length < 10 ? 5 : 0;
+        const foodXpGain = isPrimary && todayFood.length < 10 ? 5 : 0;
 
         // Bonus: +20 XP for 3+ different foods (check after this entry)
         let bonusXp = 0;
-        if (todayFood.length === 2) {
+        if (isPrimary && todayFood.length === 2) {
           // This will be the 3rd entry → bonus
           const uniqueNames = new Set([...todayFood.map((f) => f.name), name]);
           if (uniqueNames.size >= 3) bonusXp = 20;
         }
 
-        // Daily diary bonus: +10 XP (once per day)
+        // Daily diary bonus: +10 XP (once per day, primary only)
         const diaryBonusKey = "fart-counter-food-diary-bonus-" + today + "-" + pid;
         let diaryBonus = 0;
-        if (typeof localStorage !== "undefined" && !localStorage.getItem(diaryBonusKey)) {
+        if (isPrimary && typeof localStorage !== "undefined" && !localStorage.getItem(diaryBonusKey)) {
           diaryBonus = 10;
           try { localStorage.setItem(diaryBonusKey, "1"); } catch {}
         }

@@ -103,7 +103,9 @@ export function ProfileSwitcher() {
 
           {/* Profile list */}
           <div className="space-y-1.5">
-            {profiles.map((p) => (
+            {profiles.map((p) => {
+              const isPrimary = p.id === "me";
+              return (
               <div
                 key={p.id}
                 className={`flex items-center gap-3 rounded-xl border-2 p-3 transition-all ${
@@ -118,11 +120,20 @@ export function ProfileSwitcher() {
                   className="flex flex-1 items-center gap-3 text-left"
                 >
                   <span className="text-2xl">{p.avatar}</span>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="text-sm font-bold truncate">{p.name}</p>
-                      {p.id === activeProfileId && activeBadgeItem && (
+                      {p.id === activeProfileId && activeBadgeItem && isPrimary && (
                         <span className="text-xs">{activeBadgeItem.icon}</span>
+                      )}
+                      {isPrimary ? (
+                        <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary">
+                          {t("profile_primary_badge")}
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
+                          {t("profile_secondary_badge")}
+                        </span>
                       )}
                     </div>
                     <p className="text-[10px] text-muted-foreground truncate">
@@ -143,8 +154,16 @@ export function ProfileSwitcher() {
                   </button>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
+
+          {/* Secondary profile hint */}
+          {profiles.length > 1 && (
+            <p className="rounded-md bg-muted/50 px-3 py-2 text-[10px] leading-snug text-muted-foreground">
+              {t("profile_secondary_hint")}
+            </p>
+          )}
 
           {/* Add button */}
           <Button variant="outline" size="sm" onClick={() => setAddOpen(true)} className="w-full">
