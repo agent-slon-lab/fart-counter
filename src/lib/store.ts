@@ -129,6 +129,8 @@ export interface AppState {
   worldRank: Record<string, number>;
   /** User profiles (multi-profile support) */
   profiles: Profile[];
+  /** User-saved custom food names (for quick re-add) */
+  customFoods: string[];
 
   // Gamification
   xp: number;
@@ -159,6 +161,8 @@ export interface AppState {
   // Actions — Food
   addFood: (name: string) => void;
   removeFood: (id: string) => void;
+  addCustomFood: (name: string) => void;
+  removeCustomFood: (name: string) => void;
 
   // Actions — Mood
   setMood: (mood: MoodDay["mood"]) => void;
@@ -227,6 +231,7 @@ export const useStore = create<AppState>()(
       weather: [],
       worldRank: {},
       profiles: [{ id: "me", name: "Me", type: "adult", avatar: "🧑" }],
+      customFoods: [],
 
       // Gamification
       xp: 0,
@@ -420,6 +425,20 @@ export const useStore = create<AppState>()(
 
       removeFood: (id) => set((s) => ({ food: s.food.filter((f) => f.id !== id) })),
 
+      addCustomFood: (name) => {
+        const trimmed = name.trim();
+        if (!trimmed) return;
+        set((s) => {
+          // Avoid duplicates (case-insensitive)
+          const exists = s.customFoods.some((f) => f.toLowerCase() === trimmed.toLowerCase());
+          if (exists) return s;
+          return { customFoods: [...s.customFoods, trimmed] };
+        });
+      },
+
+      removeCustomFood: (name) =>
+        set((s) => ({ customFoods: s.customFoods.filter((f) => f !== name) })),
+
       setMood: (mood) => {
         const tk = todayKey();
         const pid = get().settings.activeProfileId;
@@ -539,6 +558,7 @@ export const useStore = create<AppState>()(
             worldRank: parsed.worldRank && typeof parsed.worldRank === "object" ? parsed.worldRank : get().worldRank,
             unlockedAchievements: Array.isArray(parsed.unlockedAchievements) ? parsed.unlockedAchievements : get().unlockedAchievements,
             settings: parsed.settings ? { ...get().settings, ...parsed.settings } : get().settings,
+            customFoods: Array.isArray(parsed.customFoods) ? parsed.customFoods : get().customFoods,
           });
           return true;
         } catch {
@@ -555,12 +575,13 @@ export const useStore = create<AppState>()(
           weather: [],
           worldRank: {},
           unlockedAchievements: [],
+          customFoods: [],
         }),
     }),
     {
       name: "fart-counter-store-v2",
       storage: createJSONStorage(() => localStorage),
-      version: 4,
+      version: 5,
       // NO skipHydration — let Zustand hydrate synchronously from localStorage (instant)
       migrate: (persisted: any, version: number) => {
         if (!persisted) return persisted;
@@ -624,6 +645,10 @@ export const useStore = create<AppState>()(
               return p;
             });
           }
+        }
+        if (version < 5) {
+          // v4 → v5: Add customFoods array
+          persisted.customFoods = Array.isArray(persisted.customFoods) ? persisted.customFoods : [];
         }
         return persisted;
       },
