@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useStore, dateKey, getTodayCount, getWaterToday, useProfileFarts, useProfileWater } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
@@ -91,10 +92,10 @@ export function WelcomePopup() {
     setMsgKey(key2);
     setEmoji(msgEmoji);
 
-    // Delay 2.5s after launch — let first paint + hydration finish, then show welcome
+    // Delay 1s after launch — by then language detection has settled
     const timer = setTimeout(() => {
       setVisible(true);
-    }, 2500);
+    }, 1000);
     return () => clearTimeout(timer);
   }, []); // OPTIMIZED: Empty deps — run ONCE on mount
 
@@ -105,29 +106,41 @@ export function WelcomePopup() {
   }
 
   return (
-    visible && (
-      <div
-        className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]"
-        onClick={handleDismiss}
-      >
-        <div
-          className="relative w-full max-w-xs rounded-3xl border-2 border-primary bg-card p-6 text-center shadow-2xl animate-[popIn_0.3s_cubic-bezier(0.34,1.56,0.64,1)]"
-          onClick={(e) => e.stopPropagation()}
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={handleDismiss}
         >
-          {/* Big emoji icon */}
-          <div
-            className="mx-auto my-3 flex h-24 w-24 items-center justify-center rounded-full bg-primary/15 text-6xl animate-[bounceIn_0.4s_ease-out_0.1s_both]"
+          <motion.div
+            className="relative w-full max-w-xs rounded-3xl border-2 border-primary bg-card p-6 text-center shadow-2xl"
+            initial={{ scale: 0, rotate: -10, opacity: 0 }}
+            animate={{ scale: 1, rotate: 0, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 18 }}
+            onClick={(e) => e.stopPropagation()}
           >
-            {emoji}
-          </div>
+            {/* Big emoji icon */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.15, type: "spring", stiffness: 400, damping: 12 }}
+              className="mx-auto my-3 flex h-24 w-24 items-center justify-center rounded-full bg-primary/15 text-6xl"
+            >
+              {emoji}
+            </motion.div>
 
-          <p className="mb-5 text-lg font-bold leading-snug">{msgKey ? t(msgKey) : ""}</p>
+            <p className="mb-5 text-lg font-bold leading-snug">{msgKey ? t(msgKey) : ""}</p>
 
-          <Button onClick={handleDismiss} size="lg" className="w-full">
-            {t("welcome_dismiss")}
-          </Button>
-        </div>
-      </div>
-    )
+            <Button onClick={handleDismiss} size="lg" className="w-full">
+              {t("welcome_dismiss")}
+            </Button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

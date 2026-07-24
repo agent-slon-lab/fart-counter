@@ -290,14 +290,14 @@ export function ProfileScreen() {
             <button
               key={a.id}
               onClick={() => setAccent(a.id)}
-              aria-label={getDict(lang)[a.key]}
+              aria-label={translations[lang][a.key] ?? translations.en[a.key]}
               className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-2 transition-all ${
                 settings.accent === a.id ? "border-foreground scale-105" : "border-transparent hover:border-border"
               }`}
             >
               <span className="h-8 w-8 rounded-full shadow-md" style={{ backgroundColor: a.color }} />
               <span className="text-[9px] font-medium leading-tight text-center text-muted-foreground">
-                {getDict(lang)[a.key]}
+                {translations[lang][a.key] ?? translations.en[a.key]}
               </span>
             </button>
           ))}
