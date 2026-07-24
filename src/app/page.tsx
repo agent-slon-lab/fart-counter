@@ -23,11 +23,61 @@ import type { Language } from "@/lib/i18n";
 
 const SUPPORTED_LANGS: Language[] = ["ru", "en", "es", "pt", "de", "fr", "hi"];
 
+/**
+ * Detect user's preferred language using 3 strategies (in priority order):
+ * 1. navigator.languages[] — full preference list (most accurate)
+ * 2. navigator.language — single language (fallback)
+ * 3. Timezone hint — if browser is English but timezone is Russian-speaking region, suggest RU
+ *
+ * Only called on FIRST VISIT (no persisted store). Returning users keep their saved language.
+ */
 function detectBrowserLanguage(): Language {
   if (typeof navigator === "undefined") return "en";
+
+  // Strategy 1: Check navigator.languages array (e.g. ["ru-RU", "ru", "en-US", "en"])
+  const langs = Array.isArray(navigator.languages) ? navigator.languages : [];
+  for (const l of langs) {
+    const code = (l || "").toLowerCase().split("-")[0];
+    if (SUPPORTED_LANGS.includes(code as Language)) return code as Language;
+  }
+
+  // Strategy 2: navigator.language single value
   const browserLang = (navigator.language || "en").toLowerCase();
   const exact = browserLang.split("-")[0];
   if (SUPPORTED_LANGS.includes(exact as Language)) return exact as Language;
+
+  // Strategy 3: Timezone hint — catches users with English browser in non-English countries
+  // (e.g. developer in Russia with English Chrome, or expat in Spain with English browser)
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    // Russian-speaking timezones (Russia, Belarus, Kazakhstan)
+    if (/^(Europe\/(Moscow|Kaliningrad|Samara|Volgograd|Saratov|Astrakhan|Ulyanovsk|Kirov|Simferopol|Minsk|Kiev|Kyiv)|Asia\/(Yekaterinburg|Omsk|Novosibirsk|Krasnoyarsk|Irkutsk|Yakutsk|Vladivostok|Magadan|Kamchatka|Anadyr|Sakhalin|Chita|Khandyga|Ust-Nera|Tomsk|Barnaul|Novokuznetsk|Almaty|Bishkek|Tashkent|Yerevan|Tbilisi|Baku))/.test(tz)) {
+      return "ru";
+    }
+    // Spanish-speaking timezones (Spain, Latin America)
+    if (/^(Europe\/Madrid|Atlantic\/Canary|America\/(New_York|Chicago|Denver|Los_Angeles|Argentina|Bogota|Caracas|Santiago|Lima|Mexico_City|Monterrey|Guayaquil|Asuncion|Montevideo|Tegucigalpa|San_Jose|Panama|Santo_Domingo|Havana|La_Paz|Managua|El_Salvador|Guatemala))/.test(tz)) {
+      return "es";
+    }
+    // Portuguese-speaking (Brazil, Portugal)
+    if (/^(America\/(Sao_Paulo|Bahia|Manaus|Fortaleza|Recife|Belem|Brasilia|Rio_Braneiro|Porto_Velho|Maceio|Natal|Cuiaba|Campo_Grande|Florianopolis|Goiania|Curitiba)|Europe\/Lisbon|Atlantic\/Azores|Atlantic\/Madeira)/.test(tz)) {
+      return "pt";
+    }
+    // German-speaking (Germany, Austria, Switzerland)
+    if (/^(Europe\/(Berlin|Vienna|Zurich|Luxembourg|Amsterdam))/.test(tz)) {
+      return "de";
+    }
+    // French-speaking (France, Belgium, Switzerland partial)
+    if (/^(Europe\/(Paris|Brussels|Luxembourg|Monaco))/.test(tz)) {
+      return "fr";
+    }
+    // India
+    if (/^Asia\/(Kolkata|Calcutta|Delhi|Mumbai|Chennai|Bangalore|Hyderabad|Ahmedabad|Karachi|Dhaka|Colombo|Kathmandu)/.test(tz)) {
+      return "hi";
+    }
+  } catch {
+    // timezone detection failed — fall through to default
+  }
+
   return "en";
 }
 

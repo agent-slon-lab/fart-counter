@@ -29,7 +29,8 @@ export function WelcomePopup() {
   const farts = useProfileFarts();
   const water = useProfileWater();
   const [visible, setVisible] = useState(false);
-  const [message, setMessage] = useState<string>("");
+  // Store the KEY (not the translated message) so language changes apply reactively
+  const [msgKey, setMsgKey] = useState<string>("");
   const [emoji, setEmoji] = useState<string>("💨");
 
   useEffect(() => {
@@ -61,36 +62,37 @@ export function WelcomePopup() {
       defaultEmoji = "🌙";
     }
 
-    let msgKey: string;
+    let key2: string;
     let msgEmoji: string = defaultEmoji;
 
     if (todayCount === 0 && hour >= 11) {
-      msgKey = `welcome_zero_farts`;
+      key2 = `welcome_zero_farts`;
       msgEmoji = "🤔";
     } else if (todayCount >= 10 && todayCount <= 20) {
-      msgKey = `welcome_good_norm`;
+      key2 = `welcome_good_norm`;
       msgEmoji = "🌱";
     } else if (todayCount > 20) {
-      msgKey = `welcome_overload`;
+      key2 = `welcome_overload`;
       msgEmoji = "🚶";
     } else if (waterCount === 0 && (category === "morning" || category === "day")) {
-      msgKey = `welcome_no_water`;
+      key2 = `welcome_no_water`;
       msgEmoji = "💧";
     } else if (todayCount > 0 && todayCount < 10) {
       const variants = [1, 2, 3, 4];
       const pick = variants[Math.floor(Math.random() * variants.length)];
-      msgKey = `welcome_${category}_${pick}`;
+      key2 = `welcome_${category}_${pick}`;
     } else {
       const variants = [1, 2, 3, 4];
       const pick = variants[Math.floor(Math.random() * variants.length)];
-      msgKey = `welcome_${category}_${pick}`;
+      key2 = `welcome_${category}_${pick}`;
     }
 
+    // Store KEY (not translated text) — t() is called during render, so language changes apply
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMessage(t(msgKey));
+    setMsgKey(key2);
     setEmoji(msgEmoji);
 
-    // Delay 1s after launch
+    // Delay 1s after launch — by then language detection has settled
     const timer = setTimeout(() => {
       setVisible(true);
     }, 1000);
@@ -131,7 +133,7 @@ export function WelcomePopup() {
               {emoji}
             </motion.div>
 
-            <p className="mb-5 text-lg font-bold leading-snug">{message}</p>
+            <p className="mb-5 text-lg font-bold leading-snug">{msgKey ? t(msgKey) : ""}</p>
 
             <Button onClick={handleDismiss} size="lg" className="w-full">
               {t("welcome_dismiss")}

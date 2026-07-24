@@ -156,3 +156,51 @@ Work Log:
 Stage Summary:
 - All 7 languages now at 100% coverage (0 missing keys)
 - Release zip v1.5.8 at /home/z/my-project/download/fart-counter-v1.5.8.zip includes: food expansion (28 presets), My Foods, fart correlation warnings (12 funny messages), enhanced Insights (AI insights, weekly cycle from day 1, hourly breakdown, trend sparkline) — all fully translated
+
+---
+Task ID: insights-bars-welcome-lang-v1.5.8
+Agent: main (Z.ai Code)
+Task: Fix weekly cycle bars too small, fix welcome popup showing in English for Russian users, improve language detection for other countries
+
+Work Log:
+- Fixed welcome popup language bug (src/components/pwa/welcome-popup.tsx):
+  - OLD: `setMessage(t(msgKey))` in useEffect([]) — captured translated text ONCE at mount, before language detection ran
+  - NEW: `setMsgKey(key2)` stores only the KEY; `t(msgKey)` called during render → text updates reactively when language changes
+  - Root cause: store starts with default "en", page.tsx detects browser language and calls setLanguage AFTER welcome popup already captured the message
+  - Verified: welcome popup now shows "Уже поздно. Не забудь внести пуки 🌙" in Russian when store language is "ru"
+
+- Fixed weekly cycle bars height (src/components/app/insights-screen.tsx):
+  - Container: h-32 (128px) → h-56 (224px) = +75% taller
+  - Bar area: min-h-[80px] guarantees minimum bar space
+  - Min bar height: 4px → 8px when data exists (min-h-[3px] when no data)
+  - Math.max(heightPct, c > 0 ? 8 : 2) ensures small bars are visible
+  - Gap: gap-1.5 → gap-2 (slightly wider columns)
+  - Rounded: rounded-t-md → rounded-t-lg (rounder tops)
+  - h-full on each column so they fill container
+  - Verified: bars now 80-176px tall (was ~20-66px), proportions correct
+
+- Improved language detection (src/app/page.tsx detectBrowserLanguage):
+  - Strategy 1: navigator.languages[] array (full preference list, most accurate)
+  - Strategy 2: navigator.language single value (fallback)
+  - Strategy 3: Timezone hint — catches users with English browser in non-English countries
+    - Russian-speaking timezones: Europe/Moscow, Europe/Kaliningrad, Europe/Minsk, Asia/Novosibirsk, Asia/Yekaterinburg, etc. (30+ zones covering Russia, Belarus, Kazakhstan, Ukraine, Caucasus, Central Asia)
+    - Spanish-speaking: Europe/Madrid, America/Mexico_City, America/Argentina, etc.
+    - Portuguese: America/Sao_Paulo, Europe/Lisbon, etc.
+    - German: Europe/Berlin, Europe/Vienna, Europe/Zurich
+    - French: Europe/Paris, Europe/Brussels
+    - Hindi: Asia/Kolkata, Asia/Calcutta, etc.
+  - Only runs on FIRST VISIT (no persisted store) — returning users keep their saved language
+
+- Lint: clean (0 errors)
+- Dev log: all GET / 200, no compile errors
+- Agent Browser verified:
+  - Weekly cycle bars 80-176px tall (was 20-66px) ✅
+  - Welcome popup shows in Russian "Уже поздно. Не забудь внести пуки 🌙" when store language is "ru" ✅
+  - All insights content correct in Russian ✅
+- Rebuilt /home/z/my-project/download/fart-counter-v1.5.8.zip (554 KB)
+
+Stage Summary:
+- Weekly cycle bars are now 75% taller with guaranteed minimum bar heights
+- Welcome popup (including "no water" hydration reminder) now respects store language reactively — no more English for Russian users
+- Language detection uses 3 strategies: browser languages array → browser language → timezone hint (covers 7 languages × 50+ timezones)
+- Release zip v1.5.8 updated at /home/z/my-project/download/fart-counter-v1.5.8.zip
