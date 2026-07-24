@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { translations } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n";
 
 interface Puff {
   id: number;
@@ -230,7 +230,7 @@ export function HomeScreen() {
     month: "long",
   });
 
-  const dict = translations[lang] ?? translations.en;
+  const dict = getDict(lang);
   const soundLabel = (s: FartSound) => dict[`sound_${s}`] ?? translations.en[`sound_${s}`] ?? s;
 
   return (
