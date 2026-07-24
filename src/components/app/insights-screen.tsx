@@ -545,34 +545,41 @@ export function InsightsScreen() {
           <p className="py-6 text-center text-sm text-muted-foreground">{t("cycles_no_data")}</p>
         ) : (
           <>
-            <div className="flex h-32 items-end justify-between gap-1.5">
+            {/* Chart: taller (h-56=224px) with count on top, bar fills most space, labels at bottom */}
+            <div className="flex h-56 items-end justify-between gap-2">
               {weeklyCycle.counts.map((c, i) => {
                 const heightPct = weeklyCycle.max > 0 ? (c / weeklyCycle.max) * 100 : 0;
                 const isToday = i === weeklyCycle.todayMonIdx;
                 const isPeak = i === weeklyCycle.peakIdx;
                 return (
-                  <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                    <span className="text-[10px] font-bold tabular-nums">{c}</span>
-                    <div className="flex w-full flex-1 items-end">
+                  <div key={i} className="flex flex-1 flex-col items-center gap-1.5 h-full">
+                    {/* Count on top — fixed height so it doesn't eat bar space */}
+                    <span className={`text-[11px] font-bold tabular-nums leading-none ${isToday ? "text-primary" : ""}`}>
+                      {c}
+                    </span>
+                    {/* Bar area — takes all remaining space */}
+                    <div className="flex w-full flex-1 items-end min-h-[80px]">
                       <motion.div
                         initial={{ height: 0 }}
-                        animate={{ height: `${heightPct}%` }}
+                        animate={{ height: `${Math.max(heightPct, c > 0 ? 8 : 2)}%` }}
                         transition={{ delay: i * 0.05, type: "spring", stiffness: 200, damping: 20 }}
-                        className={`w-full rounded-t-md min-h-[2px] transition-colors ${
+                        className={`w-full rounded-t-lg min-h-[3px] transition-colors ${
                           isToday
                             ? "bg-primary"
                             : isPeak
                             ? "bg-primary/70"
                             : "bg-muted-foreground/40"
                         }`}
-                        style={{ minHeight: c > 0 ? 4 : 2 }}
+                        style={{ minHeight: c > 0 ? 8 : 3 }}
                       />
                     </div>
-                    <span className={`text-[9px] font-medium ${isToday ? "text-primary" : "text-muted-foreground"}`}>
+                    {/* Weekday label */}
+                    <span className={`text-[10px] font-medium leading-none ${isToday ? "text-primary" : "text-muted-foreground"}`}>
                       {t(WEEKDAY_KEYS[i] as never)}
                     </span>
-                    <span className="text-[9px] text-muted-foreground">
-                      {weeklyCycle.daysPerWeekdayCount[i] > 0 ? `${weeklyCycle.avg[i]}` : "—"}
+                    {/* Average below */}
+                    <span className="text-[9px] text-muted-foreground leading-none tabular-nums">
+                      {weeklyCycle.daysPerWeekdayCount[i] > 0 ? `~${weeklyCycle.avg[i]}` : "—"}
                     </span>
                   </div>
                 );
