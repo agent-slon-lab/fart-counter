@@ -52,3 +52,35 @@ Stage Summary:
 - Release artifact: /home/z/my-project/download/fart-counter-v1.5.8.zip (531 KB, 130 files)
 - Includes all food expansion features from task food-expansion-v5
 - Ready for distribution / Vercel deploy / PWA update
+
+---
+Task ID: insights-enhancement-v1.5.8
+Agent: main (Z.ai Code)
+Task: Fix empty Analytics — weekly cycle not working, expand AI/trend functionality, make Insights more informative
+
+Work Log:
+- Added 45 new i18n keys (RU+EN) for enhanced insights: cycles_today/avg/total/share/peak_vs_low, trend_this_month/last_month/delta/pct/30days/7days/daily_avg/best_day, hourly_section/morning/afternoon/evening/night/peak, ai_section + 13 ai_insight_* message templates
+- Rewrote src/components/app/insights-screen.tsx (~800 lines):
+  - NEW "AI Insights" card at TOP — up to 9 rule-based pattern detections: top weekday, peak hour, streak, top food trigger, monthly delta, weekend vs weekday, medical norm comparison (10-20/day), silent/smelly ratios, mood correlation
+  - Weekly cycle: REMOVED 7-day requirement, shows from day 1. Added per-weekday average (total/distinct days), today highlight (primary color), peak highlight (primary/70), legend, "You fart Nx more on X than on Y" insight text
+  - NEW "Time of Day" card — 4 periods (Night/Morning/Afternoon/Evening) with horizontal bars, counts, share %, peak highlight, "Most often {period}" caption
+  - Monthly trend REBUILT: big numbers (this month vs last month), delta badge with % ("📈 +49 (+136%)"), 30-day sparkline bar chart, 3-col stats grid (7 days vs prev week, daily average, best day with date)
+  - Prediction enhanced: confidence % with progress bar, daily avg + today's weekday avg
+- Fixed 2 bugs found during browser testing: `cycles_daily_avg` raw key (changed to `trend_daily_avg`), duplicate "(local)" in world ranking header
+- Lint: clean (0 errors)
+- Dev log: all GET / 200, no compile errors
+- Agent Browser verified with injected test data (121 farts, 14 food, 14 moods across 35 days):
+  - AI Insights showed 7 insights correctly
+  - Weekly cycle rendered immediately with averages + "1.6x more on Sat than on Mon"
+  - Hourly breakdown: Morning 49 (40%), Evening 39 (32%), Afternoon 32 (26%), Night 1 (1%)
+  - Monthly trend: This 85, Last 36, +49 (+136%), sparkline visible, Best day Jul 18 (6)
+  - Prediction: 4 farts, 100% confidence
+  - No console errors
+- Updated CHANGELOG.md [1.5.8] section to include all Insights enhancements (was food-only)
+- Rebuilt /home/z/my-project/download/fart-counter-v1.5.8.zip (538 KB) with all new code
+
+Stage Summary:
+- Insights screen transformed from mostly-empty to information-dense: AI insights card (top), weather, prediction with confidence, weekly cycle (works from day 1), hourly breakdown (new), trend with sparkline + numbers (rebuilt), world rank, geo
+- 45 new i18n keys RU+EN (other 5 langs fall back to EN)
+- Release zip v1.5.8 updated at /home/z/my-project/download/fart-counter-v1.5.8.zip
+- Local git repo has uncommitted changes ready for push (no remote configured yet — user needs to add origin)
