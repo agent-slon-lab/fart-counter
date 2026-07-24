@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Wind, Trophy, BarChart3, Utensils, CloudSun, Globe, Languages, ArrowRight } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { translations } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n";
 import { qrToDataURL } from "@/lib/qr";
 import Link from "next/link";
 
@@ -27,7 +27,7 @@ export function LandingClient() {
     }
   }, []);
 
-  const dict = translations[language] ?? translations.en;
+  const dict = getDict(language);
   const t = (k: string) => dict[k] ?? translations.en[k] ?? translations.ru[k] ?? k;
 
   const features = [

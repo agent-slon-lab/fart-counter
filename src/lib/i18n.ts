@@ -1,7 +1,7 @@
 // i18n system for Fart Counter PWA — RU/EN/ES/PT/DE/FR/HI dictionaries
-// RU + EN are complete; ES/PT/DE/FR/HI have core keys translated, rest falls back to EN.
-
-import extraRaw from "./i18n-extra.json";
+// RU + EN are bundled inline (always available, instant).
+// ES/PT/DE/FR/HI are loaded lazily from /locales/{lang}.json on demand.
+// This saves ~80KB from the initial JS bundle (5 languages × ~15KB each).
 
 export type Language = "ru" | "en" | "es" | "pt" | "de" | "fr" | "hi";
 
@@ -17,10 +17,51 @@ export const LANGUAGES: { id: Language; flag: string; label: string }[] = [
 
 type Dict = Record<string, string>;
 
-const extra: Record<Exclude<Language, "ru" | "en">, Dict> = extraRaw as Record<
-  Exclude<Language, "ru" | "en">,
-  Dict
->;
+// Runtime cache of loaded extra translations (es/pt/de/fr/hi)
+const extraCache: Partial<Record<Exclude<Language, "ru" | "en">, Dict>> = {};
+
+/**
+ * Load extra translations for a language (es/pt/de/fr/hi) from /locales/{lang}.json.
+ * Cached in memory after first load. RU/EN are bundled inline, no fetch needed.
+ * Returns null for ru/en (they use the inline dictionaries).
+ */
+export async function loadExtraTranslations(lang: Language): Promise<Dict | null> {
+  // RU and EN are bundled inline — no fetch needed
+  if (lang === "ru" || lang === "en") return null;
+
+  // Return from cache if already loaded
+  const cached = extraCache[lang as Exclude<Language, "ru" | "en">];
+  if (cached) return cached;
+
+  // Fetch from /locales/{lang}.json
+  try {
+    const res = await fetch(`/locales/${lang}.json`, { cache: "force-cache" });
+    if (!res.ok) throw new Error(`Failed to load ${lang}`);
+    const data = await res.json() as Dict;
+    extraCache[lang as Exclude<Language, "ru" | "en">] = data;
+    return data;
+  } catch {
+    // Failed to load — fall back to EN (which is inline)
+    return null;
+  }
+}
+
+/**
+ * Get currently loaded extra translations for a language (synchronous, from cache).
+ * Returns null if not yet loaded or if ru/en.
+ */
+export function getExtraTranslations(lang: Language): Dict | null {
+  if (lang === "ru" || lang === "en") return null;
+  return extraCache[lang as Exclude<Language, "ru" | "en">] ?? null;
+}
+
+/**
+ * Check if extra translations for a language are loaded in memory.
+ */
+export function areExtraTranslationsLoaded(lang: Language): boolean {
+  if (lang === "ru" || lang === "en") return true;
+  return !!extraCache[lang as Exclude<Language, "ru" | "en">];
+}
 
 const ru: Dict = {
   // App
@@ -1446,7 +1487,45 @@ const en: Dict = {
   landing_footer: "Made with 💨 and love. No servers, no tracking.",
 };
 
-export const translations = { ru, en, es: extra.es, pt: extra.pt, de: extra.de, fr: extra.fr, hi: extra.hi } as Record<Language, Dict>;
+// NOTE: `translations` only contains RU and EN inline.
+// ES/PT/DE/FR/HI are loaded lazily via loadExtraTranslations() and stored in extraCache.
+// Use getDict(lang) to get a dict (inline or cached extra), or resolveTranslation(lang, key) for single key.
+export const translations = { ru, en } as Partial<Record<Language, Dict>>;
+
+/**
+ * Get the dict for a language (inline ru/en, or cached extra es/pt/de/fr/hi).
+ * Returns the EN dict as fallback if extra translations not yet loaded.
+ */
+export function getDict(lang: Language): Dict {
+  if (lang === "ru") return ru;
+  if (lang === "en") return en;
+  const extra = extraCache[lang as Exclude<Language, "ru" | "en">];
+  return extra ?? en; // fallback to EN if not loaded yet
+}
+
+/**
+ * Resolve a translation key for a language with fallback chain:
+ * - RU: ru dict → EN dict → key
+ * - EN: en dict → key
+ * - ES/PT/DE/FR/HI: extra dict (if loaded) → EN dict → RU dict → key
+ */
+export function resolveTranslation(lang: Language, key: string): string {
+  if (lang === "ru") {
+    if (ru[key]) return ru[key];
+    if (en[key]) return en[key];
+    return key;
+  }
+  if (lang === "en") {
+    if (en[key]) return en[key];
+    return key;
+  }
+  // Extra languages (es/pt/de/fr/hi)
+  const extra = extraCache[lang as Exclude<Language, "ru" | "en">];
+  if (extra && extra[key]) return extra[key];
+  if (en[key]) return en[key];
+  if (ru[key]) return ru[key];
+  return key;
+}
 
 export type TranslationKey = string;
 

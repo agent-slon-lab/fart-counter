@@ -4,7 +4,7 @@
 // + push subscription would be needed — out of scope for offline-first.
 
 import type { Language } from "./i18n";
-import { translations } from "./i18n";
+import { getDict } from "./i18n";
 import { getFactOfDay } from "./facts";
 
 type NotifKind = "evening" | "water" | "achievement" | "morning" | "gentle";
@@ -41,7 +41,7 @@ export function notificationPermission(): NotificationPermission | "unsupported"
 
 /** Schedule the next evening (21:00) reminder. */
 function scheduleEvening(lang: Language): ScheduledNotif | null {
-  const t = translations[lang];
+  const t = getDict(lang);
   const now = new Date();
   const next = new Date(now);
   next.setHours(21, 0, 0, 0);
@@ -58,7 +58,7 @@ function scheduleEvening(lang: Language): ScheduledNotif | null {
 
 /** Schedule the next morning (9:00) greeting with fact of the day. */
 function scheduleMorning(lang: Language): ScheduledNotif | null {
-  const t = translations[lang];
+  const t = getDict(lang);
   const now = new Date();
   const next = new Date(now);
   next.setHours(9, 0, 0, 0);
@@ -75,7 +75,7 @@ function scheduleMorning(lang: Language): ScheduledNotif | null {
 
 /** Schedule next gentle reminder (4 hours from now). */
 function scheduleGentle(lang: Language): ScheduledNotif | null {
-  const t = translations[lang];
+  const t = getDict(lang);
   return {
     kind: "gentle",
     fireAt: Date.now() + 4 * 3600 * 1000,
@@ -86,7 +86,7 @@ function scheduleGentle(lang: Language): ScheduledNotif | null {
 
 /** Schedule next water reminder (2 hours from now). */
 function scheduleWater(lang: Language): ScheduledNotif | null {
-  const t = translations[lang];
+  const t = getDict(lang);
   return {
     kind: "water",
     fireAt: Date.now() + 2 * 3600 * 1000,

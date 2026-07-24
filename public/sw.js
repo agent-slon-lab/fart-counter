@@ -113,6 +113,31 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // /locales/*.json: CACHE-FIRST with background update (translation files)
+  if (url.pathname.startsWith("/locales/") && url.pathname.endsWith(".json")) {
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        // Serve from cache instantly
+        if (cached) {
+          // Update in background
+          fetch(req).then((res) => {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+          }).catch(() => {});
+          return cached;
+        }
+        // No cache — fetch and cache
+        return fetch(req).then((res) => {
+          if (!res || res.status !== 200) return res;
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+          return res;
+        }).catch(() => cached);
+      })
+    );
+    return;
+  }
+
   // Static assets: CACHE-FIRST (fastest for repeat visits)
   event.respondWith(
     caches.match(req).then((cached) => {
