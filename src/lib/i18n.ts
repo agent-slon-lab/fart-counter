@@ -244,6 +244,9 @@ const ru: Dict = {
   profile_desc_kid: "Маленький ветрогон 💨",
   profile_desc_other: "Ещё один пукер",
   profile_baby_hint: "Норма для малышей: 15-40 газиков в сутки",
+  profile_primary_badge: "Основной",
+  profile_secondary_badge: "Без XP",
+  profile_secondary_hint: "Второстепенные профили только отслеживают пуки. XP, ачивки и магазин доступны только в основном профиле.",
 
   // Baby Mode texts (overrides when baby profile active)
   baby_add_fart: "+1 ГАЗИК!",
@@ -953,6 +956,9 @@ const en: Dict = {
   profile_desc_kid: "Little windbreaker 💨",
   profile_desc_other: "Another farter",
   profile_baby_hint: "Baby norm: 15-40 gas episodes per day",
+  profile_primary_badge: "Primary",
+  profile_secondary_badge: "No XP",
+  profile_secondary_hint: "Secondary profiles only track farts. XP, achievements and shop are available on the primary profile only.",
 
   // Baby Mode texts (overrides when baby profile active)
   baby_add_fart: "+1 GAS!",

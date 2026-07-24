@@ -1,14 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
+import dynamic from "next/dynamic";
 import { BottomNav, type TabId } from "@/components/app/bottom-nav";
-import { HomeScreen } from "@/components/app/home-screen";
-import { HistoryScreen } from "@/components/app/history-screen";
-import { StatsScreen } from "@/components/app/stats-screen";
-import { ProfileScreen } from "@/components/app/profile-screen";
-import { FoodScreen } from "@/components/app/food-screen";
-import { InsightsScreen } from "@/components/app/insights-screen";
-import { ShopScreen } from "@/components/app/shop-screen";
 import { AchievementWatcher } from "@/components/app/achievement-watcher";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { UpdateBanner } from "@/components/pwa/update-banner";
@@ -20,6 +14,43 @@ import { ProfileSwitcher } from "@/components/app/profile-switcher";
 import { useT } from "@/hooks/use-t";
 import { useStore } from "@/lib/store";
 import type { Language } from "@/lib/i18n";
+
+// Lazy-load screens — only the active screen's JS chunk is downloaded.
+// HomeScreen loads by default (most common entry); others load on tab switch.
+const HomeScreen = dynamic(() => import("@/components/app/home-screen").then(m => ({ default: m.HomeScreen })), {
+  loading: () => <ScreenSkeleton />,
+});
+const HistoryScreen = dynamic(() => import("@/components/app/history-screen").then(m => ({ default: m.HistoryScreen })), {
+  loading: () => <ScreenSkeleton />,
+});
+const StatsScreen = dynamic(() => import("@/components/app/stats-screen").then(m => ({ default: m.StatsScreen })), {
+  loading: () => <ScreenSkeleton />,
+});
+const ProfileScreen = dynamic(() => import("@/components/app/profile-screen").then(m => ({ default: m.ProfileScreen })), {
+  loading: () => <ScreenSkeleton />,
+});
+const FoodScreen = dynamic(() => import("@/components/app/food-screen").then(m => ({ default: m.FoodScreen })), {
+  loading: () => <ScreenSkeleton />,
+});
+const InsightsScreen = dynamic(() => import("@/components/app/insights-screen").then(m => ({ default: m.InsightsScreen })), {
+  loading: () => <ScreenSkeleton />,
+});
+const ShopScreen = dynamic(() => import("@/components/app/shop-screen").then(m => ({ default: m.ShopScreen })), {
+  loading: () => <ScreenSkeleton />,
+});
+
+/** Lightweight skeleton shown while a lazy screen chunk loads */
+function ScreenSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 px-4 pb-4 animate-pulse">
+      <div className="h-6 w-32 rounded-md bg-muted mt-3" />
+      <div className="h-24 rounded-xl bg-muted" />
+      <div className="h-24 rounded-xl bg-muted" />
+      <div className="h-24 rounded-xl bg-muted" />
+      <div className="h-24 rounded-xl bg-muted" />
+    </div>
+  );
+}
 
 const SUPPORTED_LANGS: Language[] = ["ru", "en", "es", "pt", "de", "fr", "hi"];
 
