@@ -32,3 +32,23 @@ Stage Summary:
 - Correlation warning system live: 3rd+ time eating a known gas-trigger food shows a funny warning dialog with random message (date/couch/elevator/fire/etc jokes) and severity-scaled UI
 - All 7 languages have new food translations; warning text falls back to EN for non-RU/EN locales
 - Store version bumped to 5 with backward-compatible migration
+
+---
+Task ID: release-v1.5.8
+Agent: main (Z.ai Code)
+Task: Build release zip v1.5.8 with food expansion + My Foods + fart correlation warnings
+
+Work Log:
+- Bumped version: src/lib/version.ts APP_VERSION 1.5.7 → 1.5.8
+- Updated public/version.json: version 1.5.8, updatedAt 2026-07-24
+- Added CHANGELOG.md entry [1.5.8] — 2026-07-24 documenting all 3 features (18 new foods, My Foods, correlation warnings with 12 funny messages, store v5 migration)
+- Staged 130 files (public/ + src/ + root configs) mirroring v1.5.7 structure
+- Excluded: node_modules, .next, .env, dev.log, *.db, db/, prisma/, mini-services/, examples/, skills/, download/, upload/, tool-results/
+- Created /home/z/my-project/download/fart-counter-v1.5.8.zip (531 KB, 143 entries including dirs)
+- Verified zip contents: all 7 modified files present (version.ts, public/version.json, store.ts, food-screen.tsx, i18n.ts, i18n-extra.json, CHANGELOG.md)
+- Verified version strings inside zip: APP_VERSION = "1.5.8", version.json = {"version":"1.5.8"}
+
+Stage Summary:
+- Release artifact: /home/z/my-project/download/fart-counter-v1.5.8.zip (531 KB, 130 files)
+- Includes all food expansion features from task food-expansion-v5
+- Ready for distribution / Vercel deploy / PWA update
