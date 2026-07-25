@@ -437,6 +437,8 @@ const ru: Dict = {
   level_pro: "Профи",
   level_master: "Мастер",
   level_legend: "Легенда",
+  levels_grid_title: "Уровни",
+  levels_grid_hint: "Уровень не снижается при покупке в магазине",
 
   // Food diary
   food_diary: "Дневник питания",
@@ -1149,6 +1151,8 @@ const en: Dict = {
   level_pro: "Pro",
   level_master: "Master",
   level_legend: "Legend",
+  levels_grid_title: "Levels",
+  levels_grid_hint: "Level doesn't decrease when you buy from shop",
 
   // Food diary
   food_diary: "Food Diary",

@@ -134,6 +134,8 @@ export interface AppState {
 
   // Gamification
   xp: number;
+  /** Maximum XP ever reached (never decreases). Used for level calculation. */
+  maxXp: number;
   streak: number;
   lastFartDay: string | null;
   lastBonusDay: string | null;
@@ -235,6 +237,7 @@ export const useStore = create<AppState>()(
 
       // Gamification
       xp: 0,
+      maxXp: 0,
       streak: 0,
       lastFartDay: null,
       lastBonusDay: null,
@@ -309,6 +312,7 @@ export const useStore = create<AppState>()(
         set((s) => ({
           farts: [...s.farts, rec],
           xp: s.xp + xpGain,
+          maxXp: Math.max(s.maxXp, s.xp + xpGain),
           streak: newStreak,
           lastFartDay: isPrimary ? today : s.lastFartDay,
           fartsTodayForXP: isPrimary ? fartsTodayForXP + 1 : s.fartsTodayForXP,
@@ -429,7 +433,7 @@ export const useStore = create<AppState>()(
 
         const totalXp = foodXpGain + bonusXp + diaryBonus;
 
-        set((s) => ({ food: [...s.food, rec], xp: s.xp + totalXp }));
+        set((s) => ({ food: [...s.food, rec], xp: s.xp + totalXp, maxXp: Math.max(s.maxXp, s.xp + totalXp) }));
       },
 
       removeFood: (id) => set((s) => ({ food: s.food.filter((f) => f.id !== id) })),
@@ -505,7 +509,7 @@ export const useStore = create<AppState>()(
 
       // ===== Gamification actions =====
       addXP: (amount) => {
-        set((s) => ({ xp: s.xp + amount }));
+        set((s) => ({ xp: s.xp + amount, maxXp: Math.max(s.maxXp, s.xp + amount) }));
       },
 
       claimDailyBonus: () => {
@@ -517,7 +521,7 @@ export const useStore = create<AppState>()(
         const streakBonus = Math.min(state.streak * 10, 200);
         const total = 50 + streakBonus;
 
-        set((s) => ({ xp: s.xp + total, lastBonusDay: today }));
+        set((s) => ({ xp: s.xp + total, maxXp: Math.max(s.maxXp, s.xp + total), lastBonusDay: today }));
         return total;
       },
 
@@ -568,6 +572,7 @@ export const useStore = create<AppState>()(
             unlockedAchievements: Array.isArray(parsed.unlockedAchievements) ? parsed.unlockedAchievements : get().unlockedAchievements,
             settings: parsed.settings ? { ...get().settings, ...parsed.settings } : get().settings,
             customFoods: Array.isArray(parsed.customFoods) ? parsed.customFoods : get().customFoods,
+            maxXp: typeof parsed.maxXp === "number" ? parsed.maxXp : Math.max(get().maxXp, parsed.xp ?? 0),
           });
           return true;
         } catch {
@@ -585,12 +590,13 @@ export const useStore = create<AppState>()(
           worldRank: {},
           unlockedAchievements: [],
           customFoods: [],
+          maxXp: 0,
         }),
     }),
     {
       name: "fart-counter-store-v2",
       storage: createJSONStorage(() => localStorage),
-      version: 5,
+      version: 6,
       // NO skipHydration — let Zustand hydrate synchronously from localStorage (instant)
       migrate: (persisted: any, version: number) => {
         if (!persisted) return persisted;
@@ -656,8 +662,13 @@ export const useStore = create<AppState>()(
           }
         }
         if (version < 5) {
-          // v4 → v5: Add customFoods array
+          // v3 → v5: Add customFoods array
           persisted.customFoods = Array.isArray(persisted.customFoods) ? persisted.customFoods : [];
+        }
+        if (version < 6) {
+          // v5 → v6: Add maxXp (maximum XP ever reached, for level calculation)
+          // Initialize maxXp to current xp so existing users don't lose their level
+          persisted.maxXp = typeof persisted.xp === "number" ? persisted.xp : 0;
         }
         return persisted;
       },
