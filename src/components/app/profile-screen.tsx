@@ -62,6 +62,7 @@ import { APP_VERSION, forceUpdate } from "@/lib/version";
 import { useManualUpdateCheck } from "@/components/pwa/update-banner";
 import { InstallButton } from "@/components/pwa/install-button";
 import { AchievementsList } from "./achievements-list";
+import { LevelsGrid } from "./levels-grid";
 import { ShareCardDialog } from "./share-card-dialog";
 
 const ACCENTS: { id: AccentColor; color: string; key: string; purchased?: boolean }[] = [
@@ -217,6 +218,9 @@ export function ProfileScreen() {
           <ChevronRight className="h-5 w-5 text-muted-foreground" />
         </div>
       </Card>
+
+      {/* Levels grid */}
+      <LevelsGrid />
 
       {/* Share card */}
       <Card className="cursor-pointer p-4 transition-colors hover:bg-muted/40" onClick={() => setShareOpen(true)}>

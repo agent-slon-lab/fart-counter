@@ -9,6 +9,7 @@ import { useT } from "@/hooks/use-t";
 export function GamificationBar() {
   const { t } = useT();
   const xp = useStore((s) => s.xp);
+  const maxXp = useStore((s) => s.maxXp);
   const streak = useStore((s) => s.streak);
   const allProfiles = useStore((s) => s.profiles);
   const activeProfileId = useStore((s) => s.settings.activeProfileId);
@@ -17,10 +18,11 @@ export function GamificationBar() {
   const farts = useProfileFarts();
   const todayCount = getTodayCount(farts);
 
-  const level = getLevel(xp);
-  const progress = getLevelProgress(xp);
+  // Level is calculated from maxXp (never decreases on purchase)
+  const level = getLevel(maxXp);
+  const progress = getLevelProgress(maxXp);
   const nextLevel = progress.next;
-  const xpToNext = nextLevel ? nextLevel - xp : 0;
+  const xpToNext = nextLevel ? nextLevel - maxXp : 0;
 
   // Health warning
   const healthKey = getHealthWarning(todayCount, isBaby);

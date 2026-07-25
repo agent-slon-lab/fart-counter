@@ -362,3 +362,51 @@ Stage Summary:
 - ZIP reduced from 615KB to 547KB by removing dead i18n-extra.json duplicate
 - Important distinction: ZIP size (all project files) vs Initial JS bundle (what browser downloads)
 - Initial JS bundle actually DECREASED ~80KB since v1.5.7 because i18n-extra.json is no longer bundled inline
+
+---
+Task ID: maxxp-levels-grid-v1.6.1
+Agent: main (Z.ai Code)
+Task: Fix level rollback on shop purchase (variant C: maxXp), add levels grid in Profile
+
+Work Log:
+- Added `maxXp` field to store (src/lib/store.ts):
+  - AppState.maxXp: number (maximum XP ever reached, never decreases)
+  - Initial value: 0
+  - Updated in addFart, addFood, addXP, claimDailyBonus: `maxXp: Math.max(s.maxXp, s.xp + gain)`
+  - purchaseItem still subtracts from `xp` (real balance) but does NOT touch `maxXp`
+  - importData: maxXp = parsed.maxXp || Math.max(current.maxXp, parsed.xp)
+  - resetAllData: maxXp = 0
+  - Persist version 5 → 6, migration: `persisted.maxXp = persisted.xp` (existing users keep their level)
+- Updated GamificationBar (src/components/app/gamification-bar.tsx):
+  - `const maxXp = useStore((s) => s.maxXp)`
+  - `getLevel(maxXp)` instead of `getLevel(xp)` — level never rolls back
+  - `getLevelProgress(maxXp)` — progress bar based on max reached
+  - `xpToNext = nextLevel - maxXp` — how much to reach next from current max
+  - Shop balance still shows `xp` (spendable), level shows `maxXp` (achievement)
+- Created LevelsGrid component (src/components/app/levels-grid.tsx):
+  - Shows all 12 levels in a 3-col (mobile) / 4-col (desktop) grid
+  - Each level card: emoji, name, XP threshold, level number badge
+  - States: current (highlighted + check), unlocked (subtle), locked (grayscale + lock icon)
+  - Hint text: "Уровень не снижается при покупке в магазине"
+- Added i18n keys (RU+EN): levels_grid_title, levels_grid_hint
+- Inserted LevelsGrid in ProfileScreen after Achievements card
+- Bumped version: APP_VERSION 1.6.0 → 1.6.1, version.json, SW cache → v1.6.1
+- Updated CHANGELOG.md [1.6.1] section
+- Lint: clean (0 errors)
+- Agent Browser verified:
+  - Set test data: xp=200, maxXp=500 (simulated: earned 500, spent 300 in shop)
+  - Home screen showed: 🍃 Любитель (level from maxXp=500), 200 XP (balance), 1500 (next threshold)
+  - Level did NOT roll back to 🌱 Новичок despite xp=200 ✅
+  - Profile screen showed full levels grid: 12 levels with correct states
+  - Current level (Любитель) highlighted with check mark
+  - Levels below 500 XP shown as unlocked
+  - Levels above 500 XP shown as locked with grayscale
+  - No console errors
+- Rebuilt /home/z/my-project/download/fart-counter-v1.6.1.zip (563 KB)
+
+Stage Summary:
+- Level rollback bug FIXED: level calculated from maxXp (never decreases), shop purchases only spend xp
+- Users can now buy from shop without losing their level achievement
+- New LevelsGrid component in Profile shows all 12 levels with visual states
+- Store migrated to v6 with backward-compatible maxXp initialization
+- Release zip at /home/z/my-project/download/fart-counter-v1.6.1.zip
