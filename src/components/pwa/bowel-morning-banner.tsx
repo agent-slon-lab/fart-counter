@@ -14,6 +14,7 @@ const DISMISS_KEY_PREFIX = "fart-counter-bowel-morning-dismissed-";
  * - AND user hasn't logged a poop today
  * - AND bowelTrackingEnabled is on
  * - AND not dismissed today
+ * - Auto-hides when user logs a poop (reactive)
  * - Shows random funny reminder from 5 variants
  */
 export function BowelMorningBanner() {
@@ -25,30 +26,33 @@ export function BowelMorningBanner() {
   // Pick random reminder once per mount
   const reminderIdx = useMemo(() => 1 + Math.floor(Math.random() * 5), []);
 
+  // Today's poop count (reactive — updates when poops array changes)
+  const todayPoopCount = useMemo(() => {
+    const today = dateKey(new Date());
+    return poops.filter((p) => dateKey(new Date(p.ts)) === today).length;
+  }, [poops]);
+
+  // Check if dismissed today (reactive — checks on every render)
+  const today = dateKey(new Date());
+  const isDismissed = typeof localStorage !== "undefined" && localStorage.getItem(DISMISS_KEY_PREFIX + today) === "1";
+
+  // Auto-hide if user logged a poop OR dismissed OR tracking disabled
   useEffect(() => {
-    if (!bowelTrackingEnabled) return;
-
-    const now = new Date();
-    const hour = now.getHours();
-    // Only after 10:00 AM
+    if (todayPoopCount > 0 || isDismissed || !bowelTrackingEnabled) {
+      setVisible(false);
+      return;
+    }
+    // Only show after 10:00 AM
+    const hour = new Date().getHours();
     if (hour < 10) return;
-
-    const today = dateKey(now);
-    const dismissKey = DISMISS_KEY_PREFIX + today;
-    if (localStorage.getItem(dismissKey) === "1") return;
-
-    // Check if user already logged a poop today
-    const todayPoops = poops.filter((p) => dateKey(new Date(p.ts)) === today);
-    if (todayPoops.length > 0) return;
 
     // Delay 2.5s after launch
     const timer = setTimeout(() => setVisible(true), 2500);
     return () => clearTimeout(timer);
-  }, [poops, bowelTrackingEnabled]);
+  }, [todayPoopCount, isDismissed, bowelTrackingEnabled]);
 
   function handleDismiss() {
-    const today = dateKey(new Date());
-    localStorage.setItem(DISMISS_KEY_PREFIX + today, "1");
+    try { localStorage.setItem(DISMISS_KEY_PREFIX + today, "1"); } catch {}
     setVisible(false);
   }
 

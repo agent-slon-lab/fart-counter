@@ -4,6 +4,22 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [SemVer](https://semver.org/lang/ru/).
 
+## [1.6.4] — 2026-07-25
+
+### 🐛 Фиксы версий + баннеры
+
+### Исправлено
+- 🔢 **Версия 1.5.7 → 1.6.4 везде**: `about_text` (RU+EN), `package.json`, `manifest.json`, `README.md`, `README.en.md` — пользователь видел устаревшую версию в Профиле
+- 🚫 **Баннеры туалета/ходьбы** — больше не выскакивают повторно после отметки. Раньше: юзер нажал «Уже сходил», но баннер мог вернуться. Теперь: баннер **реактивно скрывается** когда юзер добавляет poop/walk (через useMemo + useEffect зависимость)
+- 🚽 **BowelMorningBanner**: auto-hide если `todayPoopCount > 0` OR dismissed OR tracking disabled
+- 🚶 **WalkReminderBanner**: auto-hide если `todayWalkCount > 0` OR dismissed OR disabled
+
+### Версия
+- 🔢 APP_VERSION 1.6.3 → 1.6.4
+- 📦 SW cache → v1.6.4
+
+---
+
 ## [1.6.3] — 2026-07-25
 
 ### 🎨 Baby mode веселее + 📱 Превью ссылок
