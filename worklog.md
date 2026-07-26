@@ -505,3 +505,36 @@ Stage Summary:
 - Link previews fixed: correct metadataBase URL + new OG image + friendly description
 - Description mentions open source, no ads, no tracking, offline — to encourage users to try the app
 - Release zip at /home/z/my-project/download/fart-counter-v1.6.3.zip
+
+---
+Task ID: version-banners-fix-v1.6.4
+Agent: main (Z.ai Code)
+Task: Fix version 1.5.7 still showing in Profile, fix banners re-appearing after action
+
+Work Log:
+- Found version 1.5.7 references in 5 files:
+  - src/lib/i18n.ts about_text (RU): "Счётчик Пуков v1.5.7" → "v1.6.4"
+  - src/lib/i18n.ts about_text (EN): "Fart Counter v1.5.7" → "v1.6.4"
+  - package.json: "version": "1.5.7" → "1.6.4"
+  - public/manifest.json: "version": "1.5.7" → "1.6.4"
+  - README.md: "Версия: 1.5.7" → "1.6.4"
+  - README.en.md: "Version: 1.5.7" → "1.6.4"
+- Fixed BowelMorningBanner reactive hide (src/components/pwa/bowel-morning-banner.tsx):
+  - OLD: useEffect checked todayPoops.length > 0 only on mount, returned early (didn't show). But if banner ALREADY visible and user added poop → banner stayed.
+  - NEW: useMemo todayPoopCount (reactive), useEffect auto-hides setVisible(false) when todayPoopCount > 0 OR isDismissed OR !bowelTrackingEnabled
+  - Verified: click "Already went" → banner removed from DOM ✅; add poop + reload → banner does NOT show ✅
+- Fixed WalkReminderBanner same way (src/components/pwa/walk-reminder-banner.tsx):
+  - useMemo todayWalkCount reactive
+  - Auto-hide when todayWalkCount > 0 OR dismissed OR disabled
+  - Verified: click "Already walked" → removed ✅; add walk + reload → no banner ✅
+- Verified bowel/walk buttons ARE in dev sandbox (user may have missed them — they're below water counter, need scroll)
+  - Bowel button: "🚽 Went 0 visits today" at top=1245px (below viewport 800px) → user needs to scroll down
+- Bumped version: 1.6.3 → 1.6.4, SW cache → v1.6.4
+- Updated CHANGELOG.md [1.6.4] section
+- Lint: clean (0 errors)
+- Rebuilt /home/z/my-project/download/fart-counter-v1.6.4.zip (565 KB)
+
+Stage Summary:
+- Version 1.5.7 eliminated from all files (i18n, package.json, manifest, READMEs) — now consistently 1.6.4 everywhere
+- Bowel/Walk banners now reactively hide when user logs the action (no more re-appearing)
+- Release zip at /home/z/my-project/download/fart-counter-v1.6.4.zip

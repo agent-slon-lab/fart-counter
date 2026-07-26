@@ -14,6 +14,7 @@ const DISMISS_KEY_PREFIX = "fart-counter-walk-dismissed-";
  * - AND user hasn't logged a walk today
  * - AND walkReminderEnabled is on
  * - AND not dismissed today
+ * - Auto-hides when user logs a walk (reactive)
  * - Shows random funny walk reminder from 5 variants
  */
 export function WalkReminderBanner() {
@@ -24,27 +25,30 @@ export function WalkReminderBanner() {
 
   const reminderIdx = useMemo(() => 1 + Math.floor(Math.random() * 5), []);
 
+  // Today's walk count (reactive)
+  const todayWalkCount = useMemo(() => {
+    const today = dateKey(new Date());
+    return walks.filter((w) => dateKey(new Date(w.ts)) === today).length;
+  }, [walks]);
+
+  const today = dateKey(new Date());
+  const isDismissed = typeof localStorage !== "undefined" && localStorage.getItem(DISMISS_KEY_PREFIX + today) === "1";
+
+  // Auto-hide if user logged a walk OR dismissed OR disabled
   useEffect(() => {
-    if (!walkReminderEnabled) return;
-
-    const now = new Date();
-    const hour = now.getHours();
+    if (todayWalkCount > 0 || isDismissed || !walkReminderEnabled) {
+      setVisible(false);
+      return;
+    }
+    const hour = new Date().getHours();
     if (hour < 15) return;
-
-    const today = dateKey(now);
-    const dismissKey = DISMISS_KEY_PREFIX + today;
-    if (localStorage.getItem(dismissKey) === "1") return;
-
-    const todayWalks = walks.filter((w) => dateKey(new Date(w.ts)) === today);
-    if (todayWalks.length > 0) return;
 
     const timer = setTimeout(() => setVisible(true), 3000);
     return () => clearTimeout(timer);
-  }, [walks, walkReminderEnabled]);
+  }, [todayWalkCount, isDismissed, walkReminderEnabled]);
 
   function handleDismiss() {
-    const today = dateKey(new Date());
-    localStorage.setItem(DISMISS_KEY_PREFIX + today, "1");
+    try { localStorage.setItem(DISMISS_KEY_PREFIX + today, "1"); } catch {}
     setVisible(false);
   }
 
