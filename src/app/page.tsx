@@ -13,6 +13,8 @@ import { AchievementWatcher } from "@/components/app/achievement-watcher";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { UpdateBanner } from "@/components/pwa/update-banner";
 import { EveningReminderBanner } from "@/components/pwa/evening-reminder-banner";
+import { BowelMorningBanner } from "@/components/pwa/bowel-morning-banner";
+import { WalkReminderBanner } from "@/components/pwa/walk-reminder-banner";
 import { Onboarding, hasCompletedOnboarding } from "@/components/pwa/onboarding";
 import { WelcomePopup } from "@/components/pwa/welcome-popup";
 import { DailyBonusPopup } from "@/components/pwa/daily-bonus";
@@ -180,6 +182,8 @@ export default function Home() {
       <InstallPrompt />
       <UpdateBanner />
       <EveningReminderBanner />
+      <BowelMorningBanner />
+      <WalkReminderBanner />
       <WelcomePopup />
       <DailyBonusPopup />
     </div>

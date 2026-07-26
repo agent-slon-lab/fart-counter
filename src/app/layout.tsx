@@ -16,13 +16,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://fartcounter.app"),
+  metadataBase: new URL("https://fart-counter-lake.vercel.app"),
   title: {
-    default: "Счётчик Пуков — Fart Counter",
+    default: "Счётчик Пуков — Fart Counter 💨",
     template: "%s · Счётчик Пуков",
   },
   description:
-    "Бесплатное офлайн PWA для отслеживания пуков. Юмор, статистика, 18 достижений, дневник питания, погода, мировая карта. Без рекламы, без слежки. 7 языков.",
+    "💨 Весёлый счётчик пуков с юмором и пользой для здоровья. Отслеживай пуки, еду, туалет, ходьбу. 18 достижений, дневник питания, инсайты. Открытый исходный код, без рекламы, без слежки. Работает офлайн. 7 языков.",
   manifest: "/manifest.json",
   applicationName: "Счётчик Пуков",
   keywords: [
@@ -32,6 +32,8 @@ export const metadata: Metadata = {
     "PWA",
     "offline",
     "health tracker",
+    "открытый исходный код",
+    "open source",
     "contador de pedos",
     "contador de pum",
     "furz zähler",
@@ -54,25 +56,25 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "Счётчик Пуков — Fart Counter",
-    description: "Бесплатное офлайн PWA для отслеживания твоей ветрености. 18 достижений, 7 языков, без рекламы.",
+    title: "Счётчик Пуков — весёлый трекер здоровья 💨",
+    description: "💨 Отслеживай пуки, еду, туалет и ходьбу с юмором. 18 достижений, инсайты, корреляция еды и пуков. Открытый код, без рекламы, без слежки. Работает офлайн!",
     type: "website",
     locale: "ru_RU",
-    siteName: "Fart Counter",
+    siteName: "Счётчик Пуков",
     url: "/",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Fart Counter — Free offline PWA",
+        alt: "Счётчик Пуков — весёлый трекер здоровья, открытый код, без рекламы",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Счётчик Пуков — Fart Counter",
-    description: "Бесплатное офлайн PWA. Без рекламы, без слежки. 7 языков.",
+    title: "Счётчик Пуков 💨 — весёлый трекер здоровья",
+    description: "💨 Пуки + еда + туалет + ходьба. 18 достижений, инсайты. Открытый код, без рекламы, офлайн. 7 языков.",
     images: ["/og-image.png"],
   },
 };
