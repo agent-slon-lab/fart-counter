@@ -410,3 +410,67 @@ Stage Summary:
 - New LevelsGrid component in Profile shows all 12 levels with visual states
 - Store migrated to v6 with backward-compatible maxXp initialization
 - Release zip at /home/z/my-project/download/fart-counter-v1.6.1.zip
+
+---
+Task ID: bowel-walk-tracking-v1.6.2
+Agent: main (Z.ai Code)
+Task: Add bowel movement tracking + walk tracking + funny reminders (variant B)
+
+Work Log:
+- Store (src/lib/store.ts):
+  - Added PoopRecord interface (id, ts, consistency?: normal/loose/hard, profileId)
+  - Added WalkRecord interface (id, ts, minutes?, profileId)
+  - Added poops: PoopRecord[] and walks: WalkRecord[] to AppState
+  - Added settings.bowelTrackingEnabled and settings.walkReminderEnabled (both default true)
+  - Added actions: addPoop(consistency?), removePoop(id), addWalk(minutes?), removeWalk(id)
+  - XP: +5 XP per poop (max 3/day = 15 XP), +8 XP per walk (max 2/day = 16 XP), primary only
+  - All XP updates also update maxXp
+  - Added useProfilePoops() and useProfileWalks() selectors
+  - Persist version 6 → 7, migration: add poops=[], walks=[], bowelTrackingEnabled=true, walkReminderEnabled=true
+  - importData/resetAllData updated with poops/walks
+- i18n (src/lib/i18n.ts): added ~75 keys (RU+EN):
+  - Bowel UI: bowel_tracker, bowel_went, bowel_today, bowel_history, bowel_last_time, bowel_hours_ago, bowel_consistency, bowel_normal/loose/hard
+  - 12 bowel warnings: bowel_warning_1..12 ("Депозит зреет!", "Ты не верблюд!", "Бомба!", "Не ходи на свидание!" etc)
+  - 5 morning reminders: bowel_morning_1..5 ("Раз в день — норма!", "Где результаты?" etc)
+  - Walk UI: walk_tracker, walk_went, walk_today, walk_history, walk_minutes
+  - 5 walk reminders: walk_reminder_1..5 ("При ходьбе улучшается перистальтика!", "Движение = пуки = здоровье!" etc)
+  - bowel_disable/enable, bowel_disabled_hint, walk_xp_gain/capped, bowel_xp_gain/capped
+- BowelScreen (src/components/app/bowel-screen.tsx) — modal with:
+  - Today count badge
+  - Time since last poop (hours/days)
+  - Warning if >24h (random of 12 funny messages)
+  - Consistency selector (Hard/Normal/Loose)
+  - Add "Went #2" button
+  - 7-day history (scrollable, max 20 entries, with delete)
+  - Food correlation (avg hours from food to next poop, top 5 triggers)
+  - Disable tracking button
+- HomeScreen (src/components/app/home-screen.tsx):
+  - Added bowel + walk buttons under water counter (only if bowelTrackingEnabled)
+  - Bowel button: amber border, opens BowelScreen modal
+  - Walk button: green border, logs walk +30min, shows XP toast
+  - Both show today count
+- BowelMorningBanner (src/components/pwa/bowel-morning-banner.tsx):
+  - Shows after 10:00 if no poop logged today, random of 5 reminders, dismissible (1/day)
+- WalkReminderBanner (src/components/pwa/walk-reminder-banner.tsx):
+  - Shows after 15:00 if no walk logged today, random of 5 reminders, dismissible (1/day)
+- page.tsx: added BowelMorningBanner + WalkReminderBanner alongside EveningReminderBanner
+- Bumped version: 1.6.1 → 1.6.2, SW cache → v1.6.2
+- Updated CHANGELOG.md [1.6.2] section
+- Lint: clean (0 errors)
+- Agent Browser verified:
+  - Bowel button visible on Home under water ✅
+  - Click bowel → modal opens with consistency selector + history ✅
+  - Click "Went #2" → record added, today count=1, last visit=0ч, history shows entry ✅
+  - XP gained: xp=5, maxXp=5, poopsCount=1 ✅
+  - Walk button click → xp=13 (+8), maxXp=13, walksCount=1 ✅
+  - No console errors
+- Rebuilt /home/z/my-project/download/fart-counter-v1.6.2.zip (574 KB)
+
+Stage Summary:
+- Bowel tracking: button on Home, modal with 7-day history, food correlation, 12 funny warnings if >24h
+- Walk tracking: button on Home, +8 XP per walk (max 2/day)
+- 2 reminder banners: morning bowel (10:00+), afternoon walk (15:00+), each with 5 funny variants
+- All tracking is opt-out (enabled by default, can disable in modal or settings)
+- XP only on primary profile (anti-farm), maxXp never decreases
+- Store migrated to v7 with backward-compatible defaults
+- Release zip at /home/z/my-project/download/fart-counter-v1.6.2.zip

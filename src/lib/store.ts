@@ -69,6 +69,24 @@ export interface FoodEntry {
   profileId?: string;
 }
 
+export interface PoopRecord {
+  id: string;
+  ts: string;
+  /** Optional consistency tag */
+  consistency?: "normal" | "loose" | "hard";
+  /** Profile ID */
+  profileId?: string;
+}
+
+export interface WalkRecord {
+  id: string;
+  ts: string;
+  /** Optional duration in minutes (user-estimated) */
+  minutes?: number;
+  /** Profile ID */
+  profileId?: string;
+}
+
 export interface MoodDay {
   /** YYYY-MM-DD */
   date: string;
@@ -114,6 +132,10 @@ export interface AppSettings {
   geoEnabled: boolean;
   /** Enable weather correlation */
   weatherEnabled: boolean;
+  /** Enable bowel movement tracking (poops) + reminders */
+  bowelTrackingEnabled: boolean;
+  /** Enable walk reminders */
+  walkReminderEnabled: boolean;
   /** Active profile ID */
   activeProfileId: string;
 }
@@ -125,6 +147,10 @@ export interface AppState {
   food: FoodEntry[];
   moods: MoodDay[];
   weather: WeatherSnapshot[];
+  /** Bowel movement records (poops) */
+  poops: PoopRecord[];
+  /** Walk records (user-logged) */
+  walks: WalkRecord[];
   /** Anonymous world-ranking contribution: country code → count */
   worldRank: Record<string, number>;
   /** User profiles (multi-profile support) */
@@ -165,6 +191,14 @@ export interface AppState {
   removeFood: (id: string) => void;
   addCustomFood: (name: string) => void;
   removeCustomFood: (name: string) => void;
+
+  // Actions — Bowel (poops)
+  addPoop: (consistency?: PoopRecord["consistency"]) => void;
+  removePoop: (id: string) => void;
+
+  // Actions — Walks
+  addWalk: (minutes?: number) => void;
+  removeWalk: (id: string) => void;
 
   // Actions — Mood
   setMood: (mood: MoodDay["mood"]) => void;
@@ -231,6 +265,8 @@ export const useStore = create<AppState>()(
       food: [],
       moods: [],
       weather: [],
+      poops: [],
+      walks: [],
       worldRank: {},
       profiles: [{ id: "me", name: "Me", type: "adult", avatar: "🧑" }],
       customFoods: [],
@@ -259,6 +295,8 @@ export const useStore = create<AppState>()(
         fartSound: "classic",
         geoEnabled: false,
         weatherEnabled: false,
+        bowelTrackingEnabled: true,
+        walkReminderEnabled: true,
         activeProfileId: "me",
       },
       unlockedAchievements: [],
@@ -452,6 +490,50 @@ export const useStore = create<AppState>()(
       removeCustomFood: (name) =>
         set((s) => ({ customFoods: s.customFoods.filter((f) => f !== name) })),
 
+      addPoop: (consistency) => {
+        const pid = get().settings.activeProfileId;
+        const isPrimary = pid === "me";
+        const rec: PoopRecord = {
+          id: uid(),
+          ts: new Date().toISOString(),
+          consistency,
+          profileId: pid,
+        };
+        // +5 XP for tracking bowel health (primary only, max 3/day = 15 XP)
+        const today = todayKey();
+        const todayPoops = get().poops.filter((p) => dateKey(new Date(p.ts)) === today && (p.profileId || "me") === pid);
+        const xpGain = isPrimary && todayPoops.length < 3 ? 5 : 0;
+        set((s) => ({
+          poops: [...s.poops, rec],
+          xp: s.xp + xpGain,
+          maxXp: Math.max(s.maxXp, s.xp + xpGain),
+        }));
+      },
+
+      removePoop: (id) => set((s) => ({ poops: s.poops.filter((p) => p.id !== id) })),
+
+      addWalk: (minutes) => {
+        const pid = get().settings.activeProfileId;
+        const isPrimary = pid === "me";
+        const rec: WalkRecord = {
+          id: uid(),
+          ts: new Date().toISOString(),
+          minutes,
+          profileId: pid,
+        };
+        // +8 XP for walking (primary only, max 2/day = 16 XP)
+        const today = todayKey();
+        const todayWalks = get().walks.filter((w) => dateKey(new Date(w.ts)) === today && (w.profileId || "me") === pid);
+        const xpGain = isPrimary && todayWalks.length < 2 ? 8 : 0;
+        set((s) => ({
+          walks: [...s.walks, rec],
+          xp: s.xp + xpGain,
+          maxXp: Math.max(s.maxXp, s.xp + xpGain),
+        }));
+      },
+
+      removeWalk: (id) => set((s) => ({ walks: s.walks.filter((w) => w.id !== id) })),
+
       setMood: (mood) => {
         const tk = todayKey();
         const pid = get().settings.activeProfileId;
@@ -573,6 +655,8 @@ export const useStore = create<AppState>()(
             settings: parsed.settings ? { ...get().settings, ...parsed.settings } : get().settings,
             customFoods: Array.isArray(parsed.customFoods) ? parsed.customFoods : get().customFoods,
             maxXp: typeof parsed.maxXp === "number" ? parsed.maxXp : Math.max(get().maxXp, parsed.xp ?? 0),
+            poops: Array.isArray(parsed.poops) ? parsed.poops : get().poops,
+            walks: Array.isArray(parsed.walks) ? parsed.walks : get().walks,
           });
           return true;
         } catch {
@@ -591,12 +675,14 @@ export const useStore = create<AppState>()(
           unlockedAchievements: [],
           customFoods: [],
           maxXp: 0,
+          poops: [],
+          walks: [],
         }),
     }),
     {
       name: "fart-counter-store-v2",
       storage: createJSONStorage(() => localStorage),
-      version: 6,
+      version: 7,
       // NO skipHydration — let Zustand hydrate synchronously from localStorage (instant)
       migrate: (persisted: any, version: number) => {
         if (!persisted) return persisted;
@@ -621,6 +707,8 @@ export const useStore = create<AppState>()(
               fartSound: "classic",
               geoEnabled: false,
               weatherEnabled: false,
+              bowelTrackingEnabled: true,
+              walkReminderEnabled: true,
               activeProfileId: "me",
             },
           };
@@ -669,6 +757,15 @@ export const useStore = create<AppState>()(
           // v5 → v6: Add maxXp (maximum XP ever reached, for level calculation)
           // Initialize maxXp to current xp so existing users don't lose their level
           persisted.maxXp = typeof persisted.xp === "number" ? persisted.xp : 0;
+        }
+        if (version < 7) {
+          // v6 → v7: Add poops, walks arrays + bowelTrackingEnabled, walkReminderEnabled settings
+          persisted.poops = Array.isArray(persisted.poops) ? persisted.poops : [];
+          persisted.walks = Array.isArray(persisted.walks) ? persisted.walks : [];
+          if (persisted.settings) {
+            persisted.settings.bowelTrackingEnabled = persisted.settings.bowelTrackingEnabled ?? true;
+            persisted.settings.walkReminderEnabled = persisted.settings.walkReminderEnabled ?? true;
+          }
         }
         return persisted;
       },
@@ -734,4 +831,16 @@ export function useProfileMoods(): MoodDay[] {
   const moods = useStore((s) => s.moods);
   const pid = useStore((s) => s.settings.activeProfileId);
   return moods.filter((m) => (m.profileId || "me") === pid);
+}
+
+export function useProfilePoops(): PoopRecord[] {
+  const poops = useStore((s) => s.poops);
+  const pid = useStore((s) => s.settings.activeProfileId);
+  return poops.filter((p) => (p.profileId || "me") === pid);
+}
+
+export function useProfileWalks(): WalkRecord[] {
+  const walks = useStore((s) => s.walks);
+  const pid = useStore((s) => s.settings.activeProfileId);
+  return walks.filter((w) => (w.profileId || "me") === pid);
 }
