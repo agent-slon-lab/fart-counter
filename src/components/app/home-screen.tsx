@@ -25,6 +25,7 @@ interface Puff {
   id: number;
   dx: number;
   color: string;
+  emoji?: string;
 }
 
 // Zone thresholds: adults 10-20, babies 15-40
@@ -163,10 +164,13 @@ export function HomeScreen() {
     const colors = isBaby
       ? ["#93c5fd", "#a5f3fc", "#c4b5fd", "#fbcfe8", "#bbf7d0"]
       : ["#84cc16", "#facc15", "#f97316", "#a855f7", "#ec4899"];
-    const newPuffs: Puff[] = Array.from({ length: 4 }).map(() => ({
+    // Baby mode: cute emoji particles (stars, hearts, rainbows)
+    const babyEmojis = ["⭐", "💖", "🌈", "✨", "🎀", "🧸", "🌟"];
+    const newPuffs: Puff[] = Array.from({ length: isBaby ? 6 : 4 }).map(() => ({
       id: ++puffIdRef.current,
       dx: (Math.random() - 0.5) * 120,
       color: colors[Math.floor(Math.random() * colors.length)],
+      emoji: isBaby ? babyEmojis[Math.floor(Math.random() * babyEmojis.length)] : undefined,
     }));
     setPuffs((p) => [...p, ...newPuffs]);
     setTimeout(() => {
@@ -206,7 +210,30 @@ export function HomeScreen() {
   // Baby Mode helper: returns baby text if active
   const bt = (adultKey: string, babyKey: string): string => t(isBaby ? babyKey : adultKey);
 
-  const zoneStyles = {
+  const zoneStyles = isBaby ? {
+    // Baby mode: softer, cuter colors (pink/peach for low, mint for normal, orange for high)
+    low: {
+      bg: "bg-pink-500/10",
+      border: "border-pink-400/40",
+      text: "text-pink-600 dark:text-pink-300",
+      label: bt("below_norm", "baby_below_norm"),
+      glow: "shadow-pink-400/20",
+    },
+    normal: {
+      bg: "bg-teal-500/10",
+      border: "border-teal-400/40",
+      text: "text-teal-600 dark:text-teal-300",
+      label: bt("in_norm", "baby_in_norm"),
+      glow: "shadow-teal-400/30",
+    },
+    high: {
+      bg: "bg-orange-500/10",
+      border: "border-orange-400/40",
+      text: "text-orange-600 dark:text-orange-300",
+      label: bt("danger_zone", "baby_danger_zone"),
+      glow: "shadow-orange-400/30",
+    },
+  }[zone] : {
     low: {
       bg: "bg-yellow-500/10",
       border: "border-yellow-500/30",
@@ -296,9 +323,11 @@ export function HomeScreen() {
             {puffs.map((p) => (
               <span
                 key={p.id}
-                className="puff-particle"
-                style={{ backgroundColor: p.color, "--dx": `${p.dx}px` } as React.CSSProperties}
-              />
+                className={p.emoji ? "puff-particle puff-emoji" : "puff-particle"}
+                style={p.emoji ? { "--dx": `${p.dx}px` } as React.CSSProperties : { backgroundColor: p.color, "--dx": `${p.dx}px` } as React.CSSProperties}
+              >
+                {p.emoji}
+              </span>
             ))}
           </AnimatePresence>
         </div>

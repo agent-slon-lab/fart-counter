@@ -474,3 +474,34 @@ Stage Summary:
 - XP only on primary profile (anti-farm), maxXp never decreases
 - Store migrated to v7 with backward-compatible defaults
 - Release zip at /home/z/my-project/download/fart-counter-v1.6.2.zip
+
+---
+Task ID: baby-mode-og-preview-v1.6.3
+Agent: main (Z.ai Code)
+Task: Make baby mode more fun/playful + fix link preview (OG image + description)
+
+Work Log:
+- Fixed metadataBase URL in src/app/layout.tsx:
+  - OLD: new URL("https://fartcounter.app") — wrong domain, OG image URLs were broken
+  - NEW: new URL("https://fart-counter-lake.vercel.app") — actual Vercel deployment URL
+  - This was the root cause of "no preview" when sharing links in VK/Telegram/WhatsApp
+- Updated metadata description (RU) — friendly tone, mentions open source, no ads, offline:
+  - "💨 Весёлый счётчик пуков с юмором и пользой для здоровья. Отслеживай пуки, еду, туалет, ходьбу. 18 достижений, дневник питания, инсайты. Открытый исходный код, без рекламы, без слежки. Работает офлайн. 7 языков."
+- Updated OpenGraph + Twitter card metadata with friendly titles/descriptions
+- Generated new OG image (public/og-image.png) via z-ai image CLI — 1344x768, cartoon cloud character, friendly design
+- Baby mode improvements (src/components/app/home-screen.tsx):
+  - Zone styles: baby uses pink (low) / teal (normal) / orange (high) instead of adult yellow/green/red
+  - Puff particles: baby gets 6 emoji particles (⭐💖🌈✨🎀🧸🌟) instead of 4 colored circles
+  - Puff interface extended with optional emoji field
+  - Render: emoji puffs use .puff-emoji class with dedicated keyframe animation (puff-rise-emoji)
+- Added .puff-emoji CSS in globals.css: transparent background, 28px font, custom animation
+- Bumped version: 1.6.2 → 1.6.3, SW cache → v1.6.3
+- Updated CHANGELOG.md [1.6.3] section
+- Lint: clean (0 errors)
+- Rebuilt /home/z/my-project/download/fart-counter-v1.6.3.zip (565 KB)
+
+Stage Summary:
+- Baby mode now visually distinct: softer colors + cute emoji particle effects
+- Link previews fixed: correct metadataBase URL + new OG image + friendly description
+- Description mentions open source, no ads, no tracking, offline — to encourage users to try the app
+- Release zip at /home/z/my-project/download/fart-counter-v1.6.3.zip
