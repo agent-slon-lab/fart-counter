@@ -538,3 +538,67 @@ Stage Summary:
 - Version 1.5.7 eliminated from all files (i18n, package.json, manifest, READMEs) — now consistently 1.6.4 everywhere
 - Bowel/Walk banners now reactively hide when user logs the action (no more re-appearing)
 - Release zip at /home/z/my-project/download/fart-counter-v1.6.4.zip
+
+---
+Task ID: medical-report-bristol-v1.6.5
+Agent: main (Z.ai Code)
+Task: Medical report for gastroenterologist + Bristol Stool Scale + symptoms + CSV export
+
+Work Log:
+- Store (src/lib/store.ts):
+  - PoopRecord: replaced `consistency?: "hard"|"normal"|"loose"` with `bristolType?: 1|2|3|4|5|6|7` (medical standard)
+  - Added `symptoms?: string` field to PoopRecord
+  - addPoop signature: `(opts?: { bristolType?, symptoms? }) => void`
+  - Persist version 7 → 8, migration: consistencyMap {hard:1, normal:4, loose:6}, delete old consistency field
+- i18n (src/lib/i18n.ts): added ~60 keys (RU+EN):
+  - Bristol 1-7: bowel_bristol_1..7 names + bowel_bristol_1_desc..7_desc descriptions
+  - bowel_bristol_scale, bowel_bristol_type
+  - Symptoms: bowel_symptoms, bowel_symptoms_placeholder, bowel_symptoms_bloating/pain/nausea/heartburn/cramps/none
+  - bowel_tracking_hint (gentle onboarding)
+  - Report: report_section, report_desc, report_button, report_csv_button, report_title, report_subtitle, report_period, report_period_7/30/90, report_print, report_summary, report_patient, report_date_range, report_days_tracked, report_avg_farts, report_avg_poops, report_norm, report_water_avg, report_walks_week, report_bristol_distribution, report_food_triggers, report_food_trigger_farts, report_food_trigger_poops, report_30day_chart, report_symptoms_log, report_no_symptoms, report_no_data, report_generated, report_signature, report_disclaimer, report_farts_chart_label, report_poops_chart_label, report_track_food_hint
+- BowelScreen (src/components/app/bowel-screen.tsx) updated:
+  - Replaced 3-button consistency selector with 7-button Bristol Stool Scale (1-7)
+  - Color coding: green (type 4 normal), amber (1-2 constipation), red (6-7 diarrhea)
+  - Description of selected type shown below selector
+  - Added symptoms section: 5 quick tags (Bloating/Pain/Nausea/Heartburn/Cramps) + free text Input
+  - Added tracking hint: "💡 Для полезных инсайтов отмечай что ешь и когда ходишь в туалет"
+  - History shows Bristol type + symptoms for each entry
+  - handleAdd combines tags + text into symptoms field
+- MedicalReport (src/components/app/medical-report.tsx) — new component:
+  - Period selector: 7/30/90 days
+  - Printable HTML with @media print CSS (hides everything except .report-content)
+  - Summary: avg farts/day, avg poops/day (with norms), water, walks/week
+  - Bristol distribution: bar chart with percentages, color-coded
+  - Food triggers: fart correlation (avg farts after) + poop correlation (avg hours to poop)
+  - 30-day chart: bar chart of farts per day
+  - Symptoms log: last 10 entries with symptoms
+  - Footer: app signature + medical disclaimer
+  - Print button: window.print() → user saves as PDF
+  - exportCSV() helper: downloads CSV with all raw data (Fart/Poop/Food/Walk/Water types)
+- Profile (src/components/app/profile-screen.tsx):
+  - Added "📄 Отчёт для врача" card (opens MedicalReport modal)
+  - Added "📊 Скачать CSV" card (triggers exportCSV)
+  - Added reportOpen state
+- globals.css: added @media print styles — hides everything except .report-content, ensures colors print
+- Bumped version 1.6.4 → 1.6.5 everywhere: i18n.ts about_text (RU+EN), package.json, manifest.json, README.md, README.en.md, version.ts, public/version.json, public/sw.js (cache → v1.6.5)
+- Updated CHANGELOG.md [1.6.5] section
+- Lint: clean (0 errors)
+- Agent Browser verified with 30 days test data:
+  - Profile shows 3 new buttons: Share card, Medical report, CSV export ✅
+  - Medical report opens with period selector + print button ✅
+  - Report shows: Пуков/день 13.5, Походов/день 0.8, Bristol distribution (Type 3: 22%, Type 4: 35%, Type 5: 43%) ✅
+  - Food triggers: Хлеб 19.3 пуков после, Фасоль 15, correlation with poops Хлеб ~1ч ✅
+  - Bristol selector in bowel screen: 7 buttons, description updates ✅
+  - Symptoms: 5 tags + text input ✅
+  - History shows Bristol type + symptoms ✅
+  - No console errors
+- Rebuilt /home/z/my-project/download/fart-counter-v1.6.5.zip (574 KB)
+
+Stage Summary:
+- Medical-grade bowel tracking: Bristol Stool Scale Type 1-7 (international medical standard)
+- Symptoms tracking: 5 quick tags + free text
+- Doctor report: printable HTML with summary, Bristol distribution, food correlations, 30-day chart, symptoms log
+- CSV export: raw data for Excel/medical systems
+- Period selector: 7/30/90 days
+- Store migrated to v8 with backward-compatible Bristol conversion
+- Release zip at /home/z/my-project/download/fart-counter-v1.6.5.zip
