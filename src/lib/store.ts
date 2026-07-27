@@ -72,8 +72,10 @@ export interface FoodEntry {
 export interface PoopRecord {
   id: string;
   ts: string;
-  /** Optional consistency tag */
-  consistency?: "normal" | "loose" | "hard";
+  /** Bristol Stool Scale type 1-7 (medical standard). Old `consistency` migrated to bristolType. */
+  bristolType?: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  /** Optional symptoms/notes (free text or tags) */
+  symptoms?: string;
   /** Profile ID */
   profileId?: string;
 }
@@ -193,7 +195,7 @@ export interface AppState {
   removeCustomFood: (name: string) => void;
 
   // Actions — Bowel (poops)
-  addPoop: (consistency?: PoopRecord["consistency"]) => void;
+  addPoop: (opts?: { bristolType?: PoopRecord["bristolType"]; symptoms?: string }) => void;
   removePoop: (id: string) => void;
 
   // Actions — Walks
@@ -490,13 +492,14 @@ export const useStore = create<AppState>()(
       removeCustomFood: (name) =>
         set((s) => ({ customFoods: s.customFoods.filter((f) => f !== name) })),
 
-      addPoop: (consistency) => {
+      addPoop: (opts) => {
         const pid = get().settings.activeProfileId;
         const isPrimary = pid === "me";
         const rec: PoopRecord = {
           id: uid(),
           ts: new Date().toISOString(),
-          consistency,
+          bristolType: opts?.bristolType,
+          symptoms: opts?.symptoms?.trim() || undefined,
           profileId: pid,
         };
         // +5 XP for tracking bowel health (primary only, max 3/day = 15 XP)
@@ -682,7 +685,7 @@ export const useStore = create<AppState>()(
     {
       name: "fart-counter-store-v2",
       storage: createJSONStorage(() => localStorage),
-      version: 7,
+      version: 8,
       // NO skipHydration — let Zustand hydrate synchronously from localStorage (instant)
       migrate: (persisted: any, version: number) => {
         if (!persisted) return persisted;
@@ -765,6 +768,20 @@ export const useStore = create<AppState>()(
           if (persisted.settings) {
             persisted.settings.bowelTrackingEnabled = persisted.settings.bowelTrackingEnabled ?? true;
             persisted.settings.walkReminderEnabled = persisted.settings.walkReminderEnabled ?? true;
+          }
+        }
+        if (version < 8) {
+          // v7 → v8: Migrate poops.consistency (hard/normal/loose) → bristolType (1-7)
+          // hard → 1, normal → 4, loose → 6
+          if (Array.isArray(persisted.poops)) {
+            const consistencyMap: Record<string, number> = { hard: 1, normal: 4, loose: 6 };
+            persisted.poops = persisted.poops.map((p: any) => {
+              if (p.consistency && !p.bristolType) {
+                p.bristolType = consistencyMap[p.consistency] ?? 4;
+              }
+              delete p.consistency;
+              return p;
+            });
           }
         }
         return persisted;

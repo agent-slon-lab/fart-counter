@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Trash2, Clock, TrendingUp, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +27,15 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
   const bowelTrackingEnabled = useStore((s) => s.settings.bowelTrackingEnabled);
   const setSetting = useStore((s) => s.setSetting);
 
-  const [consistency, setConsistency] = useState<PoopRecord["consistency"]>("normal");
+  const [bristolType, setBristolType] = useState<PoopRecord["bristolType"]>(4);
+  const [symptoms, setSymptoms] = useState<string>("");
+  const [activeSymptomTags, setActiveSymptomTags] = useState<string[]>([]);
+
+  const SYMPTOM_TAGS = ["bloating", "pain", "nausea", "heartburn", "cramps"];
+
+  function toggleSymptomTag(tag: string) {
+    setActiveSymptomTags((prev) => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  }
 
   // Last 7 days of poops
   const weekPoops = useMemo(() => {
@@ -66,7 +75,13 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
   }, [food, poops]);
 
   function handleAdd() {
-    addPoop(consistency);
+    // Combine symptom tags + free text
+    const tagText = activeSymptomTags.map(tag => t(`bowel_symptoms_${tag}` as never)).join(", ");
+    const fullSymptoms = [tagText, symptoms.trim()].filter(Boolean).join(symptoms.trim() ? " · " : "") || undefined;
+    addPoop({ bristolType, symptoms: fullSymptoms });
+    // Reset symptoms after add
+    setSymptoms("");
+    setActiveSymptomTags([]);
     // Show XP toast
     const todayPoopsCount = poops.filter((p) => dateKey(new Date(p.ts)) === dateKey(new Date())).length;
     if (todayPoopsCount < 3) {
@@ -129,25 +144,83 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
               </div>
             )}
 
-            {/* Consistency selector */}
+            {/* Bristol Stool Scale selector */}
             <div>
               <p className="mb-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
-                {t("bowel_consistency" as never)}
+                {t("bowel_bristol_scale" as never)}
               </p>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(["hard", "normal", "loose"] as const).map((c) => (
+              <div className="grid grid-cols-7 gap-1">
+                {[1, 2, 3, 4, 5, 6, 7].map((bt) => {
+                  const isSelected = bristolType === bt;
+                  const isNormal = bt === 4;
+                  const isConstipation = bt <= 2;
+                  const isDiarrhea = bt >= 6;
+                  return (
+                    <button
+                      key={bt}
+                      onClick={() => setBristolType(bt as PoopRecord["bristolType"])}
+                      className={`flex flex-col items-center gap-0.5 rounded-lg border-2 py-1.5 transition-all ${
+                        isSelected
+                          ? isNormal
+                            ? "border-green-500 bg-green-500/10"
+                            : isConstipation
+                            ? "border-amber-500 bg-amber-500/10"
+                            : "border-red-500 bg-red-500/10"
+                          : "border-border"
+                      }`}
+                      title={t(`bowel_bristol_${bt}_desc` as never)}
+                    >
+                      <span className="text-[10px] font-black tabular-nums">{bt}</span>
+                      <span className="text-[14px] leading-none">
+                        {bt === 1 ? "🟫" : bt === 2 ? "🟫" : bt === 3 ? "🟫" : bt === 4 ? "🟫" : bt === 5 ? "🟫" : bt === 6 ? "🟫" : "🟫"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Description of selected type */}
+              <div className="mt-1.5 rounded-md bg-muted/40 px-2.5 py-1.5">
+                <p className="text-xs font-bold">
+                  {t("bowel_bristol_type" as never)} {bristolType}: {t(`bowel_bristol_${bristolType}` as never)}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {t(`bowel_bristol_${bristolType}_desc` as never)}
+                </p>
+              </div>
+            </div>
+
+            {/* Symptoms */}
+            <div>
+              <p className="mb-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                {t("bowel_symptoms" as never)}
+              </p>
+              <div className="mb-1.5 flex flex-wrap gap-1">
+                {SYMPTOM_TAGS.map((tag) => (
                   <button
-                    key={c}
-                    onClick={() => setConsistency(c)}
-                    className={`rounded-lg border-2 px-2 py-1.5 text-xs font-semibold transition-all ${
-                      consistency === c ? "border-primary bg-primary/10" : "border-border"
+                    key={tag}
+                    onClick={() => toggleSymptomTag(tag)}
+                    className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-all ${
+                      activeSymptomTags.includes(tag)
+                        ? "border-primary bg-primary/15 text-primary"
+                        : "border-border text-muted-foreground"
                     }`}
                   >
-                    {t(`bowel_${c}` as never)}
+                    {t(`bowel_symptoms_${tag}` as never)}
                   </button>
                 ))}
               </div>
+              <Input
+                value={symptoms}
+                onChange={(e) => setSymptoms(e.target.value)}
+                placeholder={t("bowel_symptoms_placeholder" as never)}
+                className="text-xs h-8"
+              />
             </div>
+
+            {/* Tracking hint */}
+            <p className="rounded-md bg-primary/5 px-2.5 py-1.5 text-[10px] text-muted-foreground">
+              {t("bowel_tracking_hint" as never)}
+            </p>
 
             {/* Add button */}
             <Button onClick={handleAdd} className="w-full" size="lg">
@@ -179,9 +252,14 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
                             {d.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })}{" "}
                             {d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
                           </p>
-                          {p.consistency && (
+                          {p.bristolType && (
                             <p className="text-[10px] text-muted-foreground">
-                              {t(`bowel_${p.consistency}` as never)}
+                              {t("bowel_bristol_type" as never)} {p.bristolType}: {t(`bowel_bristol_${p.bristolType}` as never)}
+                            </p>
+                          )}
+                          {p.symptoms && (
+                            <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                              {p.symptoms}
                             </p>
                           )}
                         </div>

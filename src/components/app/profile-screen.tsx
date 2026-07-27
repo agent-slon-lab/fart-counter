@@ -64,6 +64,7 @@ import { InstallButton } from "@/components/pwa/install-button";
 import { AchievementsList } from "./achievements-list";
 import { LevelsGrid } from "./levels-grid";
 import { ShareCardDialog } from "./share-card-dialog";
+import { MedicalReport, exportCSV } from "./medical-report";
 
 const ACCENTS: { id: AccentColor; color: string; key: string; purchased?: boolean }[] = [
   { id: "green", color: "#84cc16", key: "accent_green" },
@@ -97,6 +98,7 @@ export function ProfileScreen() {
   const [achOpen, setAchOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [qrData, setQrData] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateCheck = useManualUpdateCheck();
@@ -229,6 +231,30 @@ export function ProfileScreen() {
           <div className="flex-1">
             <p className="text-sm font-bold">{t("share_card_section")}</p>
             <p className="text-xs text-muted-foreground">{t("generate_share_card")}</p>
+          </div>
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        </div>
+      </Card>
+
+      {/* Medical report for doctor */}
+      <Card className="cursor-pointer p-4 transition-colors hover:bg-muted/40" onClick={() => setReportOpen(true)}>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/15 text-xl">📄</div>
+          <div className="flex-1">
+            <p className="text-sm font-bold">{t("report_section" as never)}</p>
+            <p className="text-xs text-muted-foreground">{t("report_desc" as never)}</p>
+          </div>
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        </div>
+      </Card>
+
+      {/* CSV export */}
+      <Card className="cursor-pointer p-4 transition-colors hover:bg-muted/40" onClick={() => exportCSV()}>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/15 text-xl">📊</div>
+          <div className="flex-1">
+            <p className="text-sm font-bold">{t("report_csv_button" as never)}</p>
+            <p className="text-xs text-muted-foreground">Excel / CSV</p>
           </div>
           <ChevronRight className="h-5 w-5 text-muted-foreground" />
         </div>
@@ -400,6 +426,7 @@ export function ProfileScreen() {
 
       <AchievementsList open={achOpen} onOpenChange={setAchOpen} />
       <ShareCardDialog open={shareOpen} onOpenChange={setShareOpen} />
+      <MedicalReport open={reportOpen} onOpenChange={setReportOpen} />
 
       {/* QR dialog */}
       <Dialog open={qrOpen} onOpenChange={setQrOpen}>
