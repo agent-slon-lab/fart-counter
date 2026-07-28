@@ -696,3 +696,29 @@ Stage Summary:
 - OG image: JPEG with correct .jpg extension + image/jpeg type → TG/VK will show preview
 - Install button: always visible at bottom of dialog (was only for Android/Desktop before)
 - All fixes in dev sandbox only, no version bump (still v1.6.6)
+
+---
+Task ID: zip-readme-og-v1.6.7
+Agent: main (Z.ai Code)
+Task: Build v1.6.7 zip with all fixes, update README with new features
+
+Work Log:
+- Bumped version 1.6.6 → 1.6.7 (version.ts, version.json, sw.js, i18n.ts, package.json, manifest.json, READMEs, medical-report.tsx)
+- Updated README.md with new features sections:
+  - Основное (counter, tags, sounds, achievements, stats, journal)
+  - Здоровье и питание (food diary, correlation, Bristol scale, walk tracker, water)
+  - Отчёт для гастроэнтеролога (medical report, CSV, period selector)
+  - Аналитика (AI insights, weekly cycle, hourly, trend, predictor)
+  - Напоминания (morning bowel, walk, evening)
+  - Прочее (mood, weather, baby mode, anti-farm, levels grid, etc.)
+- Updated CHANGELOG.md [1.6.7] section
+- Cleaned up CHANGELOG (removed old cancelled v1.6.7 entry about button move)
+- Lint: clean (0 errors)
+- Built /home/z/my-project/download/fart-counter-v1.6.7.zip (661 KB)
+- ZIP includes: og-image.jpg (84KB, correct JPEG), og-image.png (84KB, old), og-image.svg (5.6KB)
+
+Stage Summary:
+- v1.6.7 zip ready with: bowel button fix, OG image JPEG fix, always-visible INSTALL button
+- README updated with all new features (Bristol, medical report, walk, AI insights, baby mode, anti-farm, levels)
+- OG preview data: title "Счётчик Пуков — весёлый трекер здоровья 💨", image /og-image.jpg (image/jpeg), description with Bristol + doctor report mention
+- Release zip at /home/z/my-project/download/fart-counter-v1.6.7.zip
