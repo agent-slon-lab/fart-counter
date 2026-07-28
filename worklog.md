@@ -637,3 +637,25 @@ Stage Summary:
 - Icons used in 3 places: bowel screen selector, bowel screen description, medical report distribution
 - SVGs are tiny (194-582 bytes each), load instantly, work offline (cached by SW as static assets)
 - Release zip at /home/z/my-project/download/fart-counter-v1.6.6.zip
+
+---
+Task ID: bowel-button-visibility-v1.6.7
+Agent: main (Z.ai Code)
+Task: Fix bowel/walk buttons not visible in sandbox — user couldn't find them below water
+
+Work Log:
+- Diagnosed: bowel button was at top=1268px, viewport=800px → needed 468px scroll to see it
+- Root cause: Bowel+Walk card was placed AFTER water tracker, which was after tags (11 buttons) + fact of day + medical hint
+- Fix: Moved Bowel+Walk card from after water → immediately after +1 ПУК button (before fact of day)
+- New layout order: Header → GamificationBar → Counter card → +1 ПУК → 🚽/🚶 (new position) → Fact of day → Tags → Cancel → Hint → Water → Sound
+- Made card more compact: p-3 (was p-4), text-xl icons (was text-2xl), gap-0.5 (was gap-1)
+- Verified: bowel button now at top=683px, isVisible=true, needsScroll=false ✅
+- Verified: clicking bowel button opens Bristol scale modal ✅
+- Bumped version 1.6.6 → 1.6.7 everywhere (version.ts, version.json, sw.js, i18n.ts, package.json, manifest.json, READMEs, medical-report.tsx)
+- Lint: clean (0 errors)
+- Rebuilt /home/z/my-project/download/fart-counter-v1.6.7.zip (578 KB)
+
+Stage Summary:
+- Bowel/walk buttons now visible without scrolling on first screen
+- Buttons placed right after the main +1 ПУК button — natural eye flow
+- Release zip at /home/z/my-project/download/fart-counter-v1.6.7.zip
