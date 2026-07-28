@@ -133,6 +133,21 @@ function InstallDialog({
   // Show native install button if we have a deferred prompt (Android/Desktop Chrome)
   const showNativeButton = !!deferredPrompt;
 
+  // Handle install button click — always available
+  async function handleInstallClick() {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === "accepted") {
+        setDeferredPrompt(null);
+        onOpenChange(false);
+      }
+    } else {
+      // No native prompt (iOS) — just close dialog, instructions are shown above
+      onOpenChange(false);
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[360px]">
@@ -163,46 +178,30 @@ function InstallDialog({
           </>
         )}
 
-        {/* Android instructions + native button */}
+        {/* Android instructions */}
         {showPlatform === "android" && (
-          <>
-            <InstallSteps
-              icon={<Smartphone className="h-5 w-5" />}
-              title={t("install_android_title")}
-              steps={[
-                t("install_android_step1"),
-                t("install_android_step2"),
-                t("install_android_step3"),
-              ]}
-            />
-            {showNativeButton && (
-              <Button onClick={onNativeInstall} size="lg" className="w-full text-base font-bold">
-                <Download className="mr-2 h-4 w-4" />
-                {t("install_button_native")}
-              </Button>
-            )}
-          </>
+          <InstallSteps
+            icon={<Smartphone className="h-5 w-5" />}
+            title={t("install_android_title")}
+            steps={[
+              t("install_android_step1"),
+              t("install_android_step2"),
+              t("install_android_step3"),
+            ]}
+          />
         )}
 
-        {/* Desktop instructions + native button */}
+        {/* Desktop instructions */}
         {showPlatform === "desktop" && (
-          <>
-            <InstallSteps
-              icon={<Monitor className="h-5 w-5" />}
-              title={t("install_desktop_title")}
-              steps={[
-                t("install_desktop_step1"),
-                t("install_desktop_step2"),
-                t("install_desktop_step3"),
-              ]}
-            />
-            {showNativeButton && (
-              <Button onClick={onNativeInstall} size="lg" className="w-full text-base font-bold">
-                <Download className="mr-2 h-4 w-4" />
-                {t("install_button_native")}
-              </Button>
-            )}
-          </>
+          <InstallSteps
+            icon={<Monitor className="h-5 w-5" />}
+            title={t("install_desktop_title")}
+            steps={[
+              t("install_desktop_step1"),
+              t("install_desktop_step2"),
+              t("install_desktop_step3"),
+            ]}
+          />
         )}
 
         {/* Other — show all 3 + native button if available */}
@@ -237,14 +236,14 @@ function InstallDialog({
                 ]}
               />
             </div>
-            {showNativeButton && (
-              <Button onClick={onNativeInstall} size="lg" className="w-full text-base font-bold">
-                <Download className="mr-2 h-4 w-4" />
-                {t("install_button_native")}
-              </Button>
-            )}
           </>
         )}
+
+        {/* Always show INSTALL button at the bottom */}
+        <Button onClick={handleInstallClick} size="lg" className="w-full text-base font-bold">
+          <Download className="mr-2 h-5 w-5" />
+          {t("install_button_native")}
+        </Button>
       </DialogContent>
     </Dialog>
   );

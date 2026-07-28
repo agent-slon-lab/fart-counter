@@ -659,3 +659,40 @@ Stage Summary:
 - Bowel/walk buttons now visible without scrolling on first screen
 - Buttons placed right after the main +1 ПУК button — natural eye flow
 - Release zip at /home/z/my-project/download/fart-counter-v1.6.7.zip
+
+---
+Task ID: sandbox-og-install-fixes
+Agent: main (Z.ai Code)
+Task: Fix 3 issues: bowel button not in sandbox, OG image not showing in TG/VK, add INSTALL button to install dialog
+
+Work Log:
+- Issue 1: Bowel button not visible in sandbox
+  - Root cause: bowelTrackingEnabled could be undefined in old stores → button hidden
+  - Fix: home-screen.tsx — `useStore((s) => s.settings.bowelTrackingEnabled ?? true)` — defaults to true if undefined
+  - Verified: HTML contains 🚽 Went (button renders) ✅
+
+- Issue 2: OG image not showing in TG/VK
+  - Root cause: og-image.png was actually a JPEG file with .png extension → messengers couldn't detect MIME type
+  - Fix: 
+    - Copied og-image.png → og-image.jpg (correct extension for JPEG)
+    - Updated layout.tsx metadata: og:image url → /og-image.jpg, added og:image:type = "image/jpeg"
+    - Updated twitter:image → /og-image.jpg
+  - Verified: og:image:type = "image/jpeg" in HTML ✅, og-image.jpg returns 200 (84KB) ✅
+  - Also updated description to mention Bristol scale + doctor report
+
+- Issue 3: INSTALL button missing in install dialog
+  - Root cause: install_button_native only showed when showNativeButton = !!deferredPrompt (Android/Desktop Chrome only). iOS had NO button at all.
+  - Fix: 
+    - Added handleInstallClick() — always available, calls native prompt if available, otherwise closes dialog (iOS instructions shown above)
+    - Removed conditional {showNativeButton && ...} from android/desktop/other sections
+    - Added single INSTALL button at bottom of dialog — ALWAYS visible
+  - Now every platform sees: instructions + big "Установить сейчас" button
+
+- Lint: clean (0 errors)
+- Dev server running (PID 1140, 200 OK)
+
+Stage Summary:
+- Bowel button: forced default true if undefined → always shows in sandbox
+- OG image: JPEG with correct .jpg extension + image/jpeg type → TG/VK will show preview
+- Install button: always visible at bottom of dialog (was only for Android/Desktop before)
+- All fixes in dev sandbox only, no version bump (still v1.6.6)
