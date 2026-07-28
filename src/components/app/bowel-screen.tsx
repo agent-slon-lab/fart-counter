@@ -171,21 +171,31 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
                       title={t(`bowel_bristol_${bt}_desc` as never)}
                     >
                       <span className="text-[10px] font-black tabular-nums">{bt}</span>
-                      <span className="text-[14px] leading-none">
-                        {bt === 1 ? "🟫" : bt === 2 ? "🟫" : bt === 3 ? "🟫" : bt === 4 ? "🟫" : bt === 5 ? "🟫" : bt === 6 ? "🟫" : "🟫"}
-                      </span>
+                      <img
+                        src={`/bristol/type${bt}.svg`}
+                        alt={`Bristol type ${bt}`}
+                        className="h-5 w-7 object-contain"
+                        loading="lazy"
+                      />
                     </button>
                   );
                 })}
               </div>
               {/* Description of selected type */}
-              <div className="mt-1.5 rounded-md bg-muted/40 px-2.5 py-1.5">
-                <p className="text-xs font-bold">
-                  {t("bowel_bristol_type" as never)} {bristolType}: {t(`bowel_bristol_${bristolType}` as never)}
-                </p>
-                <p className="text-[10px] text-muted-foreground">
-                  {t(`bowel_bristol_${bristolType}_desc` as never)}
-                </p>
+              <div className="mt-1.5 flex items-center gap-2.5 rounded-md bg-muted/40 px-2.5 py-1.5">
+                <img
+                  src={`/bristol/type${bristolType}.svg`}
+                  alt={`Bristol type ${bristolType}`}
+                  className="h-8 w-12 shrink-0 object-contain"
+                />
+                <div className="min-w-0">
+                  <p className="text-xs font-bold">
+                    {t("bowel_bristol_type" as never)} {bristolType}: {t(`bowel_bristol_${bristolType}` as never)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {t(`bowel_bristol_${bristolType}_desc` as never)}
+                  </p>
+                </div>
               </div>
             </div>
 

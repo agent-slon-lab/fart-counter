@@ -602,3 +602,38 @@ Stage Summary:
 - Period selector: 7/30/90 days
 - Store migrated to v8 with backward-compatible Bristol conversion
 - Release zip at /home/z/my-project/download/fart-counter-v1.6.5.zip
+
+---
+Task ID: bristol-svg-icons-v1.6.6
+Agent: main (Z.ai Code)
+Task: Add visual SVG icons for Bristol Stool Scale types (mini images under each type)
+
+Work Log:
+- Created 7 hand-drawn SVG icons in public/bristol/:
+  - type1.svg: small hard separate lumps (constipation)
+  - type2.svg: lumpy sausage shape (constipation)
+  - type3.svg: sausage with cracks (normal)
+  - type4.svg: smooth sausage (ideal)
+  - type5.svg: soft separate blobs (low fiber)
+  - type6.svg: fluffy mushy pieces (mild diarrhea)
+  - type7.svg: watery liquid (diarrhea)
+  - Each SVG: 60×40 viewBox, brown color (#8b6914 to #c9a838), flat medical illustration style
+- Updated BowelScreen (src/components/app/bowel-screen.tsx):
+  - Bristol selector: replaced emoji 🟫 with <img src="/bristol/typeN.svg"> (28×20px)
+  - Description block: added larger icon (48×32px) next to selected type name + description
+- Updated MedicalReport (src/components/app/medical-report.tsx):
+  - Bristol distribution: each row starts with mini icon (20×14px) before the type name
+- Bumped version 1.6.5 → 1.6.6 everywhere: version.ts, version.json, sw.js (cache → v1.6.6), i18n.ts about_text (RU+EN), package.json, manifest.json, README.md, README.en.md, medical-report.tsx signature
+- Lint: clean (0 errors)
+- Agent Browser verified:
+  - All 7 SVG icons render in Bristol selector (28×20px each) ✅
+  - Larger icon (48×32px) shows next to selected type description ✅
+  - All SVGs return 200 from /bristol/typeN.svg ✅
+  - No console errors
+- Rebuilt /home/z/my-project/download/fart-counter-v1.6.6.zip (578 KB)
+
+Stage Summary:
+- Bristol Stool Scale now has visual icons showing actual stool shape for each type
+- Icons used in 3 places: bowel screen selector, bowel screen description, medical report distribution
+- SVGs are tiny (194-582 bytes each), load instantly, work offline (cached by SW as static assets)
+- Release zip at /home/z/my-project/download/fart-counter-v1.6.6.zip

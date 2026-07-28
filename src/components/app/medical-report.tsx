@@ -171,7 +171,12 @@ export function MedicalReport({ open, onOpenChange }: { open: boolean; onOpenCha
                       const pct = periodPoops.length > 0 ? Math.round((count / periodPoops.length) * 100) : 0;
                       return (
                         <div key={bt} className="flex items-center gap-2 text-xs">
-                          <span className="w-16 shrink-0">
+                          <img
+                            src={`/bristol/type${bt}.svg`}
+                            alt={`Type ${bt}`}
+                            className="h-5 w-7 shrink-0 object-contain"
+                          />
+                          <span className="w-20 shrink-0">
                             {t("bowel_bristol_type" as never)} {bt}: {t(`bowel_bristol_${bt}` as never)}
                           </span>
                           <div className="flex-1 h-4 bg-muted rounded">
@@ -257,7 +262,7 @@ export function MedicalReport({ open, onOpenChange }: { open: boolean; onOpenCha
 
               {/* Footer */}
               <div className="mt-4 border-t pt-2 text-center">
-                <p className="text-[10px] text-muted-foreground">{t("report_signature" as never)} · v1.6.5</p>
+                <p className="text-[10px] text-muted-foreground">{t("report_signature" as never)} · v1.6.6</p>
                 <p className="text-[9px] text-muted-foreground italic">{t("report_disclaimer" as never)}</p>
               </div>
             </>
