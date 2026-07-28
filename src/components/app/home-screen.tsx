@@ -101,7 +101,8 @@ export function HomeScreen() {
   const addWater = useStore((s) => s.addWater);
   const removeWater = useStore((s) => s.removeWater);
   const addWalk = useStore((s) => s.addWalk);
-  const bowelTrackingEnabled = useStore((s) => s.settings.bowelTrackingEnabled);
+  // Default to true if undefined (for old stores without this field)
+  const bowelTrackingEnabled = useStore((s) => s.settings.bowelTrackingEnabled ?? true);
   const walkReminderEnabled = useStore((s) => s.settings.walkReminderEnabled);
   const poops = useProfilePoops();
   const walks = useProfileWalks();
