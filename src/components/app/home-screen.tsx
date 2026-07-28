@@ -357,66 +357,6 @@ export function HomeScreen() {
         </motion.button>
       </div>
 
-      {/* Bowel + Walk tracker (right after +1 button for maximum visibility) */}
-      {bowelTrackingEnabled && (
-        <Card className="p-3">
-          <div className="grid grid-cols-2 gap-2">
-            {/* Bowel button */}
-            <button
-              onClick={() => setBowelOpen(true)}
-              className="flex flex-col items-center gap-0.5 rounded-xl border-2 border-amber-500/40 bg-amber-500/5 p-2 transition-all hover:border-amber-500 hover:bg-amber-500/10"
-            >
-              <span className="text-xl">🚽</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                {t("bowel_went_short" as never)}
-              </span>
-              <span className="text-[10px] text-muted-foreground tabular-nums">
-                {poops.filter((p) => {
-                  const d = new Date(p.ts);
-                  const today = new Date();
-                  return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
-                }).length} {t("bowel_today" as never)}
-              </span>
-            </button>
-
-            {/* Walk button */}
-            {walkReminderEnabled && (
-              <button
-                onClick={() => {
-                  addWalk(30);
-                  const todayWalks = walks.filter((w) => {
-                    const d = new Date(w.ts);
-                    const today = new Date();
-                    return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
-                  }).length;
-                  if (todayWalks < 2) {
-                    toast(t("walk_xp_gain" as never), { icon: "🚶", duration: 1500 });
-                  } else {
-                    toast(t("walk_xp_capped" as never), { icon: "📊", duration: 1500 });
-                  }
-                }}
-                className="flex flex-col items-center gap-0.5 rounded-xl border-2 border-green-500/40 bg-green-500/5 p-2 transition-all hover:border-green-500 hover:bg-green-500/10"
-              >
-                <span className="text-xl">🚶</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400">
-                  {t("walk_went_short" as never)}
-                </span>
-                <span className="text-[10px] text-muted-foreground tabular-nums">
-                  {walks.filter((w) => {
-                    const d = new Date(w.ts);
-                    const today = new Date();
-                    return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
-                  }).length} {t("walk_today" as never)}
-                </span>
-              </button>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* Bowel screen modal */}
-      <BowelScreen open={bowelOpen} onOpenChange={setBowelOpen} />
-
       {/* Fact of the day */}
       <Card className="border-primary/30 bg-primary/5 p-3">
         <div className="mb-1 flex items-center justify-between">
@@ -506,6 +446,66 @@ export function HomeScreen() {
           </Button>
         </div>
       </Card>
+
+      {/* Bowel + Walk tracker (under water, only if bowelTrackingEnabled) */}
+      {bowelTrackingEnabled && (
+        <Card className="p-4">
+          <div className="grid grid-cols-2 gap-2">
+            {/* Bowel button */}
+            <button
+              onClick={() => setBowelOpen(true)}
+              className="flex flex-col items-center gap-1 rounded-xl border-2 border-amber-500/40 bg-amber-500/5 p-3 transition-all hover:border-amber-500 hover:bg-amber-500/10"
+            >
+              <span className="text-2xl">🚽</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                {t("bowel_went_short" as never)}
+              </span>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {poops.filter((p) => {
+                  const d = new Date(p.ts);
+                  const today = new Date();
+                  return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+                }).length} {t("bowel_today" as never)}
+              </span>
+            </button>
+
+            {/* Walk button */}
+            {walkReminderEnabled && (
+              <button
+                onClick={() => {
+                  addWalk(30);
+                  const todayWalks = walks.filter((w) => {
+                    const d = new Date(w.ts);
+                    const today = new Date();
+                    return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+                  }).length;
+                  if (todayWalks < 2) {
+                    toast(t("walk_xp_gain" as never), { icon: "🚶", duration: 1500 });
+                  } else {
+                    toast(t("walk_xp_capped" as never), { icon: "📊", duration: 1500 });
+                  }
+                }}
+                className="flex flex-col items-center gap-1 rounded-xl border-2 border-green-500/40 bg-green-500/5 p-3 transition-all hover:border-green-500 hover:bg-green-500/10"
+              >
+                <span className="text-2xl">🚶</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400">
+                  {t("walk_went_short" as never)}
+                </span>
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {walks.filter((w) => {
+                    const d = new Date(w.ts);
+                    const today = new Date();
+                    return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+                  }).length} {t("walk_today" as never)}
+                </span>
+              </button>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {/* Bowel screen modal */}
+      <BowelScreen open={bowelOpen} onOpenChange={setBowelOpen} />
 
       {/* Sound selector dialog */}
       <Dialog open={soundOpen} onOpenChange={setSoundOpen}>
