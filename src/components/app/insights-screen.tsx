@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useStore, dateKey, useProfileFarts, useProfileMoods, useProfileFood, type FartRecord, type MoodDay } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 import { toast } from "sonner";
+import { DigestCards } from "./digest-cards";
 
 const WEEKDAY_KEYS = ["weekday_mon", "weekday_tue", "weekday_wed", "weekday_thu", "weekday_fri", "weekday_sat", "weekday_sun"];
 const FOOD_LIFESPAN_MS = 24 * 60 * 60 * 1000;
@@ -465,6 +466,9 @@ export function InsightsScreen() {
           </div>
         )}
       </Card>
+
+      {/* Digest cards (Spotify Wrapped style) */}
+      <DigestCards />
 
       {/* Weather */}
       <Card className="p-4">

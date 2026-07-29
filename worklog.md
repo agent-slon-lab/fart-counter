@@ -787,3 +787,49 @@ Stage Summary:
 - Install button: uses navigator.share() on iOS to open native share sheet, with adaptive text
 - OG preview: tags are correct on production, TG cache is the issue — share with ?1 to bust
 - Release zip at /home/z/my-project/download/fart-counter-v1.6.8.zip
+
+---
+Task ID: digest-cards-v1.6.9
+Agent: main (Z.ai Code)
+Task: Add Spotify Wrapped style digest cards (5 stat cards + 1 funny insight) to Insights
+
+Work Log:
+- Added 35 i18n keys (RU+EN) in src/lib/i18n.ts:
+  - digest_section, digest_period, digest_no_data
+  - 5 card labels: digest_avg_rhythm, digest_top_type, digest_food_trigger, digest_best_day, digest_progress (each with _unit and _desc)
+  - digest_insight_title + 20 funny insights (digest_insight_1..20)
+  - Format: [Fact] + [light joke], e.g. "Похоже, твой кишечник любит расписание."
+- Created src/components/app/digest-cards.tsx:
+  - DigestCards component — 7-day period analysis
+  - 5 stat cards in 2-column grid:
+    1. Average rhythm (poops/day) — blue
+    2. Top Bristol type (most frequent + %) — amber
+    3. Food trigger (food with most symptoms after) — red
+    4. Best day (fewest symptoms) — green
+    5. Progress (days tracked) — purple
+  - 6th card "Insight of the day" — random from 20 funny phrases, full width, gradient background
+  - Color-coded cards with icons (Calendar, Trophy, Utensils, Star, TrendingUp)
+  - Framer Motion animation: cards appear one by one with 0.1s delay
+  - Empty state: "Недостаточно данных" if no poops in 7 days
+- Integrated into InsightsScreen (src/components/app/insights-screen.tsx):
+  - Added import { DigestCards } from "./digest-cards"
+  - Placed after AI Insights card, before Weather section
+- Bumped version 1.6.8 → 1.6.9 everywhere
+- Lint: clean (0 errors)
+- Agent Browser verified with 7 days test data (poops with Bristol types + symptoms + food):
+  - "ТВОЙ ДАЙДЖЕСТ · за 7 дней" section appears ✅
+  - Card 1: СРЕДНИЙ РИТМ — 2.1 раза в день ✅
+  - Card 2: ЧАСТЫЙ ТИП — Тип 5, 40% · твой фаворит ✅
+  - Card 3: ТРИГГЕР ПО ЕДЕ — Брокколи, 1 симптомов ✅
+  - Card 4: ЛУЧШИЙ ДЕНЬ — Пн, без симптомов ✅
+  - Card 5: ПРОГРЕСС — 7 дней данных собрано ✅
+  - Card 6: ИНСАЙТ ДНЯ — «Похоже, твой кишечник любит расписание.» ✅
+  - No console errors
+- Rebuilt /home/z/my-project/download/fart-counter-v1.6.9.zip (668 KB)
+
+Stage Summary:
+- Spotify Wrapped style digest cards added to Insights screen
+- 5 colored stat cards with real data (rhythm, Bristol top, food trigger, best day, progress)
+- 20 funny insights rotating daily (format: fact + light joke)
+- Cards animate in with staggered delay
+- Release zip at /home/z/my-project/download/fart-counter-v1.6.9.zip
