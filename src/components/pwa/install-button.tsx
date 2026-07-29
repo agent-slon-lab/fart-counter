@@ -133,17 +133,36 @@ function InstallDialog({
   // Show native install button if we have a deferred prompt (Android/Desktop Chrome)
   const showNativeButton = !!deferredPrompt;
 
-  // Handle install button click — always available
+  // Handle install button click — platform-aware
   async function handleInstallClick() {
     if (deferredPrompt) {
+      // Android/Desktop Chrome — native install prompt
       await deferredPrompt.prompt();
       const choice = await deferredPrompt.userChoice;
       if (choice.outcome === "accepted") {
         setDeferredPrompt(null);
         onOpenChange(false);
       }
+    } else if (platform === "ios-safari") {
+      // iOS Safari — no native prompt, instructions are shown above
+      // Try to trigger share sheet (iOS 13+ supports navigator.share)
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "Счётчик Пуков",
+            text: "Добавь на главный экран",
+            url: window.location.href,
+          });
+        } catch {
+          // User cancelled share — instructions still visible
+        }
+      }
+      // Keep dialog open so user can read instructions
+    } else if (platform === "ios-other") {
+      // iOS Chrome/Firefox — can't install, need Safari
+      window.open("https://support.apple.com/en-us/HT204211", "_blank");
     } else {
-      // No native prompt (iOS) — just close dialog, instructions are shown above
+      // Desktop/other without native prompt — close dialog
       onOpenChange(false);
     }
   }
@@ -239,11 +258,18 @@ function InstallDialog({
           </>
         )}
 
-        {/* Always show INSTALL button at the bottom */}
+        {/* Install button — text depends on platform */}
         <Button onClick={handleInstallClick} size="lg" className="w-full text-base font-bold">
           <Download className="mr-2 h-5 w-5" />
-          {t("install_button_native")}
+          {platform === "ios-safari" ? "📤 Открыть «Поделиться»" : platform === "ios-other" ? "🍎 Открыть в Safari" : t("install_button_native")}
         </Button>
+
+        {/* iOS Safari hint */}
+        {platform === "ios-safari" && (
+          <p className="text-center text-[11px] text-muted-foreground">
+            Нажми кнопку → «На экран Домой» → «Добавить»
+          </p>
+        )}
       </DialogContent>
     </Dialog>
   );
