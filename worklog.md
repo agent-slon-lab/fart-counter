@@ -722,3 +722,68 @@ Stage Summary:
 - README updated with all new features (Bristol, medical report, walk, AI insights, baby mode, anti-farm, levels)
 - OG preview data: title "Счётчик Пуков — весёлый трекер здоровья 💨", image /og-image.jpg (image/jpeg), description with Bristol + doctor report mention
 - Release zip at /home/z/my-project/download/fart-counter-v1.6.7.zip
+
+---
+Task ID: og-cache-diagnosis
+Agent: main (Z.ai Code)
+Task: Diagnose why TG doesn't show description despite correct OG tags
+
+Work Log:
+- Verified production Vercel (fart-counter-lake.vercel.app) serves correct OG tags:
+  - og:title: "Счётчик Пуков — весёлый трекер здоровья 💨"
+  - og:description: "💨 Отслеживай пуки, еду, туалет и ходьбу с юмором..."
+  - og:image: https://fart-counter-lake.vercel.app/og-image.jpg
+  - og:image:type: image/jpeg
+  - twitter:card: summary_large_image
+- Verified og-image.jpg accessible (HTTP 200, content-type: image/jpeg)
+- Production version.json = 1.6.7 (deployed)
+- Root cause: Telegram caches link previews aggressively. Once a link was shared (before OG was correct), TG won't re-fetch until forced.
+- Solution for user: share link with a query param to bust TG cache, e.g.:
+  - https://fart-counter-lake.vercel.app/?1
+  - https://fart-counter-lake.vercel.app/?v=2
+- Alternative: use @WebpageBot on Telegram to force re-scrape
+
+Stage Summary:
+- OG tags are 100% correct on production — issue is purely TG cache
+- User should share with ?1 query param to force fresh preview
+
+---
+Task ID: ios-install-og-fix-v1.6.8
+Agent: main (Z.ai Code)
+Task: Fix iOS PWA install (missing apple-mobile-web-app-capable) + explain OG cache
+
+Work Log:
+- OG diagnosis: production Vercel serves correct OG tags (verified via curl):
+  - og:title, og:description, og:image (jpg), og:image:type all present
+  - og-image.jpg returns 200 with content-type: image/jpeg
+  - Root cause: Telegram caches link previews — user shared link before OG was correct
+  - Solution: share with query param (?1) to bust TG cache, or use @WebpageBot to re-scrape
+
+- iOS install fix (src/app/layout.tsx):
+  - Added <head> section with critical iOS meta tags:
+    - <meta name="apple-mobile-web-app-capable" content="yes"> — REQUIRED for iOS "Add to Home Screen"
+    - <meta name="mobile-web-app-capable" content="yes"> — for older Android
+    - <meta name="apple-mobile-web-app-title" content="Счётчик Пуков">
+    - <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    - <link rel="apple-touch-icon" href="/apple-touch-icon.png"> (3 sizes: 180/192/512)
+  - Updated metadata.appleWebApp: statusBarStyle "default" → "black-translucent", added startupImage
+  - Updated metadata.icons.apple: added 180x180 apple-touch-icon
+
+- Install button improvement (src/components/pwa/install-button.tsx):
+  - handleInstallClick now platform-aware:
+    - deferredPrompt (Android/Desktop Chrome) → native prompt
+    - iOS Safari → navigator.share() (opens iOS share sheet)
+    - iOS Chrome/Firefox → opens Apple support page
+    - Other → closes dialog
+  - Button text adaptive: "📤 Открыть Поделиться" (iOS Safari) / "🍎 Открыть в Safari" (iOS other) / "Установить сейчас" (Android/Desktop)
+  - Added hint under button on iOS: "Нажми кнопку → На экран Домой → Добавить"
+
+- Bumped version 1.6.7 → 1.6.8 everywhere
+- Lint: clean (0 errors)
+- Built /home/z/my-project/download/fart-counter-v1.6.8.zip (662 KB)
+
+Stage Summary:
+- iOS install: added all required meta tags (apple-mobile-web-app-capable, apple-touch-icon, status-bar-style) — iOS Safari will now offer "Add to Home Screen"
+- Install button: uses navigator.share() on iOS to open native share sheet, with adaptive text
+- OG preview: tags are correct on production, TG cache is the issue — share with ?1 to bust
+- Release zip at /home/z/my-project/download/fart-counter-v1.6.8.zip

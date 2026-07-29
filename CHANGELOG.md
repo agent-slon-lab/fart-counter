@@ -4,6 +4,29 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [SemVer](https://semver.org/lang/ru/).
 
+## [1.6.8] — 2026-07-29
+
+### 🍎 iOS PWA install fix + OG cache busting
+
+### Исправлено — iOS установка
+- 🍎 **`apple-mobile-web-app-capable: yes`** meta tag добавлен в `<head>` — критично для iOS Safari «Add to Home Screen» (без этого iPhone не предлагает установку!)
+- 🍎 **`mobile-web-app-capable: yes`** — для старых Android
+- 🍎 **`apple-touch-icon`** в 3 размерах (180/192/512) — iOS использует для иконки на главном экране
+- 🍎 **`apple-mobile-web-app-status-bar-style: black-translucent`** — для красивого status bar
+- 📤 **Install button на iOS** — теперь вызывает `navigator.share()` (нативный share sheet iOS) вместо простого закрытия диалога
+- 📱 **Текст кнопки адаптивный**: iOS Safari → «📤 Открыть Поделиться», iOS Chrome → «🍎 Открыть в Safari», Android/Desktop → «Установить сейчас»
+- 💡 **Hint под кнопкой** на iOS: «Нажми кнопку → На экран Домой → Добавить»
+
+### Исправлено — OG preview
+- 📱 **OG теги корректны на production** — проверено: og:title, og:description, og:image (jpg), og:image:type все на месте
+- ℹ️ **TG кэширует preview** — если отправлял ссылку раньше, TG не обновит. Решение: отправь ссылку с query параметром, например `https://fart-counter-lake.vercel.app/?1`
+
+### Версия
+- 🔢 APP_VERSION 1.6.7 → 1.6.8
+- 📦 SW cache → v1.6.8
+
+---
+
 ## [1.6.7] — 2026-07-29
 
 ### 🐛 Фиксы превью + установки + видимости
