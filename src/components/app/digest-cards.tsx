@@ -151,14 +151,19 @@ export function DigestCards() {
           variants={cardVariants}
         />
 
-        {/* 2. Top type */}
+        {/* 2. Top type — show Bristol icon + type name + description by category */}
         {topType && (
           <DigestCard
             icon={<Trophy className="h-4 w-4" />}
             title={t("digest_top_type" as never)}
-            value={`Тип ${topType.type}`}
-            unit={`${topType.pct}% · ${t("digest_top_type_unit" as never)}`}
-            desc={t("digest_top_type_desc" as never)}
+            value={`${t("bowel_bristol_type" as never)} ${topType.type}: ${t(`bowel_bristol_${topType.type}` as never)}`}
+            unit={`${topType.pct}% ${t("digest_top_type_unit" as never)}`}
+            desc={
+              topType.type === 4 ? t("digest_top_type_desc_normal" as never)
+              : topType.type <= 2 ? t("digest_top_type_desc_constipation" as never)
+              : topType.type >= 6 ? t("digest_top_type_desc_diarrhea" as never)
+              : t("digest_avg_rhythm_desc" as never)
+            }
             color="amber"
             index={1}
             variants={cardVariants}
@@ -171,7 +176,7 @@ export function DigestCards() {
             icon={<Utensils className="h-4 w-4" />}
             title={t("digest_food_trigger" as never)}
             value={foodTrigger.name}
-            unit={`${foodTrigger.symptoms} симптомов`}
+            unit={`${foodTrigger.symptoms} ${t("digest_food_trigger_unit" as never)}`}
             desc={t("digest_food_trigger_desc" as never)}
             color="red"
             index={2}
@@ -185,7 +190,11 @@ export function DigestCards() {
             icon={<Star className="h-4 w-4" />}
             title={t("digest_best_day" as never)}
             value={t(WEEKDAY_KEYS[bestDay.dayIdx] as never)}
-            unit={bestDay.symptoms === 0 ? "без симптомов" : `${bestDay.symptoms} симпт.`}
+            unit={
+              bestDay.symptoms === 0
+                ? t("digest_best_day_unit" as never)
+                : t("digest_best_day_unit_with" as never).replace("{n}", String(bestDay.symptoms))
+            }
             desc={t("digest_best_day_desc" as never)}
             color="green"
             index={3}
@@ -193,12 +202,16 @@ export function DigestCards() {
           />
         )}
 
-        {/* 5. Progress */}
+        {/* 5. Progress — proper pluralization */}
         <DigestCard
           icon={<TrendingUp className="h-4 w-4" />}
           title={t("digest_progress" as never)}
           value={String(progress)}
-          unit={t("digest_progress_unit" as never)}
+          unit={
+            progress === 1 ? t("digest_progress_unit_one" as never)
+            : progress >= 2 && progress <= 4 ? t("digest_progress_unit_few" as never)
+            : t("digest_progress_unit_many" as never)
+          }
           desc={t("digest_progress_desc" as never)}
           color="purple"
           index={4}
@@ -257,7 +270,7 @@ function DigestCard({ icon, title, value, unit, desc, color, index, variants }: 
           <span className={colors.text}>{icon}</span>
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{title}</span>
         </div>
-        <p className={`text-2xl font-black leading-tight ${colors.text}`}>{value}</p>
+        <p className={`font-black leading-tight ${colors.text} ${value.length > 12 ? "text-sm" : value.length > 8 ? "text-lg" : "text-2xl"}`}>{value}</p>
         <p className="text-[10px] text-muted-foreground">{unit}</p>
         <p className="mt-1.5 text-[10px] leading-snug text-muted-foreground">{desc}</p>
       </Card>

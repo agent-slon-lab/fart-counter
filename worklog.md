@@ -871,3 +871,46 @@ Stage Summary:
 - Each platform shows relevant instructions + correct button text
 - Landing page also unified
 - Release zip at /home/z/my-project/download/fart-counter-v1.7.0.zip
+
+---
+Task ID: digest-texts-clarity-v1.7.1
+Agent: main (Z.ai Code)
+Task: Fix confusing digest card texts (user screenshot showed unclear labels)
+
+Work Log:
+- Analyzed user screenshot via VLM — confirmed problems:
+  1. "1.5 раза в день" — no context what "раза" means (bathroom visits?)
+  2. "Тип 2 — 33% — твой фаворит" — "фаворит" is weird for stool type, no name shown
+  3. "Мягко, но уже с характером" — description doesn't match Type 2 (constipation!)
+  4. "2 дней данных собрано" — wrong pluralization ("дней" instead of "дня")
+  5. "Уже четыре!" — description text didn't match the number 2
+
+- Fixed i18n texts (RU+EN):
+  - digest_avg_rhythm_unit: "раза в день" → "походов в день" (added context)
+  - digest_top_type: now shows "Тип 2: Колбаса комками" (Bristol type name included)
+  - digest_top_type_unit: "твой фаворит" → "всех походов" (clearer)
+  - digest_top_type_desc: split into 3 variants by Bristol category:
+    - desc_normal (type 4): "Норма — всё в порядке!"
+    - desc_constipation (types 1-2): "Ближе к запору. Пей больше воды."
+    - desc_diarrhea (types 6-7): "Ближе к диарее. Проверь питание."
+  - digest_food_trigger_unit: added "симптомов после" (context)
+  - digest_best_day: i18n with placeholder {n} for symptom count
+  - digest_progress: 3 plural forms (one/few/many) for proper Russian grammar
+
+- Updated digest-cards.tsx:
+  - Bristol type card now shows full type name (e.g. "Тип 2: Колбаса комками")
+  - Description dynamically chosen based on Bristol type (normal/constipation/diarrhea)
+  - Best day unit uses i18n with {n} replacement
+  - Progress unit uses proper pluralization (1 день / 2-4 дня / 5+ дней)
+  - Adaptive font size: text-2xl (short) → text-lg (medium) → text-sm (long Bristol names)
+
+- Bumped version 1.7.0 → 1.7.1
+- Lint: clean (0 errors)
+- Built /home/z/my-project/download/fart-counter-v1.7.1.zip (669 KB)
+
+Stage Summary:
+- All digest card texts now clear and self-explanatory
+- Bristol type shows full name + contextual health advice
+- Proper Russian pluralization for days
+- Adaptive font sizing for long Bristol type names
+- Release zip at /home/z/my-project/download/fart-counter-v1.7.1.zip
