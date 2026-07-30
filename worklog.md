@@ -833,3 +833,41 @@ Stage Summary:
 - 20 funny insights rotating daily (format: fact + light joke)
 - Cards animate in with staggered delay
 - Release zip at /home/z/my-project/download/fart-counter-v1.6.9.zip
+
+---
+Task ID: install-texts-unify-v1.7.0
+Agent: main (Z.ai Code)
+Task: Review and fix install app texts for all platforms (Android, iOS, Desktop)
+
+Work Log:
+- Reviewed all install-related i18n keys (RU+EN) in src/lib/i18n.ts
+- Found issues:
+  1. Mixed tone: some texts used "ты" (informal), others "вы" (formal) — inconsistent
+  2. Android steps said "Tap three dots ⋮" — but we have native beforeinstallprompt, should say "Tap Install below"
+  3. iOS steps said "Tap Share button" — but we have navigator.share() button, should say "Tap Open Share below"
+  4. Desktop steps said "Install icon in address bar" — but we have native prompt, should say "Tap Install below"
+  5. Landing page also used "вы" form
+- Fixed all install texts (RU+EN):
+  - Android: "Нажми кнопку «Установить» ниже — появится системный диалог" → "Подтверди установку" → "Иконка 💨 появится"
+  - iPhone Safari: "Нажми кнопку «📤 Открыть Поделиться» ниже" → "Выбери «На экран Домо»" → "Нажми «Добавить»"
+  - iPhone other: "⚠️ Установка возможна только в Safari. Открой ссылку в Safari." + button "🍎 Открыть в Safari"
+  - Desktop: "Нажми кнопку «Установить» ниже" → "Подтверди в диалоге браузера" → "Приложение откроется в отдельном окне"
+  - Landing page: all "вы" → "ты"
+  - install_dialog_subtitle: "Выбери вашу платформу" → "Выбери свою платформу"
+- Added 3 new i18n keys (RU+EN):
+  - install_button_ios_share: "📤 Открыть «Поделиться»" / "📤 Open Share"
+  - install_button_ios_hint: "Нажми кнопку → «На экран Домой» → «Добавить»"
+  - install_iphone_other_button: "🍎 Открыть в Safari" / "🍎 Open in Safari"
+- Updated install-button.tsx:
+  - Button text now uses i18n keys instead of hardcoded Russian
+  - navigator.share() uses t("install_dialog_title") and t("install_app") for title/text
+- Bumped version 1.6.9 → 1.7.0 (minor bump for text overhaul)
+- Lint: clean (0 errors)
+- Built /home/z/my-project/download/fart-counter-v1.7.0.zip (668 KB)
+
+Stage Summary:
+- All install texts now consistent "ты" tone (RU), platform-accurate steps
+- Buttons use native prompts (beforeinstallprompt for Android/Desktop, navigator.share for iOS)
+- Each platform shows relevant instructions + correct button text
+- Landing page also unified
+- Release zip at /home/z/my-project/download/fart-counter-v1.7.0.zip
