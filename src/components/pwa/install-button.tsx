@@ -149,8 +149,8 @@ function InstallDialog({
       if (navigator.share) {
         try {
           await navigator.share({
-            title: "Счётчик Пуков",
-            text: "Добавь на главный экран",
+            title: t("install_dialog_title"),
+            text: t("install_app"),
             url: window.location.href,
           });
         } catch {
@@ -261,13 +261,13 @@ function InstallDialog({
         {/* Install button — text depends on platform */}
         <Button onClick={handleInstallClick} size="lg" className="w-full text-base font-bold">
           <Download className="mr-2 h-5 w-5" />
-          {platform === "ios-safari" ? "📤 Открыть «Поделиться»" : platform === "ios-other" ? "🍎 Открыть в Safari" : t("install_button_native")}
+          {platform === "ios-safari" ? t("install_button_ios_share" as never) : platform === "ios-other" ? t("install_iphone_other_button" as never) : t("install_button_native")}
         </Button>
 
         {/* iOS Safari hint */}
         {platform === "ios-safari" && (
           <p className="text-center text-[11px] text-muted-foreground">
-            Нажми кнопку → «На экран Домой» → «Добавить»
+            {t("install_button_ios_hint" as never)}
           </p>
         )}
       </DialogContent>
