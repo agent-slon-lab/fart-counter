@@ -10,6 +10,7 @@ import { vibrateFart, vibrateWater } from "@/lib/haptics";
 import { getFactOfDay, getRandomFact } from "@/lib/facts";
 import { GamificationBar } from "./gamification-bar";
 import { BowelScreen } from "./bowel-screen";
+import { HealthTipCard } from "./health-tip-card";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -507,6 +508,9 @@ export function HomeScreen() {
 
       {/* Bowel screen modal */}
       <BowelScreen open={bowelOpen} onOpenChange={setBowelOpen} />
+
+      {/* Health tip (random on each open) */}
+      <HealthTipCard />
 
       {/* Sound selector dialog */}
       <Dialog open={soundOpen} onOpenChange={setSoundOpen}>
