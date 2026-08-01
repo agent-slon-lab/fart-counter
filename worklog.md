@@ -914,3 +914,32 @@ Stage Summary:
 - Proper Russian pluralization for days
 - Adaptive font sizing for long Bristol type names
 - Release zip at /home/z/my-project/download/fart-counter-v1.7.1.zip
+
+---
+Task ID: health-tip-card-v1.7.2
+Agent: main (Z.ai Code)
+Task: Add random health tip card on Home under water+bowel block
+
+Work Log:
+- Added 20 health tips to i18n (RU+EN) in src/lib/i18n.ts:
+  - health_tip_title: "Совет дня" / "Tip of the day"
+  - health_tip_1..20: practical gut health tips with emojis
+  - Topics: walking after meals, water intake, regularity, fiber, schedule, movement, coffee, dairy, late eating, stress, Bristol norm, beans, whole grain, smoking, antibiotics, apples, bananas, peppermint tea, salad, 10k steps
+- Created src/components/app/health-tip-card.tsx:
+  - HealthTipCard component — lightweight card with gradient background
+  - Random tip index via useMemo (changes on each mount/app open)
+  - Lightbulb icon + "СОВЕТ ДНЯ" label + tip text
+  - Placed on Home after BowelScreen modal, before Sound selector
+- Integrated into HomeScreen (src/components/app/home-screen.tsx):
+  - Added import { HealthTipCard } from "./health-tip-card"
+  - Placed after bowel+walk block + BowelScreen modal
+  - Layout: +1 ПУК → Факт дня → Теги → Вода → Туалет/Ходьба → 💡 Совет дня
+- Bumped version 1.7.1 → 1.7.2 everywhere
+- Lint: clean (0 errors)
+- Built /home/z/my-project/download/fart-counter-v1.7.2.zip (672 KB)
+
+Stage Summary:
+- Health tip card added to Home screen, shows random tip on each app open
+- 20 practical gut health tips (walking, water, fiber, regularity, Bristol norm, etc.)
+- Users see a new tip every time they open the app
+- Release zip at /home/z/my-project/download/fart-counter-v1.7.2.zip

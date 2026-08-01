@@ -262,7 +262,7 @@ export function MedicalReport({ open, onOpenChange }: { open: boolean; onOpenCha
 
               {/* Footer */}
               <div className="mt-4 border-t pt-2 text-center">
-                <p className="text-[10px] text-muted-foreground">{t("report_signature" as never)} · v1.7.1</p>
+                <p className="text-[10px] text-muted-foreground">{t("report_signature" as never)} · v1.7.2</p>
                 <p className="text-[9px] text-muted-foreground italic">{t("report_disclaimer" as never)}</p>
               </div>
             </>
