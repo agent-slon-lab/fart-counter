@@ -22,12 +22,15 @@
 
 ---
 
-### 🎙️ Озвучка (TTS)
+### 🎙️ Озвучка (TTS) — 2 языка
 
-**Файл:** `voiceover.mp3` (уже сгенерирован)
+**🇷🇺 Русский:** `voiceover-ru.mp3`
 
-**Полный текст:**
 > «Счётчик Пуков — твой весёлый трекер здоровья. Считай пуки, отмечай еду, отслеживай туалет по шкале Бристоля. ИИ-инсайты покажут закономерности. Дайджест ЖКТ в стиле Spotify Wrapped. Отчёт для гастроэнтеролога одним тапом. Сорок восемь достижений, семь языков, работает офлайн. Без рекламы, без слежки. Открытый код. Попробуй прямо сейчас.»
+
+**🇬🇧 English:** `voiceover-en.mp3`
+
+> «Fart Counter — your fun health tracker. Count your farts, log your food, track bathroom visits with the Bristol Stool Scale. AI insights reveal your patterns. GI tract digest in Spotify Wrapped style. Doctor report in one tap. 48 achievements, 7 languages, works offline. No ads, no tracking. Open source. Try it now.»
 
 ---
 
