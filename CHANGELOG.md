@@ -4,6 +4,26 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [SemVer](https://semver.org/lang/ru/).
 
+## [1.7.3] — 2026-08-05
+
+### 🐛 Фикс: Hydration error + SW navigation strategy
+
+### Исправлено — Hydration mismatch (HealthTipCard)
+- ❌ **Было:** `useMemo(() => Math.random())` — сервер рендерил один совет, клиент другой → **Hydration error**
+- ✅ **Стало:** `useState(1)` (стартовый совет #1) + `useEffect` меняет на случайный ПОСЛЕ монтирования (client-only)
+- 🔧 Также исправил `DigestCards.insightIdx` — та же проблема
+- 🛡️ Добавил `suppressHydrationWarning` на текст совета (двойная защита)
+
+### Исправлено — Service Worker navigation strategy
+- ❌ **Было:** `CACHE-FIRST` — SW отдавал старый HTML со ссылками на удалённые JS-чанки → белый экран
+- ✅ **Стало:** `NETWORK-FIRST` — свежий HTML всегда, кэш только для офлайна
+
+### Версия
+- 🔢 APP_VERSION 1.7.2 → 1.7.3
+- 📦 SW cache → v1.7.3
+
+---
+
 ## [1.7.2] — 2026-07-30
 
 ### 💡 Плашка «Совет дня» на Home

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Trophy, Utensils, Star, TrendingUp, Lightbulb } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -102,8 +102,11 @@ export function DigestCards() {
   // 5. Progress (days tracked)
   const progress = daysTracked;
 
-  // 6. Random funny insight (changes on mount)
-  const insightIdx = useMemo(() => 1 + Math.floor(Math.random() * 20), []);
+  // 6. Random funny insight (changes on mount — client only to avoid hydration mismatch)
+  const [insightIdx, setInsightIdx] = useState(1);
+  useEffect(() => {
+    setInsightIdx(1 + Math.floor(Math.random() * 20));
+  }, []);
 
   // No data
   if (periodPoops.length === 0) {
