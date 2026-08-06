@@ -4,6 +4,46 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [SemVer](https://semver.org/lang/ru/).
 
+## [1.7.4] — 2026-08-06
+
+### 🧹 Аудит и чистка (по результатам external review)
+
+### Исправлено — Accessibility
+- ♿ **Viewport:** убраны `userScalable: false` + `maximumScale: 1` — теперь пользователь может зумить (Lighthouse больше не флажит)
+
+### Исправлено — Service Worker
+- 🔄 **`/version.json`: NETWORK-FIRST** — отдельное правило в SW. Раньше мог закэшироваться и баннер обновлений видел бы старую версию. Теперь всегда свежий.
+
+### Добавлено — PWA
+- 📱 **Screenshots в manifest.json** — 3 скриншота (Home, Insights, Food) для красивой карточки установки на Android
+
+### Очищено — package.json (удалено 30+ неиспользуемых пакетов)
+- ❌ **Prisma** (@prisma/client, prisma) — приложение использует localStorage, БД не нужна
+- ❌ **next-auth** — нет бэкенда, нет авторизации
+- ❌ **@mdxeditor/editor** — не используется
+- ❌ **react-syntax-highlighter** — не используется
+- ❌ **html2canvas** — не используется (упоминалось только в комментарии)
+- ❌ **input-otp, cmdk, embla-carousel** — UI компоненты не импортируются
+- ❌ **@dnd-kit/\*** — drag-and-drop не используется
+- ❌ **@tanstack/react-query, @tanstack/react-table** — используем Zustand
+- ❌ **next-intl** — свой i18n
+- ❌ **react-hook-form, @hookform/resolvers, zod** — формы не используются
+- ❌ **react-markdown, react-resizable-panels** — не используются
+- ❌ **z-ai-web-dev-sdk** — только в skills/, не в src/
+- ❌ **uuid** — используем свой uid()
+- ❌ **18 неиспользуемых radix-ui пакетов** (accordion, avatar, checkbox, dropdown-menu, popover, select, slider, table, и др.)
+- ❌ **Prisma scripts** (db:push, db:generate, db:migrate, db:reset)
+
+### Удалено — неиспользуемые файлы
+- 🗑️ 24 неиспользуемых UI компонента (accordion, avatar, checkbox, command, carousel, dropdown-menu, form, input-otp, popover, select, sidebar, slider, table, и др.)
+- 🗑️ src/lib/db.ts (Prisma client — не нужен)
+
+### Версия
+- 🔢 APP_VERSION 1.7.3 → 1.7.4
+- 📦 SW cache → v1.7.4
+
+---
+
 ## [1.7.3] — 2026-08-05
 
 ### 🐛 Фикс: Hydration error + SW navigation strategy

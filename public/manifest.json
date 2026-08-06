@@ -42,6 +42,29 @@
       "purpose": "maskable"
     }
   ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "400x800",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Главная — счётчик пуков"
+    },
+    {
+      "src": "/screenshots/insights.png",
+      "sizes": "400x800",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Аналитика — ИИ-инсайты и дайджест"
+    },
+    {
+      "src": "/screenshots/food.png",
+      "sizes": "400x800",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Дневник питания"
+    }
+  ],
   "shortcuts": [
     {
       "name": "+1 Пук",
