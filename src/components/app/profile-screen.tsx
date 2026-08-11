@@ -24,6 +24,7 @@ import {
   RefreshCw,
   Github,
   Shield,
+  Database,
 } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
@@ -101,6 +102,7 @@ export function ProfileScreen() {
   const [reportOpen, setReportOpen] = useState(false);
   const [qrData, setQrData] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const backupInputRef = useRef<HTMLInputElement>(null);
   const updateCheck = useManualUpdateCheck();
   const handleCheckUpdates = updateCheck.check;
 
@@ -360,6 +362,62 @@ export function ProfileScreen() {
         <p className="mt-2 rounded-md bg-amber-500/10 px-2 py-1.5 text-[10px] leading-snug text-amber-700 dark:text-amber-400">
           {t("notif_limitation_note")}
         </p>
+      </SectionCard>
+
+      {/* Data Backup */}
+      <SectionCard icon={<Database className="h-4 w-4" />} title={t("backup_section" as never)}>
+        <p className="mb-3 text-[11px] leading-snug text-muted-foreground">
+          {t("backup_auto_hint" as never)}
+        </p>
+        <div className="space-y-2">
+          <Button
+            variant="default"
+            size="sm"
+            className="w-full"
+            onClick={() => {
+              import("@/lib/backup").then(({ manualBackup }) => {
+                const ok = manualBackup(useStore.getState());
+                toast(ok ? t("backup_done" as never) : t("backup_invalid" as never), {
+                  icon: ok ? "💾" : "⚠️",
+                  duration: 2000,
+                });
+              });
+            }}
+          >
+            <Database className="mr-2 h-4 w-4" />
+            {t("backup_now" as never)}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => backupInputRef.current?.click()}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            {t("backup_restore" as never)}
+          </Button>
+          <input
+            ref={backupInputRef}
+            type="file"
+            accept=".json,application/json"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const text = await readFileAsText(file);
+              import("@/lib/backup").then(({ parseBackup }) => {
+                const backup = parseBackup(text);
+                if (backup) {
+                  useStore.setState(backup.state);
+                  toast(t("backup_restored" as never), { icon: "✅", duration: 3000 });
+                } else {
+                  toast(t("backup_invalid" as never), { icon: "⚠️", duration: 2000 });
+                }
+              });
+              if (backupInputRef.current) backupInputRef.current.value = "";
+            }}
+          />
+        </div>
       </SectionCard>
 
       {/* About */}

@@ -108,6 +108,26 @@ export default function Home() {
     if (!hasCompletedOnboarding()) {
       setShowOnboarding(true);
     }
+
+    // Auto-backup: if 7+ days since last backup, download JSON file
+    if (hasPersisted) {
+      import("@/lib/backup").then(({ shouldAutoBackup, autoBackup }) => {
+        if (shouldAutoBackup()) {
+          // Delay 5s — let app load first, then trigger backup download
+          setTimeout(() => {
+            const raw = localStorage.getItem("fart-counter-store-v2");
+            if (raw) {
+              try {
+                const parsed = JSON.parse(raw);
+                if (parsed.state) {
+                  autoBackup(parsed.state);
+                }
+              } catch {}
+            }
+          }, 5000);
+        }
+      });
+    }
   }, [setLanguage]);
 
   useEffect(() => {
