@@ -404,31 +404,41 @@ export function ProfileScreen() {
               const file = e.target.files?.[0];
               if (!file) return;
               const text = await readFileAsText(file);
-              import("@/lib/backup").then(({ parseBackup }) => {
-                const backup = parseBackup(text);
-                if (backup) {
-                  // Write DIRECTLY to localStorage — most reliable on mobile
-                  const storeData = {
-                    state: backup.state,
-                    version: backup.version,
-                  };
-                  try {
-                    localStorage.setItem("fart-counter-store-v2", JSON.stringify(storeData));
-                  } catch {}
-
-                  // Also update in-memory state
-                  useStore.setState(backup.state);
-
-                  toast(t("backup_restored" as never), { icon: "✅", duration: 2000 });
-
-                  // Reload page after 1.5s so app picks up fresh state from localStorage
-                  setTimeout(() => {
-                    window.location.reload();
-                  }, 1500);
-                } else {
+              try {
+                const parsed = JSON.parse(text);
+                // Backup file has { state: {...}, version: 8 }
+                // Zustand persist expects { state: {...}, version: N }
+                const stateData = parsed.state || parsed; // handle both formats
+                if (!stateData.farts && !stateData.farts === undefined) {
                   toast(t("backup_invalid" as never), { icon: "⚠️", duration: 2000 });
+                  return;
                 }
-              });
+
+                // Write DIRECTLY to localStorage — this is the source of truth
+                // Format exactly as Zustand persist stores it
+                const storeData = JSON.stringify({
+                  state: stateData,
+                  version: parsed.version ?? 8,
+                });
+                localStorage.setItem("fart-counter-store-v2", storeData);
+
+                // Verify write succeeded
+                const verify = localStorage.getItem("fart-counter-store-v2");
+                if (!verify || verify.length < 100) {
+                  toast("⚠️ Ошибка записи", { icon: "⚠️", duration: 2000 });
+                  return;
+                }
+
+                toast(t("backup_restored" as never), { icon: "✅", duration: 1500 });
+
+                // Hard reload — app will read fresh data from localStorage
+                // Use timeout to let toast show, then location.replace (no cache)
+                setTimeout(() => {
+                  window.location.replace(window.location.href);
+                }, 1000);
+              } catch {
+                toast(t("backup_invalid" as never), { icon: "⚠️", duration: 2000 });
+              }
               if (backupInputRef.current) backupInputRef.current.value = "";
             }}
           />
