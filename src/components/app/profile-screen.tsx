@@ -407,8 +407,24 @@ export function ProfileScreen() {
               import("@/lib/backup").then(({ parseBackup }) => {
                 const backup = parseBackup(text);
                 if (backup) {
+                  // Write DIRECTLY to localStorage — most reliable on mobile
+                  const storeData = {
+                    state: backup.state,
+                    version: backup.version,
+                  };
+                  try {
+                    localStorage.setItem("fart-counter-store-v2", JSON.stringify(storeData));
+                  } catch {}
+
+                  // Also update in-memory state
                   useStore.setState(backup.state);
-                  toast(t("backup_restored" as never), { icon: "✅", duration: 3000 });
+
+                  toast(t("backup_restored" as never), { icon: "✅", duration: 2000 });
+
+                  // Reload page after 1.5s so app picks up fresh state from localStorage
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1500);
                 } else {
                   toast(t("backup_invalid" as never), { icon: "⚠️", duration: 2000 });
                 }
