@@ -84,14 +84,15 @@ export function FoodScreen() {
   // Pending food that triggered a warning — needs confirmation
   const [warnPending, setWarnPending] = useState<{ name: string; avgFarts: number; times: number } | null>(null);
 
-  // Only show non-expired food for today's list
+  // Only show non-expired food (within 24h window) — NOT by calendar date
+  // This fixes: food added at 22:00 yesterday disappears at 00:01 today
   const todayFood = useMemo(() => {
-    return getFoodToday(food).filter((f) => !isExpired(f.ts));
+    return food.filter((f) => !isExpired(f.ts));
   }, [food]);
 
   // Expired food count
   const expiredCount = useMemo(() => {
-    return getFoodToday(food).filter((f) => isExpired(f.ts)).length;
+    return food.filter((f) => isExpired(f.ts)).length;
   }, [food]);
 
   // Correlation: ONLY use non-expired food (within 24h window)
@@ -164,7 +165,7 @@ export function FoodScreen() {
   }
 
   function handleClearExpired() {
-    const expired = getFoodToday(food).filter((f) => isExpired(f.ts));
+    const expired = food.filter((f) => isExpired(f.ts));
     expired.forEach((f) => removeFood(f.id));
     toast(`${expired.length} ${t("food_expired").toLowerCase()}`, { icon: "🧹" });
   }
