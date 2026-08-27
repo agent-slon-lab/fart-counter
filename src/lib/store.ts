@@ -197,6 +197,7 @@ export interface AppState {
   // Actions — Bowel (poops)
   addPoop: (opts?: { bristolType?: PoopRecord["bristolType"]; symptoms?: string }) => void;
   removePoop: (id: string) => void;
+  updatePoop: (id: string, updates: Partial<Pick<PoopRecord, "ts" | "bristolType" | "symptoms">>) => void;
 
   // Actions — Walks
   addWalk: (minutes?: number) => void;
@@ -514,6 +515,10 @@ export const useStore = create<AppState>()(
       },
 
       removePoop: (id) => set((s) => ({ poops: s.poops.filter((p) => p.id !== id) })),
+
+      updatePoop: (id, updates) => set((s) => ({
+        poops: s.poops.map((p) => p.id === id ? { ...p, ...updates } : p),
+      })),
 
       addWalk: (minutes) => {
         const pid = get().settings.activeProfileId;

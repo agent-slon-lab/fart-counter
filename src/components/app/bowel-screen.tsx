@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Trash2, Clock, TrendingUp, AlertCircle } from "lucide-react";
+import { Trash2, Clock, TrendingUp, AlertCircle, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,12 +24,18 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
   const food = useProfileFood();
   const addPoop = useStore((s) => s.addPoop);
   const removePoop = useStore((s) => s.removePoop);
+  const updatePoop = useStore((s) => s.updatePoop);
   const bowelTrackingEnabled = useStore((s) => s.settings.bowelTrackingEnabled);
   const setSetting = useStore((s) => s.setSetting);
 
   const [bristolType, setBristolType] = useState<PoopRecord["bristolType"]>(4);
   const [symptoms, setSymptoms] = useState<string>("");
   const [activeSymptomTags, setActiveSymptomTags] = useState<string[]>([]);
+  // Edit state
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editTs, setEditTs] = useState<string>("");
+  const [editBristol, setEditBristol] = useState<PoopRecord["bristolType"]>(4);
+  const [editSymptoms, setEditSymptoms] = useState<string>("");
 
   const SYMPTOM_TAGS = ["bloating", "pain", "nausea", "heartburn", "cramps"];
 
@@ -89,6 +95,33 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
     } else {
       toast(t("bowel_xp_capped" as never), { icon: "📊", duration: 1500 });
     }
+  }
+
+  // Edit functions
+  function startEdit(p: PoopRecord) {
+    // Convert ISO to datetime-local format: YYYY-MM-DDTHH:MM
+    const d = new Date(p.ts);
+    const localISO = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    setEditId(p.id);
+    setEditTs(localISO);
+    setEditBristol(p.bristolType ?? 4);
+    setEditSymptoms(p.symptoms ?? "");
+  }
+
+  function handleSaveEdit() {
+    if (!editId) return;
+    const newTs = new Date(editTs).toISOString();
+    updatePoop(editId, {
+      ts: newTs,
+      bristolType: editBristol,
+      symptoms: editSymptoms.trim() || undefined,
+    });
+    setEditId(null);
+    toast("✅", { icon: "💾", duration: 1000 });
+  }
+
+  function handleCancelEdit() {
+    setEditId(null);
   }
 
   const locale = lang === "ru" ? "ru-RU" : "en-US";
@@ -248,38 +281,97 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
                 <div className="max-h-48 space-y-1.5 overflow-y-auto thin-scroll">
                   {weekPoops.slice(0, 20).map((p) => {
                     const d = new Date(p.ts);
+                    const isEditing = editId === p.id;
                     return (
                       <motion.div
                         key={p.id}
                         layout
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="flex items-center gap-2 rounded-lg bg-muted/40 px-2.5 py-1.5 text-xs"
+                        className="rounded-lg bg-muted/40 px-2.5 py-1.5 text-xs"
                       >
-                        <span className="text-base">🚽</span>
-                        <div className="flex-1">
-                          <p className="font-medium">
-                            {d.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })}{" "}
-                            {d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
-                          </p>
-                          {p.bristolType && (
-                            <p className="text-[10px] text-muted-foreground">
-                              {t("bowel_bristol_type" as never)} {p.bristolType}: {t(`bowel_bristol_${p.bristolType}` as never)}
-                            </p>
-                          )}
-                          {p.symptoms && (
-                            <p className="text-[10px] text-amber-600 dark:text-amber-400">
-                              {p.symptoms}
-                            </p>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => removePoop(p.id)}
-                          className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-destructive/20"
-                          aria-label="delete"
-                        >
-                          <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-                        </button>
+                        {isEditing ? (
+                          // EDIT MODE
+                          <div className="space-y-2 py-1">
+                            <div>
+                              <p className="mb-1 text-[10px] text-muted-foreground">{t("bowel_edit_time" as never)}</p>
+                              <Input
+                                type="datetime-local"
+                                value={editTs}
+                                onChange={(e) => setEditTs(e.target.value)}
+                                className="h-8 text-xs"
+                              />
+                            </div>
+                            <div>
+                              <p className="mb-1 text-[10px] text-muted-foreground">{t("bowel_bristol_scale" as never)}</p>
+                              <div className="grid grid-cols-7 gap-1">
+                                {[1, 2, 3, 4, 5, 6, 7].map((bt) => (
+                                  <button
+                                    key={bt}
+                                    onClick={() => setEditBristol(bt as PoopRecord["bristolType"])}
+                                    className={`rounded border py-0.5 text-[10px] font-bold ${
+                                      editBristol === bt ? "border-primary bg-primary/15" : "border-border"
+                                    }`}
+                                  >
+                                    {bt}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="mb-1 text-[10px] text-muted-foreground">{t("bowel_symptoms" as never)}</p>
+                              <Input
+                                value={editSymptoms}
+                                onChange={(e) => setEditSymptoms(e.target.value)}
+                                placeholder={t("bowel_symptoms_placeholder" as never)}
+                                className="h-8 text-xs"
+                              />
+                            </div>
+                            <div className="flex gap-1.5">
+                              <Button size="sm" className="flex-1 h-7 text-xs" onClick={handleSaveEdit}>
+                                {t("bowel_save" as never)}
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={handleCancelEdit}>
+                                {t("bowel_cancel" as never)}
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          // VIEW MODE
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">🚽</span>
+                            <div className="flex-1">
+                              <p className="font-medium">
+                                {d.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })}{" "}
+                                {d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
+                              </p>
+                              {p.bristolType && (
+                                <p className="text-[10px] text-muted-foreground">
+                                  {t("bowel_bristol_type" as never)} {p.bristolType}: {t(`bowel_bristol_${p.bristolType}` as never)}
+                                </p>
+                              )}
+                              {p.symptoms && (
+                                <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                                  {p.symptoms}
+                                </p>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => startEdit(p)}
+                              className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-primary/20"
+                              aria-label={t("bowel_edit" as never)}
+                            >
+                              <Pencil className="h-3 w-3 text-muted-foreground hover:text-primary" />
+                            </button>
+                            <button
+                              onClick={() => removePoop(p.id)}
+                              className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-destructive/20"
+                              aria-label="delete"
+                            >
+                              <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                            </button>
+                          </div>
+                        )}
                       </motion.div>
                     );
                   })}
