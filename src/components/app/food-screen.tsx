@@ -194,12 +194,6 @@ export function FoodScreen() {
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
             {t("food_added_today")} · {todayFood.length}
           </p>
-          {expiredCount > 0 && (
-            <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={handleClearExpired}>
-              <Trash2 className="mr-1 h-3 w-3" />
-              {t("food_clear_expired")} ({expiredCount})
-            </Button>
-          )}
         </div>
         {todayFood.length === 0 ? (
           <p className="py-4 text-center text-sm text-muted-foreground">{t("no_records")}</p>
