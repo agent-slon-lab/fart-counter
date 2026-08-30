@@ -943,3 +943,43 @@ Stage Summary:
 - 20 practical gut health tips (walking, water, fiber, regularity, Bristol norm, etc.)
 - Users see a new tip every time they open the app
 - Release zip at /home/z/my-project/download/fart-counter-v1.7.2.zip
+
+---
+Task ID: i18n-translate-207-v2
+Agent: sub-agent (general-purpose)
+Task: Translate 207 missing i18n keys into 5 languages (ES/PT/DE/FR/HI) and add to /public/locales/{lang}.json
+
+Work Log:
+- Read /home/z/my-project/src/lib/i18n.ts and extracted exact EN values for all 207 keys via Grep on the `const en: Dict = {` block.
+- Read each existing /public/locales/{lang}.json — confirmed 637 keys each, none of the 207 target keys present.
+- Wrote /home/z/my-project/scripts/translate_207.py — a single Python script that:
+  - Holds 5 dicts (es/pt/de/fr/hi) of 207 translations each, grouped by prefix (bowel_*, digest_*, report_*, health_tip_*, walk_*, backup_*, install_*, profile_*, levels_*).
+  - Verifies each language has exactly 207 keys and all 5 share the same key set.
+  - Reads each existing JSON, asserts zero collisions with existing keys, merges, then sorts alphabetically by key.
+  - Writes back with `ensure_ascii=False, indent=2` + trailing newline to match existing convention.
+  - Re-parses each file post-write and asserts final count == 844.
+- Translation choices per language:
+  - ES (Spanish, "tú" form, Latin Spanish): "Baño" for bowel_tracker; "Estreñimiento" for constipation; Bristol scale 1="Nueces" (hard lumps like nuts); retained humor in bowel_warning_* (e.g. "¡No eres camello, no puedes acumular! 🐪").
+  - PT (Brazilian Portuguese, "você" form): "Banheiro"; "Constipação" for constipation (medical term); Bristol 1="Bolinhas duras"; humor retained ("Você não é camelo, não pode acumular! 🐪").
+  - DE (German, "du" form): "Klo" for bowel_tracker (informal); "Verstopfung" for constipation; Bristol 1="Nüsse"; "Diarrhö" for diarrhea (medical); humor retained ("Du bist kein Kamel, horten verboten! 🐪").
+  - FR (French, "tu" form): "Toilettes"; "Constipation" for constipation; Bristol 1="Noisettes"; "Diarrhée" for diarrhea; humor retained ("Tu n'es pas un chameau, pas de thésaurisation ! 🐪").
+  - HI (Hindi, Devanagari, conversational): "शौचालय"; "कब्ज़" for constipation; Bristol 1="कड़े दाने"; "डायरिया" for diarrhea (English loanword, common in Hindi); humor retained ("आप ऊंट नहीं हैं, जमा नहीं कर सकते! 🐪").
+- Placeholder preservation verified: only `{h}` (in bowel_warning_subtitle) and `{n}` (in digest_best_day_unit_with) appear in the 207 keys — both preserved across all 5 languages.
+- Emoji preservation verified: all 12 bowel_warning_* emojis, 5 walk_reminder_* emojis, 20 health_tip_* emojis, plus report_button 📄, report_csv_button 📊, report_print 🖨️, backup_now 💾, backup_restore 🔄, install_button_ios_share 📤, install_iphone_other_button 🍎 all preserved.
+
+Results:
+- 5 JSON files (es/pt/de/fr/hi) updated: 637 → 844 keys each (added 207 each, 1035 translations total).
+- All 5 files verified valid JSON via re-parse.
+- All 5 files sorted alphabetically (matches existing convention).
+- `bun run lint` → exit code 0, no errors, no warnings.
+- Existing 637 keys + their placeholders ({food}, {pct}, {day}, {period}, {mood}, {peak}, {low}, {times}, {mult}, {level}, {xp}, {cost}) untouched.
+
+Tricky translations:
+- "Went #2" (bowel_went): EN euphemism. Translated as "Fui al baño" (ES), "Fiz número 2" (PT), "Großes Geschäft" (DE — literal German idiom), "Fait caca" (FR), "पखाना हो गया" (HI — direct).
+- "Time bomb!" — kept the metaphor in all 5 (ES: "Bomba de tiempo", PT: "Bomba relógio", DE: "Zeitbombe", FR: "Bombe à retardement", HI: "टाइम बम").
+- Bristol Type 2 "lumpy sausage" — used "Sausage with lumps" pattern in Romance languages; "Wurst mit Klumpen" (DE); "Saucisse grumeleuse" (FR); "गांठदार सॉसेज" (HI).
+- "Conveyor" (bowel_morning_4) — kept factory metaphor: ES "cinta", PT "esteira", DE "Förderband", FR "tapis", HI "कन्वेयर".
+- "Thésaurisation" (FR) chosen for "hoard" — formal/funny, fits the comic tone.
+- Hindi used English loanword "डायरिया" for diarrhea (most natural in conversational Hindi) and "पेरिस्टल्सिस" as transliteration for peristalsis.
+
+Next actions: None required. App will now serve complete translations for all 5 languages on demand; previously these 207 keys fell back to English.

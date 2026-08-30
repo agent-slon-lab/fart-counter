@@ -4,6 +4,8 @@
 
 **Version: 1.7.6**
 
+[▶️ Watch 30s demo](https://youtube.com/shorts/SU068NOUf_8)
+
 🇷🇺 **Русская версия:** [README.md](./README.md)
 
 ---
