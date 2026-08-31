@@ -363,7 +363,7 @@ const ru: Dict = {
   backup_invalid: "Неверный файл бэкапа",
   backup_choose_file: "Выбрать файл бэкапа (.json)",
   about_section: "О приложении",
-  about_text: "Счётчик Пуков v1.7.6 — офлайн PWA. Никаких серверов, никакой слежки. Только ты и твоя ветреность.",
+  about_text: "Счётчик Пуков v1.7.7 — офлайн PWA. Никаких серверов, никакой слежки. Только ты и твоя ветреность.",
   medical_disclaimer: "Норма 10–20 пуков в сутки — медицинский факт. Больше — повод задуматься о рационе.",
   app_version: "Версия",
   app_source_code: "Исходный код",
@@ -634,8 +634,8 @@ const ru: Dict = {
   food_custom_saved: "Сохранено в «Моя еда»",
 
   // Funny warning system
-  food_warning_title: "Осторожно! 💨",
-  food_warning_subtitle: "После «{food}» у тебя в среднем {n} пуков за 24 часа. Уже {times} раза!",
+  food_warning_title: "Отмечаем еду! 💨",
+  food_warning_subtitle: "В прошлые разы после «{food}» у тебя было в среднем {n} пуков за 24 часа. Уже {times} раза!",
   food_warn_1: "Не ходи на свидание сегодня! 💔",
   food_warn_2: "Запри двери и закрой окна! 🚪",
   food_warn_3: "Готовь запасное бельё! 🩲",
@@ -648,11 +648,11 @@ const ru: Dict = {
   food_warn_10: "Никаких лифтов с людьми! 🛗",
   food_warn_11: "Отмени все встречи и поездки! ✈️",
   food_warn_12: "Включи вентилятор на максимум! 🌀",
-  food_add_anyway: "Всё равно добавить!",
+  food_add_anyway: "Добавить!",
   food_chicken_out: "Передумал 😅",
-  food_warning_low: "Так себе идея, но жить можно...",
-  food_warning_mid: "Серьёзно? Ну сам виноват!",
-  food_warning_high: "Эвакуация! Спасайся кто может!",
+  food_warning_low: "Нормально, но interesante...",
+  food_warning_mid: "Окей, ты сам выбрал эту еду!",
+  food_warning_high: "Удачи тебе и твоему кишечнику!",
 
   // Mood tracker
   mood_tracker: "Дневник настроения",
@@ -1290,7 +1290,7 @@ const en: Dict = {
   backup_invalid: "Invalid backup file",
   backup_choose_file: "Choose backup file (.json)",
   about_section: "About",
-  about_text: "Fart Counter v1.7.6 — offline PWA. No servers, no tracking. Just you and your windiness.",
+  about_text: "Fart Counter v1.7.7 — offline PWA. No servers, no tracking. Just you and your windiness.",
   medical_disclaimer: "Norm 10–20 farts per day is a medical fact. More is a reason to rethink your diet.",
   app_version: "Version",
   app_source_code: "Source code",
@@ -1561,8 +1561,8 @@ const en: Dict = {
   food_custom_saved: "Saved to “My foods”",
 
   // Funny warning system
-  food_warning_title: "Warning! 💨",
-  food_warning_subtitle: "After “{food}” you averaged {n} farts in 24h. That's {times} times already!",
+  food_warning_title: "Logging food! 💨",
+  food_warning_subtitle: "Last time after \"{food}\" you had {n} farts in 24h. That's {times} times already!",
   food_warn_1: "Don't go on a date today! 💔",
   food_warn_2: "Lock the doors and close the windows! 🚪",
   food_warn_3: "Get spare underwear ready! 🩲",
@@ -1575,11 +1575,11 @@ const en: Dict = {
   food_warn_10: "No crowded elevators! 🛗",
   food_warn_11: "Cancel all meetings and trips! ✈️",
   food_warn_12: "Crank the fan to max! 🌀",
-  food_add_anyway: "Add anyway!",
+  food_add_anyway: "Add!",
   food_chicken_out: "Maybe not 😅",
-  food_warning_low: "Meh idea, but you'll survive...",
-  food_warning_mid: "Seriously? It's on you!",
-  food_warning_high: "Evacuation! Run for your life!",
+  food_warning_low: "Fine, but interesting...",
+  food_warning_mid: "Okay, you chose this food yourself!",
+  food_warning_high: "Good luck to you and your gut!",
 
   // Mood tracker
   mood_tracker: "Mood Diary",
