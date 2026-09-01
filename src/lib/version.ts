@@ -75,26 +75,54 @@ export function markCheckedNow(): void {
 }
 
 /**
- * Force-reload the app, clearing all caches.
- * 1. Unregister all service workers
- * 2. Clear all caches
- * 3. Reload the page
+ * Smooth update flow — no data loss:
+ * 1. Send SKIP_WAITING to the waiting service worker
+ * 2. Listen for controllerchange (fires when new SW takes over)
+ * 3. Reload page — new SW serves fresh HTML + correct chunks
+ * 4. Zustand persist writes synchronously, so all data is safe
+ *
+ * Fallback: if no SW or no waiting worker, just reload.
  */
 export async function forceUpdate(): Promise<void> {
+  // Check if Service Worker is available
+  if (!("serviceWorker" in navigator)) {
+    window.location.reload();
+    return;
+  }
+
   try {
-    // Clear caches
-    if ("caches" in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((k) => caches.delete(k)));
-    }
-    // Unregister service workers
-    if ("serviceWorker" in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map((r) => r.unregister()));
+    const reg = await navigator.serviceWorker.getRegistration();
+
+    if (reg && reg.waiting) {
+      // New SW is waiting — tell it to skip waiting
+      reg.waiting.postMessage("SKIP_WAITING");
+
+      // Listen for controller change (new SW takes over)
+      // Then reload once — data is safe in localStorage (Zustand writes sync)
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        window.location.reload();
+      }, { once: true });
+
+      // Safety timeout: if controllerchange doesn't fire in 5s, reload anyway
+      setTimeout(() => {
+        window.location.reload();
+      }, 5000);
+    } else {
+      // No waiting SW — just reload (fresh HTML from network)
+      window.location.reload();
     }
   } catch {
-    // ignore
+    // Fallback: clear caches + unregister + reload (old behavior)
+    try {
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+    } catch {}
+    window.location.reload();
   }
-  // Hard reload with cache-bust
-  window.location.reload();
 }

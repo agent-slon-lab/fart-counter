@@ -19,7 +19,15 @@ self.addEventListener("install", (event) => {
       Promise.allSettled(PRECACHE.map((url) => cache.add(url)))
     )
   );
-  self.skipWaiting();
+  // Don't skipWaiting here — let the client decide via postMessage
+  // This prevents race condition where SW activates mid-session
+});
+
+// Listen for SKIP_WAITING message from client
+self.addEventListener("message", (event) => {
+  if (event.data === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("activate", (event) => {
