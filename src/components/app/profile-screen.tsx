@@ -422,6 +422,9 @@ export function ProfileScreen() {
                 });
                 localStorage.setItem("fart-counter-store-v2", storeData);
 
+                // Mark backup as done — so auto-backup doesn't trigger immediately after restore
+                localStorage.setItem("fart-counter-last-backup", new Date().toISOString());
+
                 // Verify write succeeded
                 const verify = localStorage.getItem("fart-counter-store-v2");
                 if (!verify || verify.length < 100) {

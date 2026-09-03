@@ -59,3 +59,6 @@ tool-results/
 
 # skills (dev only, не нужен в продакшене)
 /skills/
+
+# Test backup files (don't deploy)
+download/fart-counter-backup-*

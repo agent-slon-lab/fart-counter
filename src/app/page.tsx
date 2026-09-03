@@ -109,6 +109,34 @@ export default function Home() {
       setShowOnboarding(true);
     }
 
+    // Streak validation: if lastFartDay is more than 2 days ago, reset streak
+    // This prevents fake streak from restored backups or long absences
+    if (hasPersisted) {
+      try {
+        const raw = localStorage.getItem(storeKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.state && parsed.state.lastFartDay) {
+            const today = new Date();
+            const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+            const yesterday = new Date(Date.now() - 86400000);
+            const yesterdayKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+            const twoDaysAgo = new Date(Date.now() - 2 * 86400000);
+            const twoDaysAgoKey = `${twoDaysAgo.getFullYear()}-${String(twoDaysAgo.getMonth() + 1).padStart(2, "0")}-${String(twoDaysAgo.getDate()).padStart(2, "0")}`;
+
+            const lastFart = parsed.state.lastFartDay;
+            if (lastFart !== todayKey && lastFart !== yesterdayKey && lastFart !== twoDaysAgoKey) {
+              // Streak broken — last fart was more than 2 days ago
+              if (parsed.state.streak > 0) {
+                parsed.state.streak = 0;
+                localStorage.setItem(storeKey, JSON.stringify(parsed));
+              }
+            }
+          }
+        }
+      } catch {}
+    }
+
     // Auto-backup: if 7+ days since last backup, download JSON file
     if (hasPersisted) {
       import("@/lib/backup").then(({ shouldAutoBackup, autoBackup }) => {
