@@ -9,20 +9,26 @@ import { dateKey } from "./store";
 const BACKUP_KEY = "fart-counter-last-backup";
 
 /**
- * Check if it's time for a weekly backup (Sunday or 7+ days since last backup).
+ * Check if it's time for a weekly backup.
+ * NEVER triggers on first visit — only after 7+ days of data.
  */
 export function shouldAutoBackup(): boolean {
   try {
     const lastBackup = localStorage.getItem(BACKUP_KEY);
-    if (!lastBackup) return true; // Never backed up
+    
+    // First visit — NEVER auto-backup immediately
+    // Set BACKUP_KEY to now so the 7-day timer starts
+    if (!lastBackup) {
+      localStorage.setItem(BACKUP_KEY, new Date().toISOString());
+      return false;
+    }
 
     const lastDate = new Date(lastBackup);
     const now = new Date();
     const diffDays = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24);
 
-    // Backup if 7+ days passed OR it's Sunday
+    // Backup if 7+ days passed
     if (diffDays >= 7) return true;
-    if (now.getDay() === 0 && dateKey(now) !== dateKey(lastDate)) return true;
 
     return false;
   } catch {
