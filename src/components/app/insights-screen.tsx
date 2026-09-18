@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Globe, MapPin, TrendingUp, Calendar, CloudSun, Sparkles, Brain, Clock, Zap, Activity } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useStore, dateKey, useProfileFarts, useProfileMoods, useProfileFood, type FartRecord, type MoodDay } from "@/lib/store";
+import { useStore, dateKey, useProfileFarts, useProfileMoods, useProfileFood, useProfilePoops, useProfileWalks, useProfileWater, type FartRecord, type MoodDay } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
 import { toast } from "sonner";
 import { DigestCards } from "./digest-cards";
@@ -26,8 +26,9 @@ export function InsightsScreen() {
   const recordWeather = useStore((s) => s.recordWeather);
   const appMode = useStore((s) => s.settings.appMode);
   const isMedical = appMode === "medical";
-  const poops = useStore((s) => s.poops.filter((p) => (p.profileId || "me") === s.settings.activeProfileId));
-  const walks = useStore((s) => s.walks.filter((w) => (w.profileId || "me") === s.settings.activeProfileId));
+  const poops = useProfilePoops();
+  const walks = useProfileWalks();
+  const water = useProfileWater();
 
   // ===== Weather =====
   const [weatherLoading, setWeatherLoading] = useState(false);
@@ -478,7 +479,7 @@ export function InsightsScreen() {
 
       {/* Medical mode sections */}
       {isMedical && (
-        <MedicalInsights poops={poops} walks={walks} water={useStore.getState().water} t={t} lang={lang} />
+        <MedicalInsights poops={poops} walks={walks} water={water} t={t} lang={lang} />
       )}
 
       {/* Weather — BOTH modes */}
