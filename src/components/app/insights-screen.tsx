@@ -24,6 +24,10 @@ export function InsightsScreen() {
   const streak = useStore((s) => s.streak);
   const setSetting = useStore((s) => s.setSetting);
   const recordWeather = useStore((s) => s.recordWeather);
+  const appMode = useStore((s) => s.settings.appMode);
+  const isMedical = appMode === "medical";
+  const poops = useStore((s) => s.poops.filter((p) => (p.profileId || "me") === s.settings.activeProfileId));
+  const walks = useStore((s) => s.walks.filter((w) => (w.profileId || "me") === s.settings.activeProfileId));
 
   // ===== Weather =====
   const [weatherLoading, setWeatherLoading] = useState(false);
@@ -434,7 +438,8 @@ export function InsightsScreen() {
     <div className="flex flex-col gap-4 px-4 pb-4">
       <h1 className="pt-1 text-center text-lg font-bold">{t("tab_insights")}</h1>
 
-      {/* AI Insights (NEW - most engaging, shown first) */}
+      {/* AI Insights — fun mode only (fart-related patterns) */}
+      {!isMedical && (
       <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-4">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -466,11 +471,17 @@ export function InsightsScreen() {
           </div>
         )}
       </Card>
+      )}
 
-      {/* Digest cards (Spotify Wrapped style) */}
+      {/* Digest cards — BOTH modes (poop/food based, not farts) */}
       <DigestCards />
 
-      {/* Weather */}
+      {/* Medical mode sections */}
+      {isMedical && (
+        <MedicalInsights poops={poops} walks={walks} water={useStore.getState().water} t={t} lang={lang} />
+      )}
+
+      {/* Weather — BOTH modes */}
       <Card className="p-4">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -504,7 +515,8 @@ export function InsightsScreen() {
         ) : null}
       </Card>
 
-      {/* Prediction (enhanced) */}
+      {/* Prediction — fun mode only (fart prediction) */}
+      {!isMedical && (
       <Card className="p-4">
         <div className="mb-2 flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
@@ -537,8 +549,10 @@ export function InsightsScreen() {
           <p className="py-2 text-center text-sm text-muted-foreground">{t("prediction_no_data")}</p>
         )}
       </Card>
+      )}
 
-      {/* Weekly cycle (NEW: shows from day 1, with averages + share %) */}
+      {/* Weekly cycle — fun mode only (fart counts per weekday) */}
+      {!isMedical && (
       <Card className="p-4">
         <div className="mb-1 flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -611,8 +625,10 @@ export function InsightsScreen() {
           </>
         )}
       </Card>
+      )}
 
-      {/* Hourly breakdown (NEW) */}
+      {/* Hourly breakdown — fun mode only (fart time of day) */}
+      {!isMedical && (
       <Card className="p-4">
         <div className="mb-1 flex items-center gap-2">
           <Clock className="h-4 w-4 text-muted-foreground" />
@@ -655,8 +671,10 @@ export function InsightsScreen() {
           </div>
         )}
       </Card>
+      )}
 
-      {/* Monthly trend (NEW: with numbers + sparkline) */}
+      {/* Monthly trend — fun mode only (fart trend) */}
+      {!isMedical && (
       <Card className="p-4">
         <div className="mb-1 flex items-center gap-2">
           <TrendingUp className={`h-4 w-4 ${trend.direction === "up" ? "text-red-500" : trend.direction === "down" ? "text-green-500" : "text-muted-foreground"}`} />
@@ -733,8 +751,10 @@ export function InsightsScreen() {
           </div>
         </div>
       </Card>
+      )}
 
-      {/* World rank — Coming Soon */}
+      {/* World rank — fun mode only */}
+      {!isMedical && (
       <Card className="p-4">
         <div className="mb-3 flex items-center gap-2">
           <Globe className="h-4 w-4 text-blue-500" />
@@ -765,8 +785,10 @@ export function InsightsScreen() {
           </div>
         )}
       </Card>
+      )}
 
-      {/* Geo toggle */}
+      {/* Geo toggle — fun mode only */}
+      {!isMedical && (
       <Card className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -778,6 +800,7 @@ export function InsightsScreen() {
           </Button>
         </div>
       </Card>
+      )}
     </div>
   );
 }
@@ -806,4 +829,184 @@ function computeFoodCorrelation(
   return Array.from(byName.entries())
     .map(([name, v]) => ({ name, avgFarts: v.times > 0 ? +(v.sum / v.times).toFixed(1) : 0, times: v.times }))
     .sort((a, b) => b.avgFarts - a.avgFarts);
+}
+
+/** Medical Insights — Bristol overview, symptoms, regularity, activity, water */
+function MedicalInsights({ poops, walks, water, t, lang }: {
+  poops: any[];
+  walks: any[];
+  water: any[];
+  t: (k: never) => string;
+  lang: string;
+}) {
+  const locale = lang === "ru" ? "ru-RU" : "en-US";
+  const now = Date.now();
+  const periodMs = 30 * 24 * 3600 * 1000; // 30 days
+  const periodPoops = poops.filter((p) => now - new Date(p.ts).getTime() < periodMs);
+  const periodWalks = walks.filter((w) => now - new Date(w.ts).getTime() < periodMs);
+
+  // Bristol distribution
+  const bristolStats = useMemo(() => {
+    if (periodPoops.length === 0) return null;
+    const normal = periodPoops.filter((p) => p.bristolType >= 3 && p.bristolType <= 5).length;
+    const constipation = periodPoops.filter((p) => p.bristolType && p.bristolType <= 2).length;
+    const diarrhea = periodPoops.filter((p) => p.bristolType && p.bristolType >= 6).length;
+    return {
+      normal: Math.round((normal / periodPoops.length) * 100),
+      constipation: Math.round((constipation / periodPoops.length) * 100),
+      diarrhea: Math.round((diarrhea / periodPoops.length) * 100),
+    };
+  }, [periodPoops]);
+
+  // Symptoms summary
+  const symptomCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    periodPoops.forEach((p) => {
+      if (p.symptoms) {
+        p.symptoms.split(/[·,]/).forEach((s: string) => {
+          const trimmed = s.trim();
+          if (trimmed) counts[trimmed] = (counts[trimmed] || 0) + 1;
+        });
+      }
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [periodPoops]);
+
+  // Regularity: days with bowel movement
+  const regularityPct = useMemo(() => {
+    const days = new Set<string>();
+    periodPoops.forEach((p) => days.add(dateKey(new Date(p.ts))));
+    const totalDays = 30;
+    return Math.round((days.size / totalDays) * 100);
+  }, [periodPoops]);
+
+  // Walk stats
+  const walkStats = useMemo(() => {
+    const weekWalks = walks.filter((w) => now - new Date(w.ts).getTime() < 7 * 24 * 3600 * 1000);
+    const totalMin = periodWalks.reduce((sum, w) => sum + (w.minutes || 0), 0);
+    return { weekCount: weekWalks.length, totalMin };
+  }, [walks, periodWalks]);
+
+  // Water average
+  const waterAvg = useMemo(() => {
+    if (water.length === 0) return 0;
+    const periodWater = water.filter((w) => {
+      const d = new Date(w.date + "T12:00:00");
+      return now - d.getTime() < periodMs;
+    });
+    if (periodWater.length === 0) return 0;
+    const total = periodWater.reduce((sum, w) => sum + w.count, 0);
+    return Math.round((total / periodWater.length) * 10) / 10;
+  }, [water]);
+
+  return (
+    <>
+      {/* Bristol overview */}
+      {bristolStats && (
+        <Card className="p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Activity className="h-4 w-4 text-primary" />
+            <span className="text-xs uppercase tracking-widest text-primary">
+              {t("medical_bristol_overview" as never)}
+            </span>
+          </div>
+          <div className="space-y-2">
+            {/* Normal */}
+            <div className="flex items-center gap-2 text-xs">
+              <span className="w-32 shrink-0">{t("medical_bristol_normal_pct" as never)}</span>
+              <div className="flex-1 h-5 bg-muted rounded">
+                <div className="h-full rounded bg-green-500" style={{ width: `${bristolStats.normal}%` }} />
+              </div>
+              <span className="w-10 text-right tabular-nums font-bold">{bristolStats.normal}%</span>
+            </div>
+            {/* Constipation */}
+            <div className="flex items-center gap-2 text-xs">
+              <span className="w-32 shrink-0">{t("medical_bristol_constipation_pct" as never)}</span>
+              <div className="flex-1 h-5 bg-muted rounded">
+                <div className="h-full rounded bg-amber-500" style={{ width: `${bristolStats.constipation}%` }} />
+              </div>
+              <span className="w-10 text-right tabular-nums font-bold">{bristolStats.constipation}%</span>
+            </div>
+            {/* Diarrhea */}
+            <div className="flex items-center gap-2 text-xs">
+              <span className="w-32 shrink-0">{t("medical_bristol_diarrhea_pct" as never)}</span>
+              <div className="flex-1 h-5 bg-muted rounded">
+                <div className="h-full rounded bg-red-500" style={{ width: `${bristolStats.diarrhea}%` }} />
+              </div>
+              <span className="w-10 text-right tabular-nums font-bold">{bristolStats.diarrhea}%</span>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Symptoms overview */}
+      <Card className="p-4">
+        <div className="mb-3 flex items-center gap-2">
+          <Activity className="h-4 w-4 text-amber-500" />
+          <span className="text-xs uppercase tracking-widest text-muted-foreground">
+            {t("medical_symptoms_overview" as never)}
+          </span>
+        </div>
+        {symptomCounts.length === 0 ? (
+          <p className="py-2 text-center text-sm text-muted-foreground">
+            {t("medical_symptoms_none" as never)}
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {symptomCounts.map(([symptom, count]) => (
+              <div key={symptom} className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs">
+                <span className="font-medium">{symptom}</span>
+                <span className="ml-1.5 text-muted-foreground tabular-nums">×{count}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {/* Regularity */}
+      <Card className="p-4">
+        <div className="mb-2 flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-primary" />
+          <span className="text-xs uppercase tracking-widest text-primary">
+            {t("medical_regularity" as never)}
+          </span>
+        </div>
+        <p className="text-[10px] text-muted-foreground mb-2">{t("medical_regularity_desc" as never)}</p>
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-black tabular-nums text-primary">{regularityPct}%</span>
+          <span className="text-xs text-muted-foreground">{t("medical_regularity_pct" as never)}</span>
+        </div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+          <div className="h-full rounded-full bg-primary" style={{ width: `${regularityPct}%` }} />
+        </div>
+      </Card>
+
+      {/* Activity + Water grid */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <Card className="p-3">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <Zap className="h-3.5 w-3.5 text-green-500" />
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {t("medical_walk_overview" as never)}
+            </span>
+          </div>
+          <p className="text-2xl font-black text-green-600 dark:text-green-400">{walkStats.weekCount}</p>
+          <p className="text-[10px] text-muted-foreground">{t("medical_walk_avg_week" as never)}</p>
+          <p className="mt-1 text-sm font-bold tabular-nums">{walkStats.totalMin}</p>
+          <p className="text-[10px] text-muted-foreground">{t("medical_walk_total_min" as never)}</p>
+        </Card>
+
+        <Card className="p-3">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <CloudSun className="h-3.5 w-3.5 text-blue-500" />
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {t("medical_water_overview" as never)}
+            </span>
+          </div>
+          <p className="text-2xl font-black text-blue-600 dark:text-blue-400">{waterAvg}</p>
+          <p className="text-[10px] text-muted-foreground">{t("medical_water_avg_day" as never)}</p>
+        </Card>
+      </div>
+    </>
+  );
 }
