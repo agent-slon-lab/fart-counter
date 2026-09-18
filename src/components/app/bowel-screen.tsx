@@ -128,7 +128,7 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto max-w-[360px]">
+      <DialogContent className="max-h-[92vh] overflow-y-auto max-w-[360px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             🚽 {t("bowel_tracker" as never)}

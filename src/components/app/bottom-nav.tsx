@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Home, History, Settings, Utensils, Sparkles, ShoppingBag } from "lucide-react";
 import { useT } from "@/hooks/use-t";
+import { useStore } from "@/lib/store";
 
 export type TabId = "home" | "history" | "food" | "insights" | "shop" | "profile";
 
@@ -13,14 +14,22 @@ interface Props {
 
 export function BottomNav({ active, onChange }: Props) {
   const { t } = useT();
-  const items: { id: TabId; label: string; icon: React.ElementType }[] = [
+  const appMode = useStore((s) => s.settings.appMode);
+  const isMedical = appMode === "medical";
+
+  const allItems: { id: TabId; label: string; icon: React.ElementType; medical?: boolean }[] = [
     { id: "home", label: t("tab_home"), icon: Home },
-    { id: "history", label: t("tab_history"), icon: History },
+    { id: "history", label: t("tab_history"), icon: History, medical: false },
     { id: "food", label: t("tab_food"), icon: Utensils },
     { id: "insights", label: t("tab_insights"), icon: Sparkles },
-    { id: "shop", label: t("shop_title"), icon: ShoppingBag },
+    { id: "shop", label: t("shop_title"), icon: ShoppingBag, medical: false },
     { id: "profile", label: t("tab_profile"), icon: Settings },
   ];
+
+  // Filter: in medical mode, hide history + shop
+  const items = isMedical
+    ? allItems.filter((item) => item.medical !== false)
+    : allItems;
 
   return (
     <nav

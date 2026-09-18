@@ -25,6 +25,9 @@ import type { Language } from "@/lib/i18n";
 
 const SUPPORTED_LANGS: Language[] = ["ru", "en", "es", "pt", "de", "fr", "hi"];
 
+// Tab type: medical mode has fewer tabs
+type TabId = "home" | "history" | "food" | "insights" | "shop" | "profile";
+
 /**
  * Detect user's preferred language using 3 strategies (in priority order):
  * 1. navigator.languages[] — full preference list (most accurate)
@@ -91,6 +94,8 @@ export default function Home() {
   const primeAudioOnce = useRef(false);
   const mainRef = useRef<HTMLDivElement>(null);
   const setLanguage = useStore((s) => s.setLanguage);
+  const appMode = useStore((s) => s.settings.appMode);
+  const isMedical = appMode === "medical";
 
   useEffect(() => {
     const storeKey = "fart-counter-store-v2";
@@ -199,9 +204,9 @@ export default function Home() {
 
       <header className="safe-top sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/95 px-4 py-2 backdrop-blur-md">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-base shadow-sm">💨</span>
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-base shadow-sm">{isMedical ? "🩺" : "💨"}</span>
           <div className="leading-none" suppressHydrationWarning>
-            <p className="text-sm font-black" suppressHydrationWarning>{t("app_name")}</p>
+            <p className="text-sm font-black" suppressHydrationWarning>{isMedical ? t("app_mode_medical_title" as never) : t("app_name")}</p>
             <p className="text-[10px] text-muted-foreground" suppressHydrationWarning>{t("app_tagline")}</p>
           </div>
         </div>
@@ -212,7 +217,7 @@ export default function Home() {
       <main ref={mainRef} className="flex-1 overflow-y-auto overflow-x-hidden pb-24 thin-scroll">
         <div key={tab} className="pt-3">
           {tab === "home" && <HomeScreen />}
-          {tab === "history" && (
+          {tab === "history" && !isMedical && (
             <>
               <HistoryScreen />
               <StatsScreen />
@@ -220,20 +225,20 @@ export default function Home() {
           )}
           {tab === "food" && <FoodScreen />}
           {tab === "insights" && <InsightsScreen />}
-          {tab === "shop" && <ShopScreen />}
+          {tab === "shop" && !isMedical && <ShopScreen />}
           {tab === "profile" && <ProfileScreen />}
         </div>
       </main>
 
       <BottomNav active={tab} onChange={handleTabChange} />
       <AchievementWatcher />
-      <InstallPrompt />
+      {!isMedical && <InstallPrompt />}
       <UpdateBanner />
       <EveningReminderBanner />
       <BowelMorningBanner />
       <WalkReminderBanner />
-      <WelcomePopup />
-      <DailyBonusPopup />
+      {!isMedical && <WelcomePopup />}
+      {!isMedical && <DailyBonusPopup />}
     </div>
   );
 }

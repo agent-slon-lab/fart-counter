@@ -24,6 +24,8 @@ import {
   RefreshCw,
   Github,
   Shield,
+  Zap,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
@@ -207,6 +209,40 @@ export function ProfileScreen() {
   return (
     <div className="flex flex-col gap-4 px-4 pb-4">
       <h1 className="pt-1 text-center text-lg font-bold">{t("settings_title")}</h1>
+
+      {/* App Mode Switcher — TOP of settings */}
+      <SectionCard icon={<Zap className="h-4 w-4" />} title={t("app_mode_section" as never)}>
+        <div className="grid grid-cols-1 gap-2">
+          {/* Fun mode */}
+          <button
+            onClick={() => setSetting("appMode", "fun")}
+            className={`flex items-start gap-2.5 rounded-xl border-2 p-3 text-left transition-all ${
+              settings.appMode === "fun" ? "border-primary bg-primary/5" : "border-border"
+            }`}
+          >
+            <span className="text-xl">🔥</span>
+            <div>
+              <p className="text-sm font-bold">{t("app_mode_fun" as never)}</p>
+              <p className="text-[10px] text-muted-foreground leading-snug">{t("app_mode_fun_desc" as never)}</p>
+            </div>
+            {settings.appMode === "fun" && <Check className="ml-auto h-4 w-4 text-primary" />}
+          </button>
+          {/* Medical mode */}
+          <button
+            onClick={() => setSetting("appMode", "medical")}
+            className={`flex items-start gap-2.5 rounded-xl border-2 p-3 text-left transition-all ${
+              settings.appMode === "medical" ? "border-primary bg-primary/5" : "border-border"
+            }`}
+          >
+            <span className="text-xl">🩺</span>
+            <div>
+              <p className="text-sm font-bold">{t("app_mode_medical" as never)}</p>
+              <p className="text-[10px] text-muted-foreground leading-snug">{t("app_mode_medical_desc" as never)}</p>
+            </div>
+            {settings.appMode === "medical" && <Check className="ml-auto h-4 w-4 text-primary" />}
+          </button>
+        </div>
+      </SectionCard>
 
       {/* Achievements shortcut */}
       <Card className="cursor-pointer p-4 transition-colors hover:bg-muted/40" onClick={() => setAchOpen(true)}>

@@ -138,6 +138,8 @@ export interface AppSettings {
   bowelTrackingEnabled: boolean;
   /** Enable walk reminders */
   walkReminderEnabled: boolean;
+  /** App mode: "fun" = full features with jokes, "medical" = serious GI tracker */
+  appMode: "fun" | "medical";
   /** Active profile ID */
   activeProfileId: string;
 }
@@ -300,6 +302,7 @@ export const useStore = create<AppState>()(
         weatherEnabled: false,
         bowelTrackingEnabled: true,
         walkReminderEnabled: true,
+        appMode: "fun",
         activeProfileId: "me",
       },
       unlockedAchievements: [],
@@ -690,7 +693,7 @@ export const useStore = create<AppState>()(
     {
       name: "fart-counter-store-v2",
       storage: createJSONStorage(() => localStorage),
-      version: 8,
+      version: 9,
       // NO skipHydration — let Zustand hydrate synchronously from localStorage (instant)
       migrate: (persisted: any, version: number) => {
         if (!persisted) return persisted;
@@ -717,6 +720,7 @@ export const useStore = create<AppState>()(
               weatherEnabled: false,
               bowelTrackingEnabled: true,
               walkReminderEnabled: true,
+        appMode: "fun",
               activeProfileId: "me",
             },
           };
@@ -787,6 +791,12 @@ export const useStore = create<AppState>()(
               delete p.consistency;
               return p;
             });
+          }
+        }
+        if (version < 9) {
+          // v8 → v9: Add appMode setting
+          if (persisted.settings) {
+            persisted.settings.appMode = persisted.settings.appMode ?? "fun";
           }
         }
         return persisted;

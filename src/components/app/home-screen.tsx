@@ -105,6 +105,8 @@ export function HomeScreen() {
   // Default to true if undefined (for old stores without this field)
   const bowelTrackingEnabled = useStore((s) => s.settings.bowelTrackingEnabled ?? true);
   const walkReminderEnabled = useStore((s) => s.settings.walkReminderEnabled);
+  const appMode = useStore((s) => s.settings.appMode);
+  const isMedical = appMode === "medical";
   const poops = useProfilePoops();
   const walks = useProfileWalks();
   const [bowelOpen, setBowelOpen] = useState(false);
@@ -292,9 +294,11 @@ export function HomeScreen() {
       </div>
 
       {/* Gamification: Streak + Level + XP + Health */}
-      <GamificationBar />
+      {/* Gamification: Streak + Level + XP + Health — fun mode only */}
+      {!isMedical && <GamificationBar />}
 
-      {/* Counter card */}
+      {/* Counter card — fun mode only */}
+      {!isMedical && (
       <Card
         className={`relative overflow-hidden border-2 ${zoneStyles.border} ${zoneStyles.bg} ${zoneStyles.glow} p-6 shadow-lg transition-colors`}
       >
@@ -334,8 +338,10 @@ export function HomeScreen() {
           </AnimatePresence>
         </div>
       </Card>
+      )}
 
-      {/* Big +1 button */}
+      {/* Big +1 button — fun mode only */}
+      {!isMedical && (
       <div className="relative flex justify-center py-2">
         <motion.button
           onClick={() => handleAddFart([])}
@@ -358,8 +364,9 @@ export function HomeScreen() {
           </span>
         </motion.button>
       </div>
+      )}
 
-      {/* Fact of the day */}
+      {/* Fact of the day — BOTH modes (educational!) */}
       <Card className="border-primary/30 bg-primary/5 p-3">
         <div className="mb-1 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
@@ -381,7 +388,8 @@ export function HomeScreen() {
         </p>
       </Card>
 
-      {/* Tag buttons — all visible at once, grid 3 columns */}
+      {/* Tag buttons — fun mode only */}
+      {!isMedical && (
       <div className="grid grid-cols-3 gap-1.5">
         {TAG_OPTIONS.map(({ tag, icon, labelKey }) => (
           <Button
@@ -396,16 +404,21 @@ export function HomeScreen() {
           </Button>
         ))}
       </div>
+      )}
 
-      {/* Undo */}
+      {/* Undo — fun mode only */}
+      {!isMedical && (
       <Button variant="ghost" size="sm" onClick={handleUndo} disabled={count === 0} className="text-muted-foreground">
         <Minus className="mr-1 h-4 w-4" />
         {bt("cancel_fart", "baby_cancel_fart")}
       </Button>
+      )}
 
+      {!isMedical && (
       <p className="text-center text-[11px] text-muted-foreground">
         {isBaby ? t("profile_baby_hint") : t("normal_range_hint")}
       </p>
+      )}
 
       {/* Water tracker */}
       <Card className="p-4">
