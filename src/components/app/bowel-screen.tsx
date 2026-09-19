@@ -145,25 +145,24 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
           </div>
         ) : (
           <div className="space-y-3">
-            {/* Today count */}
-            <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
-              <span className="text-xs uppercase tracking-widest text-muted-foreground">
-                {t("bowel_today" as never)}
-              </span>
-              <span className="text-2xl font-black tabular-nums">{todayCount}</span>
-            </div>
-
-            {/* Time since last */}
-            {timeSince && (
-              <div className={`rounded-lg px-3 py-2 text-center ${showWarning ? "bg-orange-500/10" : "bg-muted/30"}`}>
+            {/* Combined: Today count + Last visit — at the TOP */}
+            <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-3 py-2">
+              <div className="flex-1">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {t("bowel_today" as never)}
+                </p>
+                <p className="text-2xl font-black tabular-nums">{todayCount}</p>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="flex-1 text-center">
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                   {t("bowel_last_time" as never)}
                 </p>
-                <p className={`text-lg font-bold ${showWarning ? "text-orange-500" : ""}`}>
-                  {timeSince.days > 0 ? `${timeSince.days}д ${timeSince.hours % 24}ч` : `${timeSince.hours}ч`}
+                <p className={`text-lg font-bold tabular-nums ${showWarning ? "text-orange-500" : ""}`}>
+                  {timeSince ? (timeSince.days > 0 ? `${timeSince.days}д ${timeSince.hours % 24}ч` : `${timeSince.hours}ч`) : "—"}
                 </p>
               </div>
-            )}
+            </div>
 
             {/* Warning if >24h */}
             {showWarning && (
