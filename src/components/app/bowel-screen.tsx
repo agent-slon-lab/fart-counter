@@ -128,7 +128,7 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto max-w-[360px]">
+      <DialogContent className="max-h-[95vh] overflow-y-auto max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             🚽 {t("bowel_tracker" as never)}
@@ -278,7 +278,7 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
               {weekPoops.length === 0 ? (
                 <p className="py-3 text-center text-xs text-muted-foreground">{t("bowel_no_records" as never)}</p>
               ) : (
-                <div className="max-h-48 space-y-1.5 overflow-y-auto thin-scroll">
+                <div className="max-h-96 space-y-1.5 overflow-y-auto thin-scroll">
                   {weekPoops.slice(0, 20).map((p) => {
                     const d = new Date(p.ts);
                     const isEditing = editId === p.id;
