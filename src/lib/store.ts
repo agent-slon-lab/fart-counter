@@ -65,6 +65,8 @@ export interface FoodEntry {
   ts: string;
   /** food key (beans, cabbage, ...) or custom text */
   name: string;
+  /** Portion size: affects digestion speed */
+  portion?: "small" | "medium" | "large";
   /** Profile ID */
   profileId?: string;
 }
@@ -76,6 +78,12 @@ export interface PoopRecord {
   bristolType?: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   /** Optional symptoms/notes (free text or tags) */
   symptoms?: string;
+  /** Tenesmus (straining/urge without result) */
+  tenesmus?: boolean;
+  /** Feeling of incomplete evacuation */
+  incomplete?: boolean;
+  /** Symptom intensity VAS 0-10 */
+  painLevel?: number;
   /** Profile ID */
   profileId?: string;
 }
@@ -191,15 +199,15 @@ export interface AppState {
   removeWater: () => void;
 
   // Actions — Food
-  addFood: (name: string) => void;
+  addFood: (name: string, portion?: "small" | "medium" | "large") => void;
   removeFood: (id: string) => void;
   addCustomFood: (name: string) => void;
   removeCustomFood: (name: string) => void;
 
   // Actions — Bowel (poops)
-  addPoop: (opts?: { bristolType?: PoopRecord["bristolType"]; symptoms?: string }) => void;
+  addPoop: (opts?: { bristolType?: PoopRecord["bristolType"]; symptoms?: string; tenesmus?: boolean; incomplete?: boolean; painLevel?: number }) => void;
   removePoop: (id: string) => void;
-  updatePoop: (id: string, updates: Partial<Pick<PoopRecord, "ts" | "bristolType" | "symptoms">>) => void;
+  updatePoop: (id: string, updates: Partial<Pick<PoopRecord, "ts" | "bristolType" | "symptoms" | "tenesmus" | "incomplete" | "painLevel">>) => void;
 
   // Actions — Walks
   addWalk: (minutes?: number) => void;
@@ -446,9 +454,9 @@ export const useStore = create<AppState>()(
         });
       },
 
-      addFood: (name) => {
+      addFood: (name, portion) => {
         const pid = get().settings.activeProfileId;
-        const rec: FoodEntry = { id: uid(), ts: new Date().toISOString(), name, profileId: pid };
+        const rec: FoodEntry = { id: uid(), ts: new Date().toISOString(), name, portion, profileId: pid };
 
         // Gamification (XP) is ONLY awarded on the PRIMARY profile ("me").
         // Secondary profiles track food for correlation but don't farm XP.
@@ -504,6 +512,9 @@ export const useStore = create<AppState>()(
           ts: new Date().toISOString(),
           bristolType: opts?.bristolType,
           symptoms: opts?.symptoms?.trim() || undefined,
+          tenesmus: opts?.tenesmus,
+          incomplete: opts?.incomplete,
+          painLevel: opts?.painLevel,
           profileId: pid,
         };
         // +5 XP for tracking bowel health (primary only, max 3/day = 15 XP)

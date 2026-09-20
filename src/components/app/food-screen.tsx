@@ -81,6 +81,7 @@ export function FoodScreen() {
 
   const [addOpen, setAddOpen] = useState(false);
   const [customName, setCustomName] = useState("");
+  const [portion, setPortion] = useState<"small" | "medium" | "large">("medium");
   // Pending food that triggered a warning — needs confirmation
   const [warnPending, setWarnPending] = useState<{ name: string; avgFarts: number; times: number } | null>(null);
 
@@ -111,18 +112,18 @@ export function FoodScreen() {
    * If this food was eaten >=2 times before AND averaged >=3 farts in 24h → show funny warning.
    * User can confirm or cancel.
    */
-  function tryAddFood(name: string) {
+  function tryAddFood(name: string, portionSize?: "small" | "medium" | "large") {
     const stats = correlationMap.get(name.toLowerCase());
     if (stats && stats.times >= 2 && stats.avgFarts >= 3) {
       // Risky! Show warning dialog
       setWarnPending({ name, avgFarts: stats.avgFarts, times: stats.times });
       return;
     }
-    commitAddFood(name);
+    commitAddFood(name, portionSize);
   }
 
-  function commitAddFood(name: string) {
-    addFood(name);
+  function commitAddFood(name: string, portionSize?: "small" | "medium" | "large") {
+    addFood(name, portionSize);
     showFoodXP();
     setAddOpen(false);
     setCustomName("");
@@ -131,20 +132,19 @@ export function FoodScreen() {
 
   function handleAddPreset(key: string) {
     const name = t(key as never);
-    tryAddFood(name);
+    tryAddFood(name, portion);
   }
 
   function handleAddCustom() {
     const name = customName.trim();
     if (!name) return;
-    // Save to custom foods list for quick re-add later
     addCustomFood(name);
-    tryAddFood(name);
+    tryAddFood(name, portion);
     toast(t("food_custom_saved" as never), { icon: "⭐", duration: 1500 });
   }
 
   function handleAddCustomQuick(name: string) {
-    tryAddFood(name);
+    tryAddFood(name, "medium");
   }
 
   function showFoodXP() {
@@ -319,6 +319,23 @@ export function FoodScreen() {
               onKeyDown={(e) => e.key === "Enter" && handleAddCustom()}
             />
           </div>
+          {/* Portion size selector */}
+          <div className="mt-2">
+            <p className="mb-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">{t("food_portion" as never)}</p>
+            <div className="grid grid-cols-3 gap-1.5">
+              {(["small", "medium", "large"] as const).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPortion(p)}
+                  className={`rounded-lg border-2 px-2 py-1.5 text-xs font-semibold transition-all ${
+                    portion === p ? "border-primary bg-primary/10" : "border-border"
+                  }`}
+                >
+                  {t(`food_portion_${p}` as never)}
+                </button>
+              ))}
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setAddOpen(false)}>
               {t("cancel")}
@@ -335,7 +352,7 @@ export function FoodScreen() {
         pending={warnPending}
         t={t}
         onCancel={() => setWarnPending(null)}
-        onConfirm={() => warnPending && commitAddFood(warnPending.name)}
+        onConfirm={() => warnPending && commitAddFood(warnPending.name, portion)}
       />
     </div>
   );

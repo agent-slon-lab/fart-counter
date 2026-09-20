@@ -37,7 +37,10 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
   const [editBristol, setEditBristol] = useState<PoopRecord["bristolType"]>(4);
   const [editSymptoms, setEditSymptoms] = useState<string>("");
 
-  const SYMPTOM_TAGS = ["bloating", "pain", "nausea", "heartburn", "cramps"];
+  const SYMPTOM_TAGS = ["bloating", "pain", "nausea", "heartburn", "cramps", "borborygmi"];
+  const [tenesmus, setTenesmus] = useState(false);
+  const [incomplete, setIncomplete] = useState(false);
+  const [painLevel, setPainLevel] = useState(0);
 
   function toggleSymptomTag(tag: string) {
     setActiveSymptomTags((prev) => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
@@ -84,10 +87,13 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
     // Combine symptom tags + free text
     const tagText = activeSymptomTags.map(tag => t(`bowel_symptoms_${tag}` as never)).join(", ");
     const fullSymptoms = [tagText, symptoms.trim()].filter(Boolean).join(symptoms.trim() ? " · " : "") || undefined;
-    addPoop({ bristolType, symptoms: fullSymptoms });
-    // Reset symptoms after add
+    addPoop({ bristolType, symptoms: fullSymptoms, tenesmus, incomplete, painLevel: painLevel > 0 ? painLevel : undefined });
+    // Reset after add
     setSymptoms("");
     setActiveSymptomTags([]);
+    setTenesmus(false);
+    setIncomplete(false);
+    setPainLevel(0);
     // Show XP toast
     const todayPoopsCount = poops.filter((p) => dateKey(new Date(p.ts)) === dateKey(new Date())).length;
     if (todayPoopsCount < 3) {
@@ -256,6 +262,48 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
                 onChange={(e) => setSymptoms(e.target.value)}
                 placeholder={t("bowel_symptoms_placeholder" as never)}
                 className="text-xs h-8"
+              />
+            </div>
+
+            {/* Tenesmus + Incomplete evacuation */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setTenesmus(!tenesmus)}
+                className={`flex items-center gap-1.5 rounded-lg border-2 px-2 py-1.5 text-xs font-semibold transition-all ${
+                  tenesmus ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400" : "border-border"
+                }`}
+              >
+                <span className="text-sm">{tenesmus ? "☑️" : "⬜"}</span>
+                {t("bowel_tenesmus" as never)}
+              </button>
+              <button
+                onClick={() => setIncomplete(!incomplete)}
+                className={`flex items-center gap-1.5 rounded-lg border-2 px-2 py-1.5 text-xs font-semibold transition-all ${
+                  incomplete ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400" : "border-border"
+                }`}
+              >
+                <span className="text-sm">{incomplete ? "☑️" : "⬜"}</span>
+                {t("bowel_incomplete" as never)}
+              </button>
+            </div>
+
+            {/* Pain level VAS 0-10 */}
+            <div>
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {t("bowel_pain_level" as never)}
+                </span>
+                <span className={`text-sm font-bold tabular-nums ${painLevel >= 7 ? "text-red-500" : painLevel >= 4 ? "text-amber-500" : "text-muted-foreground"}`}>
+                  {painLevel}/10
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="10"
+                value={painLevel}
+                onChange={(e) => setPainLevel(Number(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none bg-muted accent-primary"
               />
             </div>
 
