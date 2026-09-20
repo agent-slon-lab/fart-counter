@@ -983,3 +983,45 @@ Tricky translations:
 - Hindi used English loanword "डायरिया" for diarrhea (most natural in conversational Hindi) and "पेरिस्टल्सिस" as transliteration for peristalsis.
 
 Next actions: None required. App will now serve complete translations for all 5 languages on demand; previously these 207 keys fell back to English.
+
+---
+Task ID: medical-dashboard-v1.9.1
+Agent: main (Z.ai Code)
+Task: Build medical dashboard (hourly heatmap, lag windowing, risk ratio, FODMAP profile) for Insights + PDF report; remove double icons in AppMode switcher
+
+Work Log:
+- Identified "small double icons" bug: app_mode_fun/medical i18n strings contained emoji prefix AND a separate <span> rendered same emoji in profile-screen.tsx → duplicate
+- Removed emoji from i18n keys (app_mode_fun: "🔥 Fun" → "Fun"; same for Medical, in RU+EN inline i18n)
+- Added 31 new i18n keys (RU+EN) for medical dashboard: heatmap_title/desc/legend/peak, lag_window_desc/no_data/reactions/of_food/window, risk_ratio_desc/high/neutral/protective/insufficient/exposed/unexposed/symptom_rate, report_fodmap/lag/risk/heatmap sections, medical_dashboard_7d/14d/30d/section
+- Added same 31 keys to lazy-loaded ES/PT/DE/FR/HI locales via Python script (each file +31 keys, total 875)
+- Created src/lib/medical-analytics.ts with 4 pure functions:
+  · computeHourlyHeatmap (24-cell distribution + peak hour)
+  · computeLagWindows (3 windows 0-2h/2-6h/6-24h based on earliest symptomatic poop)
+  · computeRiskRatios (RR + 95% CI Wald log method, min 3 exposures)
+  · computeFodmapProfile (distribution by FODMAP category)
+- Created src/components/app/medical-dashboard.tsx (322 lines):
+  · Props: forPrint, fixedPeriod, compact
+  · Renders 4 cards: heatmap, lag windows, risk ratio rows, FODMAP profile bars
+  · Color-coded badges for RR (high/neutral/protective/insufficient)
+  · Period selector 7/14/30 days when interactive
+- Integrated MedicalDashboard into insights-screen.tsx (medical mode, after MedicalInsights)
+- Integrated MedicalDashboard into medical-report.tsx (compact print mode, fixed to report period)
+- Fixed lag window label lookup bug: wKey was `lag_window_0_2h` (with trailing h), but i18n key is `lag_window_0_2` — added `.replace("h", "")` to fix
+- Verified via Agent Browser with 30-day test data (40 poops + 59 food events injected via localStorage):
+  · Hourly heatmap renders 24 cells with color intensity, peak hour "22:00 · Evening"
+  · Lag windows: 0-2h=11%, 2-6h=11%, 6-24h=78% (math correct)
+  · Risk Ratio: Potato RR=0.45 (0.07-2.71), "Fewer symptoms" badge
+  · FODMAP profile: Low 47%, Oligo 29%, Polyols 12%, Lactose 6%, Fructose 6%
+  · PDF medical-report renders all 4 sections in print mode
+  · AppMode switcher in profile-screen.tsx now shows single 🔥 before "Fun" and single 🩺 before "Medical" — no more duplicates
+- Bumped version 1.9.0 → 1.9.1 in: version.ts, i18n.ts (about_text RU+EN), package.json, manifest.json, version.json, sw.js, README.md, README.en.md, medical-report.tsx footer
+- Updated version.json date 2026-09-19 → 2026-09-20
+- Updated CHANGELOG.md with v1.9.1 + v1.9.0 sections
+- Lint: clean (0 errors)
+
+Stage Summary:
+- All 4 clinical analytics sections built and verified end-to-end in both Insights and PDF report
+- All lag window labels properly translated (no raw keys visible)
+- Double-icon UI bug fixed in AppMode switcher
+- 31 new i18n keys added to 7 languages (RU+EN inline, 5 lazy-loaded)
+- Version 1.9.1 ready to commit/push

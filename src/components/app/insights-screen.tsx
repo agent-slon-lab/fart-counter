@@ -9,6 +9,7 @@ import { useStore, dateKey, useProfileFarts, useProfileMoods, useProfileFood, us
 import { useT } from "@/hooks/use-t";
 import { toast } from "sonner";
 import { DigestCards } from "./digest-cards";
+import { MedicalDashboard } from "./medical-dashboard";
 
 const WEEKDAY_KEYS = ["weekday_mon", "weekday_tue", "weekday_wed", "weekday_thu", "weekday_fri", "weekday_sat", "weekday_sun"];
 const FOOD_LIFESPAN_MS = 24 * 60 * 60 * 1000;
@@ -479,7 +480,10 @@ export function InsightsScreen() {
 
       {/* Medical mode sections */}
       {isMedical && (
-        <MedicalInsights poops={poops} walks={walks} water={water} t={t} lang={lang} />
+        <>
+          <MedicalInsights poops={poops} walks={walks} water={water} t={t} lang={lang} />
+          <MedicalDashboard />
+        </>
       )}
 
       {/* Weather — BOTH modes */}

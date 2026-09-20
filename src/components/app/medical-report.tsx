@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { useStore, dateKey, useProfileFarts, useProfilePoops, useProfileFood, useProfileWater, useProfileWalks, type FartRecord, type PoopRecord, type FoodEntry, type WaterDay, type WalkRecord } from "@/lib/store";
 import { useT } from "@/hooks/use-t";
+import { MedicalDashboard } from "./medical-dashboard";
 
 type Period = 7 | 30 | 90;
 
@@ -260,9 +261,17 @@ export function MedicalReport({ open, onOpenChange }: { open: boolean; onOpenCha
                 </div>
               )}
 
+              {/* Clinical dashboard: heatmap + lag windows + risk ratio + FODMAP */}
+              {daysTracked > 0 && (
+                <div className="mb-4">
+                  <h2 className="mb-2 text-sm font-bold uppercase tracking-wider">{t("medical_dashboard_section" as never)}</h2>
+                  <MedicalDashboard forPrint fixedPeriod={period as 7 | 14 | 30 | 90} compact />
+                </div>
+              )}
+
               {/* Footer */}
               <div className="mt-4 border-t pt-2 text-center">
-                <p className="text-[10px] text-muted-foreground">{t("report_signature" as never)} · v1.9.0</p>
+                <p className="text-[10px] text-muted-foreground">{t("report_signature" as never)} · v1.9.1</p>
                 <p className="text-[9px] text-muted-foreground italic">{t("report_disclaimer" as never)}</p>
               </div>
             </>
