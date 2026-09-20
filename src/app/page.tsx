@@ -152,7 +152,15 @@ export default function Home() {
               try {
                 const parsed = JSON.parse(raw);
                 if (parsed.state) {
-                  autoBackup(parsed.state);
+                  // Show toast FIRST — so user understands what's happening
+                  import("sonner").then(({ toast }) => {
+                    toast("💾 Автосохранение! Файл с данными скачан в Загрузки. Если данные пропадут — восстанови из этого файла в Профиле.", {
+                      icon: "💾",
+                      duration: 5000,
+                    });
+                    // Then trigger download
+                    autoBackup(parsed.state);
+                  });
                 }
               } catch {}
             }
