@@ -1,0 +1,1150 @@
+{
+  "farts": [],
+  "poops": [
+    {
+      "id": "p_30_0",
+      "ts": "2026-08-21T23:43:06+00:00",
+      "bristolType": 2,
+      "symptoms": "bloating, pain, cramps",
+      "tenesmus": false,
+      "incomplete": true,
+      "painLevel": 5,
+      "profileId": "me"
+    },
+    {
+      "id": "p_29_0",
+      "ts": "2026-08-23T03:43:06+00:00",
+      "bristolType": 4,
+      "symptoms": "borborygmi, nausea",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": 7,
+      "profileId": "me"
+    },
+    {
+      "id": "p_28_0",
+      "ts": "2026-08-23T12:43:06+00:00",
+      "bristolType": 3,
+      "symptoms": null,
+      "tenesmus": false,
+      "incomplete": true,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_28_1",
+      "ts": "2026-08-23T22:43:06+00:00",
+      "bristolType": 6,
+      "symptoms": null,
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_27_0",
+      "ts": "2026-08-24T22:43:06+00:00",
+      "bristolType": 4,
+      "symptoms": "cramps, heartburn",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_26_0",
+      "ts": "2026-08-26T01:43:06+00:00",
+      "bristolType": 4,
+      "symptoms": "cramps, borborygmi, heartburn",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": 7,
+      "profileId": "me"
+    },
+    {
+      "id": "p_25_0",
+      "ts": "2026-08-26T18:43:06+00:00",
+      "bristolType": 4,
+      "symptoms": "pain, heartburn",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_24_0",
+      "ts": "2026-08-28T02:43:06+00:00",
+      "bristolType": 6,
+      "symptoms": "pain, nausea",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": 3,
+      "profileId": "me"
+    },
+    {
+      "id": "p_23_0",
+      "ts": "2026-08-28T14:43:06+00:00",
+      "bristolType": 5,
+      "symptoms": null,
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_22_0",
+      "ts": "2026-08-29T23:43:06+00:00",
+      "bristolType": 3,
+      "symptoms": "cramps, heartburn",
+      "tenesmus": false,
+      "incomplete": true,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_21_0",
+      "ts": "2026-08-30T14:43:06+00:00",
+      "bristolType": 5,
+      "symptoms": "bloating, cramps, heartburn",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": 8,
+      "profileId": "me"
+    },
+    {
+      "id": "p_20_0",
+      "ts": "2026-08-31T18:43:06+00:00",
+      "bristolType": 4,
+      "symptoms": null,
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_19_0",
+      "ts": "2026-09-01T18:43:06+00:00",
+      "bristolType": 3,
+      "symptoms": "bloating, heartburn",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_18_0",
+      "ts": "2026-09-02T18:43:06+00:00",
+      "bristolType": 1,
+      "symptoms": "bloating, nausea",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": 8,
+      "profileId": "me"
+    },
+    {
+      "id": "p_17_0",
+      "ts": "2026-09-03T11:43:06+00:00",
+      "bristolType": 5,
+      "symptoms": "cramps, heartburn",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": 4,
+      "profileId": "me"
+    },
+    {
+      "id": "p_16_0",
+      "ts": "2026-09-05T00:43:06+00:00",
+      "bristolType": 5,
+      "symptoms": "pain, borborygmi",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": 6,
+      "profileId": "me"
+    },
+    {
+      "id": "p_15_0",
+      "ts": "2026-09-05T12:43:06+00:00",
+      "bristolType": 5,
+      "symptoms": "bloating, heartburn",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_15_1",
+      "ts": "2026-09-06T02:43:06+00:00",
+      "bristolType": 4,
+      "symptoms": "cramps, nausea",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_14_0",
+      "ts": "2026-09-06T16:43:06+00:00",
+      "bristolType": 5,
+      "symptoms": "cramps, nausea, heartburn",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_13_0",
+      "ts": "2026-09-07T11:43:06+00:00",
+      "bristolType": 2,
+      "symptoms": "heartburn",
+      "tenesmus": true,
+      "incomplete": true,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_12_0",
+      "ts": "2026-09-08T12:43:06+00:00",
+      "bristolType": 4,
+      "symptoms": null,
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_11_0",
+      "ts": "2026-09-09T18:43:06+00:00",
+      "bristolType": 7,
+      "symptoms": null,
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_11_1",
+      "ts": "2026-09-10T02:43:06+00:00",
+      "bristolType": 7,
+      "symptoms": "bloating, borborygmi, heartburn",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_10_0",
+      "ts": "2026-09-10T16:43:06+00:00",
+      "bristolType": 2,
+      "symptoms": null,
+      "tenesmus": true,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_9_0",
+      "ts": "2026-09-11T17:43:06+00:00",
+      "bristolType": 6,
+      "symptoms": null,
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_8_0",
+      "ts": "2026-09-12T23:43:06+00:00",
+      "bristolType": 6,
+      "symptoms": null,
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_8_1",
+      "ts": "2026-09-13T02:43:06+00:00",
+      "bristolType": 6,
+      "symptoms": null,
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_7_0",
+      "ts": "2026-09-13T23:43:06+00:00",
+      "bristolType": 3,
+      "symptoms": "borborygmi",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": 4,
+      "profileId": "me"
+    },
+    {
+      "id": "p_6_0",
+      "ts": "2026-09-14T12:43:06+00:00",
+      "bristolType": 4,
+      "symptoms": "heartburn",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": 1,
+      "profileId": "me"
+    },
+    {
+      "id": "p_5_0",
+      "ts": "2026-09-16T01:43:06+00:00",
+      "bristolType": 6,
+      "symptoms": "cramps, nausea",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": 1,
+      "profileId": "me"
+    },
+    {
+      "id": "p_4_0",
+      "ts": "2026-09-17T03:43:06+00:00",
+      "bristolType": 4,
+      "symptoms": "bloating",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": 5,
+      "profileId": "me"
+    },
+    {
+      "id": "p_3_0",
+      "ts": "2026-09-17T23:43:06+00:00",
+      "bristolType": 2,
+      "symptoms": "bloating, borborygmi",
+      "tenesmus": true,
+      "incomplete": true,
+      "painLevel": 1,
+      "profileId": "me"
+    },
+    {
+      "id": "p_2_1",
+      "ts": "2026-09-18T22:43:06+00:00",
+      "bristolType": 3,
+      "symptoms": "bloating",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_2_0",
+      "ts": "2026-09-19T03:43:06+00:00",
+      "bristolType": 5,
+      "symptoms": null,
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    },
+    {
+      "id": "p_1_0",
+      "ts": "2026-09-19T14:43:06+00:00",
+      "bristolType": 4,
+      "symptoms": "nausea, heartburn",
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": 1,
+      "profileId": "me"
+    },
+    {
+      "id": "p_0_0",
+      "ts": "2026-09-20T12:43:06+00:00",
+      "bristolType": 5,
+      "symptoms": null,
+      "tenesmus": false,
+      "incomplete": false,
+      "painLevel": null,
+      "profileId": "me"
+    }
+  ],
+  "food": [
+    {
+      "id": "f_30_0",
+      "ts": "2026-08-21T12:43:06+00:00",
+      "name": "food_beans",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_30_2",
+      "ts": "2026-08-21T13:43:06+00:00",
+      "name": "food_fastfood",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_30_1",
+      "ts": "2026-08-21T17:43:06+00:00",
+      "name": "food_coffee",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_29_0",
+      "ts": "2026-08-22T23:43:06+00:00",
+      "name": "food_egg",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_28_1",
+      "ts": "2026-08-23T11:43:06+00:00",
+      "name": "food_sweets",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_28_0",
+      "ts": "2026-08-23T16:43:06+00:00",
+      "name": "food_soda",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_27_1",
+      "ts": "2026-08-24T12:43:06+00:00",
+      "name": "food_meat",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_27_2",
+      "ts": "2026-08-24T13:43:06+00:00",
+      "name": "food_carrot",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_27_0",
+      "ts": "2026-08-24T17:43:06+00:00",
+      "name": "food_soda",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_26_0",
+      "ts": "2026-08-25T16:43:06+00:00",
+      "name": "food_corn",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_25_1",
+      "ts": "2026-08-26T12:43:06+00:00",
+      "name": "food_bread",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_25_2",
+      "ts": "2026-08-26T13:43:06+00:00",
+      "name": "food_sweets",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_25_0",
+      "ts": "2026-08-27T00:43:06+00:00",
+      "name": "food_dairy",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_24_0",
+      "ts": "2026-08-27T17:43:06+00:00",
+      "name": "food_fish",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_23_2",
+      "ts": "2026-08-28T12:43:06+00:00",
+      "name": "food_rice",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_23_1",
+      "ts": "2026-08-28T22:43:06+00:00",
+      "name": "food_broccoli",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_23_0",
+      "ts": "2026-08-29T01:43:06+00:00",
+      "name": "food_beans",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_22_0",
+      "ts": "2026-08-30T01:43:06+00:00",
+      "name": "food_bread",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_21_0",
+      "ts": "2026-08-30T12:43:06+00:00",
+      "name": "food_coffee",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_21_1",
+      "ts": "2026-08-30T12:43:06+00:00",
+      "name": "food_egg",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_20_2",
+      "ts": "2026-08-31T12:43:06+00:00",
+      "name": "food_sweets",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_20_1",
+      "ts": "2026-08-31T23:43:06+00:00",
+      "name": "food_mushroom",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_20_0",
+      "ts": "2026-09-01T00:43:06+00:00",
+      "name": "food_coffee",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_19_0",
+      "ts": "2026-09-01T12:43:06+00:00",
+      "name": "food_cabbage",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_19_2",
+      "ts": "2026-09-01T16:43:06+00:00",
+      "name": "food_mushroom",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_19_1",
+      "ts": "2026-09-01T22:43:06+00:00",
+      "name": "food_onion",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_18_0",
+      "ts": "2026-09-02T13:43:06+00:00",
+      "name": "food_fish",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_17_0",
+      "ts": "2026-09-04T01:43:06+00:00",
+      "name": "food_cabbage",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_16_0",
+      "ts": "2026-09-04T11:43:06+00:00",
+      "name": "food_meat",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_15_0",
+      "ts": "2026-09-06T00:43:06+00:00",
+      "name": "food_meat",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_14_1",
+      "ts": "2026-09-06T17:43:06+00:00",
+      "name": "food_meat",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_14_2",
+      "ts": "2026-09-06T22:43:06+00:00",
+      "name": "food_mushroom",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_14_0",
+      "ts": "2026-09-07T01:43:06+00:00",
+      "name": "food_bread",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_13_0",
+      "ts": "2026-09-08T00:43:06+00:00",
+      "name": "food_carrot",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_12_0",
+      "ts": "2026-09-08T22:43:06+00:00",
+      "name": "food_mushroom",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_11_0",
+      "ts": "2026-09-09T13:43:06+00:00",
+      "name": "food_coffee",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_11_1",
+      "ts": "2026-09-09T13:43:06+00:00",
+      "name": "food_fish",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_11_2",
+      "ts": "2026-09-09T13:43:06+00:00",
+      "name": "food_fastfood",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_10_0",
+      "ts": "2026-09-10T11:43:06+00:00",
+      "name": "food_sweets",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_9_1",
+      "ts": "2026-09-11T17:43:06+00:00",
+      "name": "food_apple",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_9_2",
+      "ts": "2026-09-11T17:43:06+00:00",
+      "name": "food_cabbage",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_9_0",
+      "ts": "2026-09-11T22:43:06+00:00",
+      "name": "food_beans",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_8_0",
+      "ts": "2026-09-12T12:43:06+00:00",
+      "name": "food_potato",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_8_1",
+      "ts": "2026-09-12T16:43:06+00:00",
+      "name": "food_beer",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_8_2",
+      "ts": "2026-09-12T23:43:06+00:00",
+      "name": "food_beans",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_7_1",
+      "ts": "2026-09-13T17:43:06+00:00",
+      "name": "food_cheese",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_7_0",
+      "ts": "2026-09-13T22:43:06+00:00",
+      "name": "food_sweets",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_7_2",
+      "ts": "2026-09-13T23:43:06+00:00",
+      "name": "food_egg",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_6_0",
+      "ts": "2026-09-14T22:43:06+00:00",
+      "name": "food_banana",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_6_1",
+      "ts": "2026-09-15T00:43:06+00:00",
+      "name": "food_sweets",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_6_2",
+      "ts": "2026-09-15T01:43:06+00:00",
+      "name": "food_broccoli",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_5_0",
+      "ts": "2026-09-15T12:43:06+00:00",
+      "name": "food_banana",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_5_1",
+      "ts": "2026-09-15T16:43:06+00:00",
+      "name": "food_soda",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_5_2",
+      "ts": "2026-09-15T23:43:06+00:00",
+      "name": "food_broccoli",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_4_0",
+      "ts": "2026-09-16T13:43:06+00:00",
+      "name": "food_banana",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_4_1",
+      "ts": "2026-09-17T01:43:06+00:00",
+      "name": "food_carrot",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_3_1",
+      "ts": "2026-09-17T17:43:06+00:00",
+      "name": "food_banana",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_3_2",
+      "ts": "2026-09-17T17:43:06+00:00",
+      "name": "food_coffee",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_3_0",
+      "ts": "2026-09-18T00:43:06+00:00",
+      "name": "food_pepper",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_2_1",
+      "ts": "2026-09-18T22:43:06+00:00",
+      "name": "food_garlic",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_2_0",
+      "ts": "2026-09-18T23:43:06+00:00",
+      "name": "food_broccoli",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_2_2",
+      "ts": "2026-09-18T23:43:06+00:00",
+      "name": "food_carrot",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_1_0",
+      "ts": "2026-09-19T11:43:06+00:00",
+      "name": "food_dairy",
+      "portion": "large",
+      "profileId": "me"
+    },
+    {
+      "id": "f_1_2",
+      "ts": "2026-09-19T13:43:06+00:00",
+      "name": "food_cabbage",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_1_1",
+      "ts": "2026-09-19T23:43:06+00:00",
+      "name": "food_bread",
+      "portion": "medium",
+      "profileId": "me"
+    },
+    {
+      "id": "f_0_0",
+      "ts": "2026-09-20T11:43:06+00:00",
+      "name": "food_beans",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_0_2",
+      "ts": "2026-09-20T13:43:06+00:00",
+      "name": "food_coffee",
+      "portion": "small",
+      "profileId": "me"
+    },
+    {
+      "id": "f_0_1",
+      "ts": "2026-09-20T16:43:06+00:00",
+      "name": "food_beans",
+      "portion": "large",
+      "profileId": "me"
+    }
+  ],
+  "water": [
+    {
+      "date": "2026-08-21",
+      "count": 8,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-08-22",
+      "count": 2,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-08-23",
+      "count": 3,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-08-24",
+      "count": 8,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-08-25",
+      "count": 4,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-08-26",
+      "count": 8,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-08-27",
+      "count": 4,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-08-28",
+      "count": 2,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-08-29",
+      "count": 7,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-08-30",
+      "count": 3,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-08-31",
+      "count": 2,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-01",
+      "count": 2,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-02",
+      "count": 3,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-03",
+      "count": 5,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-04",
+      "count": 8,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-05",
+      "count": 3,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-06",
+      "count": 7,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-07",
+      "count": 8,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-08",
+      "count": 8,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-09",
+      "count": 4,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-10",
+      "count": 5,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-11",
+      "count": 5,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-12",
+      "count": 4,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-13",
+      "count": 5,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-14",
+      "count": 2,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-15",
+      "count": 6,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-16",
+      "count": 8,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-17",
+      "count": 8,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-18",
+      "count": 6,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-19",
+      "count": 4,
+      "profileId": "me"
+    },
+    {
+      "date": "2026-09-20",
+      "count": 5,
+      "profileId": "me"
+    }
+  ],
+  "walks": [
+    {
+      "id": "w_29",
+      "ts": "2026-08-22T21:43:06+00:00",
+      "minutes": 60,
+      "profileId": "me"
+    },
+    {
+      "id": "w_28",
+      "ts": "2026-08-23T21:43:06+00:00",
+      "minutes": 20,
+      "profileId": "me"
+    },
+    {
+      "id": "w_27",
+      "ts": "2026-08-24T21:43:06+00:00",
+      "minutes": 30,
+      "profileId": "me"
+    },
+    {
+      "id": "w_26",
+      "ts": "2026-08-25T21:43:06+00:00",
+      "minutes": 20,
+      "profileId": "me"
+    },
+    {
+      "id": "w_25",
+      "ts": "2026-08-26T21:43:06+00:00",
+      "minutes": 30,
+      "profileId": "me"
+    },
+    {
+      "id": "w_22",
+      "ts": "2026-08-29T21:43:06+00:00",
+      "minutes": 60,
+      "profileId": "me"
+    },
+    {
+      "id": "w_21",
+      "ts": "2026-08-30T21:43:06+00:00",
+      "minutes": 60,
+      "profileId": "me"
+    },
+    {
+      "id": "w_18",
+      "ts": "2026-09-02T21:43:06+00:00",
+      "minutes": 20,
+      "profileId": "me"
+    },
+    {
+      "id": "w_17",
+      "ts": "2026-09-03T21:43:06+00:00",
+      "minutes": 60,
+      "profileId": "me"
+    },
+    {
+      "id": "w_15",
+      "ts": "2026-09-05T21:43:06+00:00",
+      "minutes": 15,
+      "profileId": "me"
+    },
+    {
+      "id": "w_12",
+      "ts": "2026-09-08T21:43:06+00:00",
+      "minutes": 60,
+      "profileId": "me"
+    },
+    {
+      "id": "w_11",
+      "ts": "2026-09-09T21:43:06+00:00",
+      "minutes": 20,
+      "profileId": "me"
+    },
+    {
+      "id": "w_8",
+      "ts": "2026-09-12T21:43:06+00:00",
+      "minutes": 30,
+      "profileId": "me"
+    },
+    {
+      "id": "w_6",
+      "ts": "2026-09-14T21:43:06+00:00",
+      "minutes": 45,
+      "profileId": "me"
+    },
+    {
+      "id": "w_5",
+      "ts": "2026-09-15T21:43:06+00:00",
+      "minutes": 15,
+      "profileId": "me"
+    },
+    {
+      "id": "w_4",
+      "ts": "2026-09-16T21:43:06+00:00",
+      "minutes": 30,
+      "profileId": "me"
+    },
+    {
+      "id": "w_2",
+      "ts": "2026-09-18T21:43:06+00:00",
+      "minutes": 45,
+      "profileId": "me"
+    },
+    {
+      "id": "w_1",
+      "ts": "2026-09-19T21:43:06+00:00",
+      "minutes": 15,
+      "profileId": "me"
+    }
+  ],
+  "moods": [],
+  "weather": [],
+  "worldRank": {},
+  "unlockedAchievements": [],
+  "customFoods": [],
+  "maxXp": 6000,
+  "xp": 6000,
+  "streak": 28,
+  "lastFartDay": null,
+  "lastBonusDay": null,
+  "purchasedItems": [],
+  "fartsTodayForXP": 0,
+  "activeBadge": null,
+  "profiles": [
+    {
+      "id": "me",
+      "name": "Me",
+      "type": "adult",
+      "avatar": "🧑"
+    }
+  ],
+  "settings": {
+    "language": "ru",
+    "theme": "light",
+    "accent": "green",
+    "soundEnabled": true,
+    "vibrationEnabled": true,
+    "notificationsEnabled": false,
+    "eveningReminder": true,
+    "waterReminder": false,
+    "morningReminder": false,
+    "gentleReminder": false,
+    "fartSound": "classic",
+    "geoEnabled": false,
+    "weatherEnabled": false,
+    "bowelTrackingEnabled": true,
+    "walkReminderEnabled": true,
+    "appMode": "medical",
+    "activeProfileId": "me"
+  }
+}
