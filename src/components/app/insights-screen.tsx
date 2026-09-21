@@ -863,11 +863,18 @@ function MedicalInsights({ poops, walks, water, t, lang }: {
     };
   }, [periodPoops]);
 
-  // Symptoms summary
+  // Symptoms summary — uses raw symptomTags (translated at display) + falls back to legacy symptoms text
   const symptomCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     periodPoops.forEach((p) => {
-      if (p.symptoms) {
+      // Prefer raw tags (new format, locale-agnostic)
+      if (p.symptomTags && p.symptomTags.length > 0) {
+        p.symptomTags.forEach((tag) => {
+          const trimmed = tag.trim();
+          if (trimmed) counts[trimmed] = (counts[trimmed] || 0) + 1;
+        });
+      } else if (p.symptoms) {
+        // Legacy: free text. Split on , or · and store as-is (already translated at log time).
         p.symptoms.split(/[·,]/).forEach((s: string) => {
           const trimmed = s.trim();
           if (trimmed) counts[trimmed] = (counts[trimmed] || 0) + 1;
@@ -958,12 +965,18 @@ function MedicalInsights({ poops, walks, water, t, lang }: {
           </p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {symptomCounts.map(([symptom, count]) => (
-              <div key={symptom} className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs">
-                <span className="font-medium">{symptom}</span>
-                <span className="ml-1.5 text-muted-foreground tabular-nums">×{count}</span>
-              </div>
-            ))}
+            {symptomCounts.map(([symptom, count]) => {
+              // Try to translate as a tag key (e.g. "bloating" → "bowel_symptoms_bloating" → "Вздутие")
+              const tagKey = `bowel_symptoms_${symptom}` as never;
+              const translated = t(tagKey);
+              const display = translated !== tagKey ? translated : symptom;
+              return (
+                <div key={symptom} className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs">
+                  <span className="font-medium">{display}</span>
+                  <span className="ml-1.5 text-muted-foreground tabular-nums">×{count}</span>
+                </div>
+              );
+            })}
           </div>
         )}
       </Card>

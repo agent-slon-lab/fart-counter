@@ -84,10 +84,9 @@ export function BowelScreen({ open, onOpenChange }: { open: boolean; onOpenChang
   }, [food, poops]);
 
   function handleAdd() {
-    // Combine symptom tags + free text
-    const tagText = activeSymptomTags.map(tag => t(`bowel_symptoms_${tag}` as never)).join(", ");
-    const fullSymptoms = [tagText, symptoms.trim()].filter(Boolean).join(symptoms.trim() ? " · " : "") || undefined;
-    addPoop({ bristolType, symptoms: fullSymptoms, tenesmus, incomplete, painLevel: painLevel > 0 ? painLevel : undefined });
+    // Combine symptom tags + free text. Tags are stored RAW (keys) so display can translate them.
+    const fullSymptoms = symptoms.trim() || undefined;
+    addPoop({ bristolType, symptoms: fullSymptoms, symptomTags: activeSymptomTags.length > 0 ? activeSymptomTags : undefined, tenesmus, incomplete, painLevel: painLevel > 0 ? painLevel : undefined });
     // Reset after add
     setSymptoms("");
     setActiveSymptomTags([]);

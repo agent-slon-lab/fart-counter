@@ -295,6 +295,7 @@ export function computeFodmapProfile(food: FoodEntry[]): FodmapProfileEntry[] {
 // ===== Helpers =====
 
 function hasSymptoms(p: PoopRecord): boolean {
+  if (p.symptomTags && p.symptomTags.length > 0) return true;
   if (p.symptoms && p.symptoms.trim().length > 0) return true;
   if (p.tenesmus) return true;
   if (p.incomplete) return true;

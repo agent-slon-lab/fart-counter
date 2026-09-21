@@ -76,8 +76,10 @@ export interface PoopRecord {
   ts: string;
   /** Bristol Stool Scale type 1-7 (medical standard). Old `consistency` migrated to bristolType. */
   bristolType?: 1 | 2 | 3 | 4 | 5 | 6 | 7;
-  /** Optional symptoms/notes (free text or tags) */
+  /** Optional symptoms/notes (free text or tags). Legacy: stored as translated text. New: use symptomTags. */
   symptoms?: string;
+  /** Symptom tag keys (raw, e.g. ["bloating","pain","borborygmi"]). Translated at display time. */
+  symptomTags?: string[];
   /** Tenesmus (straining/urge without result) */
   tenesmus?: boolean;
   /** Feeling of incomplete evacuation */
@@ -205,7 +207,7 @@ export interface AppState {
   removeCustomFood: (name: string) => void;
 
   // Actions — Bowel (poops)
-  addPoop: (opts?: { bristolType?: PoopRecord["bristolType"]; symptoms?: string; tenesmus?: boolean; incomplete?: boolean; painLevel?: number }) => void;
+  addPoop: (opts?: { bristolType?: PoopRecord["bristolType"]; symptoms?: string; symptomTags?: string[]; tenesmus?: boolean; incomplete?: boolean; painLevel?: number }) => void;
   removePoop: (id: string) => void;
   updatePoop: (id: string, updates: Partial<Pick<PoopRecord, "ts" | "bristolType" | "symptoms" | "tenesmus" | "incomplete" | "painLevel">>) => void;
 
@@ -512,6 +514,7 @@ export const useStore = create<AppState>()(
           ts: new Date().toISOString(),
           bristolType: opts?.bristolType,
           symptoms: opts?.symptoms?.trim() || undefined,
+          symptomTags: opts?.symptomTags,
           tenesmus: opts?.tenesmus,
           incomplete: opts?.incomplete,
           painLevel: opts?.painLevel,

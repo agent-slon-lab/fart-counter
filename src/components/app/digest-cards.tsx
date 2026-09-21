@@ -178,7 +178,7 @@ export function DigestCards() {
           <DigestCard
             icon={<Utensils className="h-4 w-4" />}
             title={t("digest_food_trigger" as never)}
-            value={foodTrigger.name}
+            value={t(foodTrigger.name as never) !== foodTrigger.name ? t(foodTrigger.name as never) : foodTrigger.name}
             unit={`${foodTrigger.symptoms} ${t("digest_food_trigger_unit" as never)}`}
             desc={t("digest_food_trigger_desc" as never)}
             color="red"

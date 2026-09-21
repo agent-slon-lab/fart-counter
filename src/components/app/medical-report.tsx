@@ -78,10 +78,10 @@ export function MedicalReport({ open, onOpenChange }: { open: boolean; onOpenCha
   }, [periodFarts, periodPoops, period]);
   const maxChartVal = Math.max(...chartData.map((d) => Math.max(d.farts, d.poops)), 1);
 
-  // Symptoms log
+  // Symptoms log — include records with either symptomTags or symptoms text
   const symptomsLog = useMemo(() => {
     return periodPoops
-      .filter((p) => p.symptoms)
+      .filter((p) => (p.symptomTags && p.symptomTags.length > 0) || p.symptoms)
       .sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
       .slice(0, 10);
   }, [periodPoops]);
@@ -247,16 +247,29 @@ export function MedicalReport({ open, onOpenChange }: { open: boolean; onOpenCha
                 <div className="mb-4">
                   <h2 className="mb-2 text-sm font-bold uppercase tracking-wider">{t("report_symptoms_log" as never)}</h2>
                   <div className="space-y-1">
-                    {symptomsLog.map((p) => (
-                      <div key={p.id} className="text-xs border-b py-0.5">
-                        <span className="font-medium">
-                          {new Date(p.ts).toLocaleDateString(locale, { day: "numeric", month: "short" })}
-                          {new Date(p.ts).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
-                        </span>
-                        {p.bristolType && <span className="text-muted-foreground"> · {t("bowel_bristol_type" as never)} {p.bristolType}</span>}
-                        <span className="text-amber-600 dark:text-amber-400"> · {p.symptoms}</span>
-                      </div>
-                    ))}
+                    {symptomsLog.map((p) => {
+                      // Translate raw symptomTags if present, else use stored symptoms text
+                      let display: string = p.symptoms || "";
+                      if (p.symptomTags && p.symptomTags.length > 0) {
+                        const translated = p.symptomTags.map((tag) => {
+                          const k = `bowel_symptoms_${tag}` as never;
+                          const tr = t(k);
+                          return tr !== k ? tr : tag;
+                        });
+                        // If user also added free text, append with separator
+                        display = [translated.join(", "), p.symptoms].filter(Boolean).join(p.symptoms ? " · " : "");
+                      }
+                      return (
+                        <div key={p.id} className="text-xs border-b py-0.5">
+                          <span className="font-medium">
+                            {new Date(p.ts).toLocaleDateString(locale, { day: "numeric", month: "short" })}
+                            {new Date(p.ts).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                          {p.bristolType && <span className="text-muted-foreground"> · {t("bowel_bristol_type" as never)} {p.bristolType}</span>}
+                          <span className="text-amber-600 dark:text-amber-400"> · {display}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -328,6 +341,15 @@ function computePoopFoodCorrelation(food: FoodEntry[], poops: PoopRecord[]): { n
     .sort((a, b) => a.avgHours - b.avgHours);
 }
 
+/** Escape a value for CSV (wrap in quotes if it contains comma, quote, or newline). */
+function escapeCSV(s: string): string {
+  if (!s) return "";
+  if (/[",\n]/.test(s)) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
 /** CSV export helper */
 export function exportCSV() {
   const store = useStore.getState();
@@ -345,7 +367,10 @@ export function exportCSV() {
     rows.push(`Fart,${f.ts},,,,${1},,${(f.tags || []).join(";")}`);
   });
   poops.forEach((p) => {
-    rows.push(`Poop,${p.ts},${p.bristolType || ""},${p.symptoms || ""},,,,`);
+    const symptomText = p.symptomTags && p.symptomTags.length > 0
+      ? p.symptomTags.join(";") + (p.symptoms ? " | " + p.symptoms : "")
+      : (p.symptoms || "");
+    rows.push(`Poop,${p.ts},${p.bristolType || ""},${escapeCSV(symptomText)},,,,`);
   });
   food.forEach((f) => {
     rows.push(`Food,${f.ts},,,,,,${f.name}`);

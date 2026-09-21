@@ -245,7 +245,7 @@ export function MedicalDashboard({ forPrint = false, fixedPeriod, compact = fals
                 <div key={e.category} className="flex items-center gap-2 text-xs">
                   <span className="w-6 shrink-0 text-base">{e.label.emoji}</span>
                   <span className="w-32 shrink-0 font-medium">
-                    {lang === "ru" ? e.label.ru : e.label.en}
+                    {t(`fodmap_${e.category}` as never)}
                   </span>
                   <div className="flex-1 h-5 bg-muted rounded overflow-hidden">
                     <div
