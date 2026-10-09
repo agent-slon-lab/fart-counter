@@ -1055,3 +1055,35 @@ Stage Summary:
 - Offline PWA now always caches on first successful visit, regardless of hydration timing
 - Repository hygiene: .env no longer tracked
 - Version 1.9.2 ready to commit/push
+
+---
+Task ID: security-audit-v1.9.2
+Agent: Super Z (AI assistant, session web-c3a30a5c)
+Task: Full security audit: secrets scan over the entire git history, tracked-file leak check, .gitignore hardening, privacy/code review
+
+Work Log:
+- Secrets scan: 1027 blobs across all 133 commits (incl. deleted files) + working tree —
+  0 findings (GitHub/AWS/Google/OpenAI/Slack/Stripe/npm keys, private keys, JWTs, DB URLs
+  with creds, generic assignments). Session GitHub token verified absent from the repo.
+- .env across full history: only ever contained DATABASE_URL (local SQLite path), no credentials.
+- Leak trap (tracked files matching .gitignore): found 8 — db/custom.db (empty Prisma scaffold,
+  0 rows), tool-results/bash_*.txt (dev server logs), upload/pasted_image_*.png x6 (dev UI
+  screenshots, verified via vision model — no PII). All untracked with git rm --cached; files
+  remain on disk locally.
+- download/*.zip (45 archives): contain only .env.example templates — no real .env, no secrets.
+- medical-test-data.json: synthetic QA data, no emails/names.
+- Dependencies: 28 deps + 10 devDeps, all standard well-known packages — no typosquats.
+- Privacy: matches PRIVACY.md — geo/weather strictly opt-in (weatherEnabled=false default);
+  external calls only to open-meteo / ipwho.is / ipapi.co / geolocation-db when enabled;
+  no analytics/trackers found.
+- Code: single dangerouslySetInnerHTML (shadcn chart CSS injection — standard, safe);
+  no eval/new Function; vercel.json sets sw.js no-cache + Service-Worker-Allowed properly.
+- .gitignore hardened: + .env.* / !.env.example / *.log / *.sqlite / *.sqlite3 / /db/ —
+  verified with git check-ignore; tracked-ignored trap now empty.
+
+Stage Summary:
+- No secrets ever leaked in the repository history — repo is clean.
+- 8 dev-artifact files untracked (db/logs/screenshots); .gitignore gaps closed.
+- Recommendations (not applied): move download/*.zip (~30MB) to GitHub Releases;
+  typescript.ignoreBuildErrors=true is risky hygiene; optional CSP header; branch
+  protection on main.
