@@ -48,15 +48,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (typeof navigator === "undefined") return;
     if (!("serviceWorker" in navigator)) return;
     if (process.env.NODE_ENV !== "production") return;
-    const onLoad = () => {
+    const register = () => {
       navigator.serviceWorker
         .register("/sw.js", { scope: "/" })
         .catch(() => {
           // ignore registration errors (e.g. during dev)
         });
     };
-    window.addEventListener("load", onLoad);
-    return () => window.removeEventListener("load", onLoad);
+    // Race guard: if the window 'load' event already fired before React
+    // hydrated (slow first visit — dynamic chunks load after 'load'),
+    // a late-attached listener would never run and the SW would never
+    // register, leaving the PWA without offline cache. In that case
+    // register immediately. register() is idempotent, so a double call
+    // (load listener + this branch) is harmless.
+    if (document.readyState === "complete") {
+      register();
+      return;
+    }
+    window.addEventListener("load", register);
+    return () => window.removeEventListener("load", register);
   }, []);
 
   return <>{children}</>;

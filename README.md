@@ -2,7 +2,7 @@
 
 > **Бесплатное офлайн PWA для отслеживания пуков и здоровья ЖКТ.** Юмор, статистика, 23 достижения, дневник питания, медицинский трекер, клиническая аналитика. Без рекламы, без слежки.
 
-**Версия: 1.9.1**
+**Версия: 1.9.2**
 
 [▶️ Watch 30s demo](https://youtube.com/shorts/SU068NOUf_8)
 
@@ -204,6 +204,7 @@ public/
 См. [CHANGELOG.md](./CHANGELOG.md)
 
 ### Ключевые версии
+- **v1.9.2** — Fix: гонка регистрации Service Worker (офлайн-PWA теперь всегда включается при медленной первой загрузке), .env убран из репозитория
 - **v1.9.1** — Medical Dashboard: heatmap, lag windowing, risk ratio, FODMAP-профиль (Insights + PDF)
 - **v1.9.0** — Clinical upgrade: FODMAP-теги, размер порции, тенезмы, VAS, борборигмы
 - **v1.8.0** — App mode switcher (Fun/Medical) + Medical Insights

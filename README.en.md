@@ -2,7 +2,7 @@
 
 > **Free offline PWA for tracking farts and GI health.** Humor, stats, 23 achievements, food diary, medical tracker, clinical analytics. No ads, no tracking.
 
-**Version: 1.9.1**
+**Version: 1.9.2**
 
 [▶️ Watch 30s demo](https://youtube.com/shorts/SU068NOUf_8)
 
@@ -204,6 +204,7 @@ public/
 See [CHANGELOG.md](./CHANGELOG.md)
 
 ### Key versions
+- **v1.9.2** — Fix: service worker registration race (offline PWA now always activates on slow first loads), .env removed from the repository
 - **v1.9.1** — Medical Dashboard: heatmap, lag windowing, risk ratio, FODMAP profile (Insights + PDF)
 - **v1.9.0** — Clinical upgrade: FODMAP tags, portion size, tenesmus, VAS, borborygmi
 - **v1.8.0** — App mode switcher (Fun/Medical) + Medical Insights

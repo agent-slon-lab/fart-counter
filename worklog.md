@@ -1025,3 +1025,33 @@ Stage Summary:
 - Double-icon UI bug fixed in AppMode switcher
 - 31 new i18n keys added to 7 languages (RU+EN inline, 5 lazy-loaded)
 - Version 1.9.1 ready to commit/push
+
+---
+Task ID: sw-offline-race-v1.9.2
+Agent: Super Z (AI assistant, session web-c3a30a5c)
+Task: Fix PWA offline not activating: service worker registration loses the window 'load' race on slow first loads; untrack .env from the repo
+
+Work Log:
+- Root cause reproduced in a headless browser against a local mirror of the production build:
+  ThemeProvider registers /sw.js on window 'load'; when hydration finishes AFTER the load event
+  already fired, the listener never runs, registration silently never happens, the SW cache stays
+  empty and the app has no offline mode at all (exactly what the user experienced)
+- Fix in src/components/theme-provider.tsx: if document.readyState === "complete" at effect time,
+  call register() immediately instead of attaching a late 'load' listener; register() is idempotent
+  so the double path is harmless; cleanup semantics preserved
+- Verified the same fix earlier on a full local mirror of the deployed app (localhost:8901):
+  SW auto-registers on a clean first visit, cache fills (27 items), and with the server killed +
+  network disabled the app still loads and the counter persists data to localStorage
+- Untracked .env (git rm --cached): was committed before .gitignore gained the .env entry; contained
+  only a local SQLite path, no secrets; build is 'next build' with no prisma step and src/lib/db.ts
+  is not imported anywhere, so Vercel builds are unaffected
+- Bumped version 1.9.1 → 1.9.2 in: version.ts, i18n.ts (about_text RU+EN), package.json,
+  manifest.json, version.json (date 2026-10-09), sw.js, README.md, README.en.md,
+  medical-report.tsx footer
+- Updated CHANGELOG.md with the v1.9.2 section
+- Offline package (fart-counter-offline.zip, local mirror + launchers) attached to GitHub Release v1.9.2
+
+Stage Summary:
+- Offline PWA now always caches on first successful visit, regardless of hydration timing
+- Repository hygiene: .env no longer tracked
+- Version 1.9.2 ready to commit/push
