@@ -1087,3 +1087,20 @@ Stage Summary:
 - Recommendations (not applied): move download/*.zip (~30MB) to GitHub Releases;
   typescript.ignoreBuildErrors=true is risky hygiene; optional CSP header; branch
   protection on main.
+
+---
+Task ID: cleanup-legacy-zips
+Agent: Super Z (AI assistant, session web-c3a30a5c)
+Task: Remove 45 legacy release zips (~19 MB) from the repo per owner request; move distribution pointer to GitHub Releases; add .gitignore rule against future zip accumulation
+
+Work Log:
+- Verified no docs (README/DEPLOY/GITHUB/TECH) reference download/*.zip — deletion is reference-safe
+- git rm download/*.zip: 45 archives removed (v1.0.2...v1.7.5 full+update zips, beta APK, fart-counter.zip)
+- download/README.md rewritten: distribution now points to GitHub Releases (v1.9.2 release already carries fart-counter-offline-v1.9.2.zip)
+- .gitignore += download/*.zip so future build artifacts can't be committed by accident
+- Kept: promo/ (voiceovers), fart-counter-medical-test-data.json (QA data)
+- Note: zips remain recoverable from git history; the packed clone size stays ~13 MB until a history rewrite (optional, requires temporarily disabling branch protection)
+
+Stage Summary:
+- Working tree slimmed by ~19 MB of dead build artifacts; public download path is the v1.9.2 GitHub Release
+- Solo-dev workflow unaffected: normal pushes to main keep working, only force-push/deletion is blocked once protection is enabled

@@ -68,3 +68,6 @@ tool-results/
 
 # Test backup files (don't deploy)
 download/fart-counter-backup-*
+
+# release zips — distribute via GitHub Releases, not git
+download/*.zip
