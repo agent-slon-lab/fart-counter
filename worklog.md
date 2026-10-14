@@ -1120,3 +1120,6 @@ Work Log:
 Stage Summary:
 - Pipeline: push to main -> Vercel builds -> Action mirrors fresh build to GitHub Pages -> https://agent-slon-lab.github.io/ always matches Vercel
 - Vercel remains the source of truth and build system; Pages is the RU-reachable read-only mirror
+- Activation (follow-up, 2026-10-14): owner re-issued the PAT with workflow scope;
+  mirror-to-pages.yml finally pushed to main — the pipeline is live. The push itself
+  triggers the first run: wait for Vercel rebuild -> mirror -> force-push to Pages.

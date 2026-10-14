@@ -1,0 +1,64 @@
+name: Mirror Vercel deploy to GitHub Pages
+
+# Vercel (*.vercel.app) is SNI-blocked in Russia; GitHub Pages is reachable.
+# This workflow keeps https://agent-slon-lab.github.io/ an exact live mirror
+# of the Vercel deployment, so RU users (and anyone else) can load the PWA
+# without a VPN. Vercel stays the source of truth for builds.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: mirror-pages
+  cancel-in-progress: true
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (mirror script)
+        uses: actions/checkout@v4
+
+      - name: Wait for fresh Vercel deployment
+        run: |
+          # Vercel rebuilds on the same push that triggered this workflow.
+          # Give it time to finish before mirroring.
+          for i in $(seq 1 16); do
+            sleep 15
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' https://fart-counter-lake.vercel.app/version.json || echo 000)
+            echo "try $i: HTTP $CODE"
+            if [ "$CODE" = "200" ] && [ "$i" -ge 4 ]; then echo "vercel ready"; break; fi
+          done
+
+      - name: Mirror site from Vercel
+        run: |
+          rm -rf ~/mirror
+          python3 scripts/mirror_vercel.py
+
+      - name: Publish to agent-slon-lab.github.io
+        env:
+          PAGES_DEPLOY_KEY: ${{ secrets.PAGES_DEPLOY_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$PAGES_DEPLOY_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          cd ~/mirror
+          touch .nojekyll
+          printf '%s\n' \
+            "# Fart Counter PWA — GitHub Pages mirror" \
+            "" \
+            "Automatic live mirror of the Vercel deployment (fart-counter-lake.vercel.app)," \
+            "which is blocked in Russia by SNI filtering. Updated by GitHub Actions on every" \
+            "push to main of agent-slon-lab/fart-counter." \
+            "Source: https://github.com/agent-slon-lab/fart-counter" > README.md
+          git init -q -b main
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "auto-sync from Vercel $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push -q -f git@github.com:agent-slon-lab/agent-slon-lab.github.io.git main
+          echo "PAGES UPDATED"
