@@ -1104,3 +1104,19 @@ Work Log:
 Stage Summary:
 - Working tree slimmed by ~19 MB of dead build artifacts; public download path is the v1.9.2 GitHub Release
 - Solo-dev workflow unaffected: normal pushes to main keep working, only force-push/deletion is blocked once protection is enabled
+
+---
+Task ID: vercel-pages-autosync
+Agent: Super Z (AI assistant, session web-c3a30a5c)
+Task: Keep GitHub Pages an exact live mirror of the Vercel deployment (vercel.app is SNI-blocked in RU, github.io is reachable)
+
+Work Log:
+- Generated ed25519 deploy key (cryptography lib, OpenSSH format), registered as write deploy key "fart-counter-mirror-bot" (id 166377289) on agent-slon-lab/agent-slon-lab.github.io
+- Created Actions secret PAGES_DEPLOY_KEY in fart-counter (sealed-box encrypted, libsodium via pynacl) — private key never appears in code/history
+- Added scripts/mirror_vercel.py (closure mirroring: index.html -> /_next/* -> scan JS/CSS for chunks/fonts/locale URLs; root files + 5 locales preloaded)
+- Added .github/workflows/mirror-to-pages.yml: on push to main + manual dispatch -> wait ~60-240s for Vercel rebuild -> mirror -> force-push to pages repo over SSH deploy key with .nojekyll
+- Concurrency group prevents overlapping runs; job timeout 10 min
+
+Stage Summary:
+- Pipeline: push to main -> Vercel builds -> Action mirrors fresh build to GitHub Pages -> https://agent-slon-lab.github.io/ always matches Vercel
+- Vercel remains the source of truth and build system; Pages is the RU-reachable read-only mirror
