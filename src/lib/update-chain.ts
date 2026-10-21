@@ -31,7 +31,7 @@ import { APP_VERSION, compareVersions, type VersionInfo } from "@/lib/version";
 /** Update sources in probe order: primary first, mirror as fallback. */
 export const UPDATE_SOURCES = [
   "https://fart-counter-lake.vercel.app", // primary (may be SNI-blocked in RU)
-  "https://agent-slon-lab.github.io", // mirror (reachable from RU)
+  "https://agent-slon-lab.github.io/fart-counter", // project-page mirror (RU-reachable)
 ] as const;
 
 const PROBE_TIMEOUT_MS = 1000;

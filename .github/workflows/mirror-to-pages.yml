@@ -1,14 +1,23 @@
 name: Mirror Vercel deploy to GitHub Pages
 
 # Vercel (*.vercel.app) is SNI-blocked in Russia; GitHub Pages is reachable.
-# This workflow keeps https://agent-slon-lab.github.io/ an exact live mirror
-# of the Vercel deployment, so RU users (and anyone else) can load the PWA
-# without a VPN. Vercel stays the source of truth for builds.
+# This workflow keeps https://agent-slon-lab.github.io/fart-counter/ an exact
+# live mirror of the Vercel deployment, so RU users (and anyone else) can load
+# the PWA without a VPN. Vercel stays the source of truth for builds.
+#
+# IMPORTANT: the mirror lives on the PROJECT PAGE of this repository (gh-pages
+# branch -> https://agent-slon-lab.github.io/fart-counter/). The user-site root
+# (agent-slon-lab.github.io) is owned by ANOTHER app's mirror bot which
+# force-pushes its own site there — two apps cannot share one root URL.
+# scripts/mirror_vercel.py rewrites all root-absolute paths to /fart-counter/.
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 concurrency:
   group: mirror-pages
@@ -33,32 +42,30 @@ jobs:
             if [ "$CODE" = "200" ] && [ "$i" -ge 4 ]; then echo "vercel ready"; break; fi
           done
 
-      - name: Mirror site from Vercel
+      - name: Mirror site from Vercel (with /fart-counter subpath rewrite)
         run: |
           rm -rf ~/mirror
           python3 scripts/mirror_vercel.py
+          test -f ~/mirror/index.html
 
-      - name: Publish to agent-slon-lab.github.io
+      - name: Publish to gh-pages branch (project page /fart-counter/)
         env:
-          PAGES_DEPLOY_KEY: ${{ secrets.PAGES_DEPLOY_KEY }}
+          GH_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "$PAGES_DEPLOY_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
           cd ~/mirror
           touch .nojekyll
           printf '%s\n' \
             "# Fart Counter PWA — GitHub Pages mirror" \
             "" \
             "Automatic live mirror of the Vercel deployment (fart-counter-lake.vercel.app)," \
-            "which is blocked in Russia by SNI filtering. Updated by GitHub Actions on every" \
-            "push to main of agent-slon-lab/fart-counter." \
+            "which is blocked in Russia by SNI filtering. Served at:" \
+            "https://agent-slon-lab.github.io/fart-counter/" \
             "Source: https://github.com/agent-slon-lab/fart-counter" > README.md
-          git init -q -b main
+          git init -q -b gh-pages
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -q -m "auto-sync from Vercel $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git push -q -f git@github.com:agent-slon-lab/agent-slon-lab.github.io.git main
-          echo "PAGES UPDATED"
+          git commit -q -m "auto-sync from Vercel $(date -u +%Y-%m-%dT%H:%M:%SZ)" || true
+          git push -q -f "https://x-access-token:${GH_REPO_TOKEN}@github.com/agent-slon-lab/fart-counter.git" gh-pages:gh-pages
+          echo "PAGES UPDATED (gh-pages -> https://agent-slon-lab.github.io/fart-counter/)"
