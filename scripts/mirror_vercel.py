@@ -32,7 +32,7 @@ def fetch(path, binary=True):
         print("  skip %s (%s)" % (path, e))
         return None
 
-todo = {"/", "/sw.js", "/manifest.json", "/version.json", "/apple-touch-icon.png",
+todo = {"/", "/landing", "/privacy", "/sw.js", "/manifest.json", "/version.json", "/apple-touch-icon.png",
         "/favicon-16.png", "/favicon-32.png", "/icon-192.png", "/icon-512.png",
         "/icon.svg", "/screenshots/home.png", "/screenshots/insights.png",
         "/screenshots/food.png",

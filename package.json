@@ -1,6 +1,6 @@
 {
   "name": "fart-counter",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "private": true,
   "scripts": {
     "dev": "TURBOPACK=0 next dev -p 3000",

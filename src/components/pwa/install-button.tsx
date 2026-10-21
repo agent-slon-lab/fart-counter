@@ -151,7 +151,7 @@ function InstallDialog({
           await navigator.share({
             title: t("install_dialog_title"),
             text: t("install_app"),
-            url: window.location.href,
+            url: window.location.toString(),
           });
         } catch {
           // User cancelled share — instructions still visible

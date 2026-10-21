@@ -1123,3 +1123,23 @@ Stage Summary:
 - Activation (follow-up, 2026-10-14): owner re-issued the PAT with workflow scope;
   mirror-to-pages.yml finally pushed to main — the pipeline is live. The push itself
   triggers the first run: wait for Vercel rebuild -> mirror -> force-push to Pages.
+
+---
+Task ID: offline-first-v1.9.3
+Agent: Super Z (AI assistant, session web-c3a30a5c)
+Task: v1.9.3 — offline-first instant startup + quiet background updates via a source chain (Vercel -> GitHub Pages -> local). STRICT no-redirect rule: location.href/replace/assign banned everywhere; the mirror is a reserve UPDATE source only, never a redirect.
+
+Work Log:
+- public/sw.js (rewrite): VERSION const 1.9.3 + versioned cache fart-counter-v1.9.3; cache-first NAVIGATION (instant open from cache even when origin is blocked; ignoreSearch+ignoreVary so PWA shortcut "/?action=fart" and Next Vary headers can't cause misses); app-shell precache at install ("/", "/landing", "/privacy", manifest, version, icons); GET_VERSION protocol — SW answers {type:"VERSION"} so the client can verify a downloaded worker is genuinely newer; SKIP_WAITING stays client-decided; version.json network-first (update checks), _next chunks/locales/static cache-first; activate purges old caches + background chunk prefetch + clients.claim().
+- src/lib/update-chain.ts (new): UPDATE_SOURCES = [vercel, gh-pages]; probes with AbortController timeout=1000ms, cache no-store + cache-buster query; semver compare; applyUpdate(): registration.update() (same-origin SW script — browsers forbid cross-origin registration) -> GET_VERSION verify -> skipWaiting -> controllerchange -> ONE guarded reload (sessionStorage flag "fc-sw-update-reloaded") + 20s fallback window; verified-not-newer => totally silent (mirror-lag / frozen-mirror protection, no reload loops); syncWaitingWorker() aligns a stale controlling SW to the running bundle; forceUpdate() for the Profile button.
+- src/lib/version.ts (slim): APP_VERSION 1.9.3 + compareVersions + VersionInfo; fetchLatestVersion / 24h throttle / old forceUpdate removed (chain replaces them).
+- src/components/pwa/update-banner.tsx (rewrite): background chain check 4s after startup; banner "vA -> vB" + 20s countdown + "Update now" button -> guardedReload; no dismiss button; useManualUpdateCheck -> checkForUpdates() with reached/error distinction + applies quietly on check.
+- profile-screen.tsx / install-button.tsx: location.href reads -> window.location.toString(); post-backup-restore location.replace(href) -> location.reload(). ZERO location.href/replace/assign remain in the codebase (rg-verified).
+- scripts/mirror_vercel.py: + "/landing", "/privacy" (mirror previously 404 on those routes).
+- CORS note: both origins already serve Access-Control-Allow-Origin: * on /version.json (verified by curl) — cross-origin probes work both ways without vercel.json changes (an explicit header would DUPLICATE and break CORS).
+- Version bump to 1.9.3: package.json, version.json (2026-10-14), manifest.json, sw.js, version.ts, i18n.ts (about_text RU/EN), medical-report.tsx, README.md, README.en.md, CHANGELOG.md [1.9.3], download/README.md (mirror link + v1.9.3 release).
+
+Stage Summary:
+- Startup is now network-independent: instant from cache, works with the origin blocked/down.
+- Updates are quiet, chain-based, loop-proof (version verification + sessionStorage guard), and never change the address bar.
+- Mirror gap fixed (/landing, /privacy now mirrored); release v1.9.3 will carry a fresh offline zip.

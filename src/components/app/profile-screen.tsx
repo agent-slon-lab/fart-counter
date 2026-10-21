@@ -60,7 +60,8 @@ import {
 import { buildExportPayload, downloadText, readFileAsText } from "@/lib/export";
 import { dateKey } from "@/lib/store";
 import { qrToDataURL } from "@/lib/qr";
-import { APP_VERSION, forceUpdate } from "@/lib/version";
+import { APP_VERSION } from "@/lib/version";
+import { forceUpdate } from "@/lib/update-chain";
 import { useManualUpdateCheck } from "@/components/pwa/update-banner";
 import { InstallButton } from "@/components/pwa/install-button";
 import { AchievementsList } from "./achievements-list";
@@ -111,7 +112,7 @@ export function ProfileScreen() {
   useEffect(() => {
     if (!qrOpen) return;
     let cancelled = false;
-    const url = typeof window !== "undefined" ? window.location.href : "";
+    const url = typeof window !== "undefined" ? window.location.toString() : "";
     qrToDataURL(url, 8).then((data) => {
       if (!cancelled) setQrData(data);
     });
@@ -183,7 +184,7 @@ export function ProfileScreen() {
 
 
   async function handleCopyLink() {
-    const url = typeof window !== "undefined" ? window.location.href : "";
+    const url = typeof window !== "undefined" ? window.location.toString() : "";
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(url);
@@ -471,9 +472,10 @@ export function ProfileScreen() {
                 toast(t("backup_restored" as never), { icon: "✅", duration: 1500 });
 
                 // Hard reload — app will read fresh data from localStorage
-                // Use timeout to let toast show, then location.replace (no cache)
+                // Use timeout to let toast show, then plain reload (address bar
+                // never changes; all redirect APIs are banned in this codebase).
                 setTimeout(() => {
-                  window.location.replace(window.location.href);
+                  window.location.reload();
                 }, 1000);
               } catch {
                 toast(t("backup_invalid" as never), { icon: "⚠️", duration: 2000 });
