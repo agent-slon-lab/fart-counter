@@ -1,0 +1,76 @@
+{
+  "name": "Счётчик Пуков",
+  "short_name": "Пуки",
+  "description": "Офлайн PWA для отслеживания пуков с юмором, статистикой и достижениями.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "/fart-counter/",
+  "scope": "/fart-counter/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1f17",
+  "theme_color": "#1a1f17",
+  "version": "1.9.3",
+  "categories": [
+    "health",
+    "lifestyle",
+    "entertainment"
+  ],
+  "icons": [
+    {
+      "src": "/fart-counter/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/fart-counter/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/fart-counter/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/fart-counter/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/fart-counter/screenshots/home.png",
+      "sizes": "400x800",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Главная — счётчик пуков"
+    },
+    {
+      "src": "/fart-counter/screenshots/insights.png",
+      "sizes": "400x800",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Аналитика — ИИ-инсайты и дайджест"
+    },
+    {
+      "src": "/fart-counter/screenshots/food.png",
+      "sizes": "400x800",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Дневник питания"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "+1 Пук",
+      "short_name": "+1",
+      "description": "Быстро добавить пук",
+      "url": "/fart-counter/?action=fart"
+    }
+  ]
+}
