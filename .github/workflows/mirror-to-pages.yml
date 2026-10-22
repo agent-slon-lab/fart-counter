@@ -34,12 +34,15 @@ jobs:
       - name: Wait for fresh Vercel deployment
         run: |
           # Vercel rebuilds on the same push that triggered this workflow.
-          # Give it time to finish before mirroring.
+          # Wait until it serves the version carried by THIS commit (not just
+          # any HTTP 200) so the mirror can never capture a stale deployment.
+          EXPECTED=$(python3 -c "import json;print(json.load(open('public/version.json'))['version'])")
+          echo "expected version: $EXPECTED"
           for i in $(seq 1 16); do
             sleep 15
-            CODE=$(curl -s -o /dev/null -w '%{http_code}' https://fart-counter-lake.vercel.app/version.json || echo 000)
-            echo "try $i: HTTP $CODE"
-            if [ "$CODE" = "200" ] && [ "$i" -ge 4 ]; then echo "vercel ready"; break; fi
+            GOT=$(curl -s -m 10 https://fart-counter-lake.vercel.app/version.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('version',''))" 2>/dev/null || echo "")
+            echo "try $i: live version '$GOT'"
+            if [ "$GOT" = "$EXPECTED" ]; then echo "vercel ready (serving $GOT)"; break; fi
           done
 
       - name: Mirror site from Vercel (with /fart-counter subpath rewrite)
@@ -66,6 +69,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -q -m "auto-sync from Vercel $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]" || true
+          # Skip the whole push when the mirror is byte-identical to live gh-pages:
+          # a no-op force-push would only create a new commit and trigger a
+          # pointless (and always failing) Vercel build of the static mirror.
+          git remote add origin https://github.com/agent-slon-lab/fart-counter.git
+          git fetch -q origin gh-pages:refs/remotes/origin/gh-pages || echo "no existing gh-pages branch"
+          NEW_TREE=$(git write-tree)
+          OLD_TREE=$(git rev-parse refs/remotes/origin/gh-pages^{tree} 2>/dev/null || echo "none")
+          echo "mirror tree: $NEW_TREE | live gh-pages tree: $OLD_TREE"
+          if [ "$NEW_TREE" = "$OLD_TREE" ]; then
+            echo "MIRROR UNCHANGED - nothing new to publish, push skipped"
+            exit 0
+          fi
+          git commit -q -m "auto-sync from Vercel $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git push -q -f "https://x-access-token:${GH_REPO_TOKEN}@github.com/agent-slon-lab/fart-counter.git" gh-pages:gh-pages
           echo "PAGES UPDATED (gh-pages -> https://agent-slon-lab.github.io/fart-counter/)"

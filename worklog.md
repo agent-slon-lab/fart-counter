@@ -1143,3 +1143,18 @@ Stage Summary:
 - Startup is now network-independent: instant from cache, works with the origin blocked/down.
 - Updates are quiet, chain-based, loop-proof (version verification + sessionStorage guard), and never change the address bar.
 - Mirror gap fixed (/landing, /privacy now mirrored); release v1.9.3 will carry a fresh offline zip.
+
+---
+Task ID: mirror-quiet-sync
+Agent: Super Z (AI assistant, session web-c3a30a5c)
+Task: gh-pages mirror pushes trigger always-failing Vercel builds ([NEXT_NO_VERSION]) - make mirror syncs quiet and safe.
+
+Work Log:
+- Diagnosis (2026-10-21): the failed build in the user's Vercel log was the Git integration building the gh-pages mirror branch itself (commit 8e3fe8b, pushed 12:55:37Z; build started 12:55:44Z). gh-pages is static output with no package.json, so a Next.js-preset build can never succeed there. Happens on every mirror sync since the mirror moved to this repo's gh-pages branch (2026-10-14); production builds from main are never affected.
+- mirror-to-pages.yml wait step: poll version.json until it serves the version carried by the pushed commit (was: any HTTP 200 after 60s) - removes the stale-deploy race before mirroring.
+- mirror-to-pages.yml publish step: fetch current gh-pages, compare root tree hashes, skip commit+push entirely when the mirror is byte-identical; no-op syncs (manual re-runs, same-version rebuilds) now publish nothing at all.
+- mirror-to-pages.yml commit message: appended [skip ci] so Vercel (if it honors the directive) skips mirror pushes instead of failing on them.
+- Optional belt-and-braces (dashboard, not required): project Settings -> Git -> Ignored Build Step = custom "if [ \"$VERCEL_GIT_COMMIT_REF\" = \"gh-pages\" ]; then exit 0; else exit 1; fi".
+
+Stage Summary:
+- Mirror pushes now occur only when mirror content actually changes; Vercel-side failures on mirror pushes disappear entirely if [skip ci] is honored, or shrink to once per real release otherwise. Production deploys of main are untouched.
