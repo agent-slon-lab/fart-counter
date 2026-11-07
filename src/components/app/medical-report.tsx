@@ -90,22 +90,45 @@ export function MedicalReport({ open, onOpenChange }: { open: boolean; onOpenCha
 
   function handlePrint() {
     // Clone the report-content into body so it's not clipped by Dialog's max-height/overflow.
-    // The clone is positioned off-screen on display, but @media print CSS (globals.css)
-    // makes it visible at top of page during printing.
+    // The clone is `display:none` on screen, and @media print CSS makes it visible
+    // while hiding everything else. Uses `afterprint` event for cleanup (mobile-safe).
     const rc = document.querySelector('.report-content');
-    if (rc) {
-      // Remove any previous clone
-      document.getElementById('print-clone')?.remove();
-      const clone = rc.cloneNode(true) as HTMLElement;
-      clone.id = 'print-clone';
-      clone.classList.add('print-clone');
-      document.body.appendChild(clone);
+    if (!rc) {
+      window.print();
+      return;
     }
-    window.print();
-    // Clean up clone after print dialog closes (give it 1s)
-    setTimeout(() => {
+
+    // Remove any previous clone
+    document.getElementById('print-clone')?.remove();
+
+    // Create fresh clone
+    const clone = rc.cloneNode(true) as HTMLElement;
+    clone.id = 'print-clone';
+    clone.classList.add('print-clone');
+    document.body.appendChild(clone);
+
+    // Cleanup function — removes clone + listeners
+    const cleanup = () => {
       document.getElementById('print-clone')?.remove();
-    }, 1000);
+      window.removeEventListener('afterprint', cleanup);
+      if (typeof fallbackTimer !== 'undefined') clearTimeout(fallbackTimer);
+    };
+
+    // Modern browsers fire `afterprint` after the print dialog closes (success OR cancel).
+    // Mobile Safari, Chrome Android, desktop browsers all support this.
+    window.addEventListener('afterprint', cleanup, { once: true });
+
+    // Fallback: 5-minute timeout for cases where `afterprint` doesn't fire
+    // (rare: some embedded WebViews). Long enough to cover slow mobile print dialogs.
+    const fallbackTimer = setTimeout(cleanup, 5 * 60 * 1000);
+
+    // Defer window.print() by one frame so the clone is fully rendered in DOM
+    // before the browser captures the print layout.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.print();
+      });
+    });
   }
 
   return (
@@ -329,7 +352,7 @@ export function MedicalReport({ open, onOpenChange }: { open: boolean; onOpenCha
 
               {/* Footer */}
               <div className="mt-4 border-t pt-2 text-center">
-                <p className="text-[10px] text-muted-foreground">{t("report_signature" as never)} · v1.9.3</p>
+                <p className="text-[10px] text-muted-foreground">{t("report_signature" as never)} · v1.9.4</p>
                 <p className="text-[9px] text-muted-foreground italic">{t("report_disclaimer" as never)}</p>
               </div>
             </>

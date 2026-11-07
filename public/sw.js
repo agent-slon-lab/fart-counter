@@ -1,6 +1,6 @@
-// Service Worker for Fart Counter PWA — OFFLINE-FIRST (v1.9.3).
+// Service Worker for Fart Counter PWA — OFFLINE-FIRST (v1.9.4).
 //
-// HARD RULES (see CHANGELOG [1.9.3]):
+// HARD RULES (see CHANGELOG [1.9.4]):
 //   1. The app ALWAYS opens from cache instantly — network NEVER blocks startup,
 //      even if the origin is down or blocked (SNI).
 //   2. Updates are downloaded only in the background by the client-side source
@@ -16,7 +16,7 @@
 //   client -> SW: "SKIP_WAITING"            => SW activates immediately.
 // The client verifies the downloaded SW is genuinely NEWER before skipWaiting —
 // this protects against mirror-sync lag and frozen local mirrors (no reload loops).
-const VERSION = "1.9.3";
+const VERSION = "1.9.4";
 const CACHE = "fart-counter-v" + VERSION;
 
 const PRECACHE = [

@@ -1,8 +1,8 @@
 // Version helpers for Fart Counter PWA.
-// Update discovery/application lives in src/lib/update-chain.ts (v1.9.3):
+// Update discovery/application lives in src/lib/update-chain.ts (v1.9.4):
 // quiet source-chain probes (Vercel -> GitHub Pages -> local), no redirects.
 
-export const APP_VERSION = "1.9.3";
+export const APP_VERSION = "1.9.4";
 
 export interface VersionInfo {
   version: string;

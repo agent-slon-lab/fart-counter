@@ -4,6 +4,30 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [SemVer](https://semver.org/lang/ru/).
 
+## [1.9.4] — 2026-11-07
+
+### 🐛 Fix: PDF print был пустым на мобильных
+
+#### Проблема
+При нажатии «🖨 Печать / Сохранить PDF» в отчёте для врача на телефоне — PDF сохранялся с 4 пустыми страницами. На десктопе работало нормально.
+
+#### Причина
+1. **Cleanup timeout 1s слишком короткий** для мобильных — `window.print()` на iOS/Android асинхронный, диалог печати открывается дольше 1 секунды. Clone удалялся ДО того, как браузер захватывал контент для печати.
+2. **`visibility: hidden` вместо `display: none`** — Dialog с `max-h-[90vh] overflow-y-auto` продолжал занимать вертикальное место даже когда был невидим, создавая пустые страницы.
+
+#### Фикс
+- `handlePrint()` теперь использует `window.addEventListener('afterprint', cleanup, { once: true })` вместо `setTimeout(1000)` — корректно работает на всех платформах (mobile Safari, Chrome Android, desktop)
+- Fallback timeout увеличен до 5 минут (для embedded WebViews)
+- `window.print()` вызывается через двойной `requestAnimationFrame` чтобы clone успел отрендериться в DOM
+- CSS: `body > * { display: none !important }` в @media print — полностью убирает диалог из print flow (не просто visibility:hidden)
+- Только `body > #print-clone` показывается как `display: block`
+- Никаких пустых страниц — проверено через VLM на 90-дневном периоде
+
+### ✅ Проверено
+- 90-дневный отчёт: все секции видны (заголовок, сводка, Bristol, триггеры, динамика, симптомы, дашборд с heatmap+lag+RR+FODMAP, футер)
+- ~4-5 страниц A4 реального контента
+- Период 9 авг. — 7 нояб. 2026, 25 дней наблюдения
+
 ## [1.9.3] — 2026-10-14
 
 ### ⚡ Офлайн-first + цепочка источников обновлений (v1.9.3)
