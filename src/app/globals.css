@@ -387,23 +387,47 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 
 /* === Print styles for medical report === */
+
+/* Off-screen positioning of the clone on display (so it doesn't show in the app) */
+.print-clone {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 100%;
+  pointer-events: none;
+  opacity: 0;
+}
+
 @media print {
-  /* Hide everything except the report */
+  /* Hide everything in body */
   body * {
     visibility: hidden;
   }
-  .report-content, .report-content * {
+  /* Show only the print-clone and its children */
+  .print-clone, .print-clone * {
     visibility: visible;
   }
-  .report-content {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+  .print-clone {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
     max-width: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
     border: none !important;
-    padding: 0 !important;
+    padding: 8px !important;
+    margin: 0 !important;
+    background: white !important;
+    color: black !important;
   }
+  /* Reset all clipping on the clone's children */
+  .print-clone,
+  .print-clone * {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  /* Hide dialog overlay (backdrop) */
   .print\:hidden {
     display: none !important;
   }
@@ -411,5 +435,23 @@ button { -webkit-tap-highlight-color: transparent; }
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+  /* Page setup */
+  @page {
+    margin: 12mm;
+  }
+  /* Avoid awkward page breaks inside cards */
+  .print-clone .rounded-lg,
+  .print-clone .rounded-xl,
+  .print-clone .border,
+  .print-clone .p-3,
+  .print-clone .p-4 {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Force section headings to start on a new line */
+  .print-clone h2 {
+    page-break-after: avoid;
+    break-after: avoid;
   }
 }

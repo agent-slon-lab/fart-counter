@@ -89,7 +89,23 @@ export function MedicalReport({ open, onOpenChange }: { open: boolean; onOpenCha
   const dateRange = `${startDate.toLocaleDateString(locale, { day: "numeric", month: "short" })} — ${new Date().toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}`;
 
   function handlePrint() {
+    // Clone the report-content into body so it's not clipped by Dialog's max-height/overflow.
+    // The clone is positioned off-screen on display, but @media print CSS (globals.css)
+    // makes it visible at top of page during printing.
+    const rc = document.querySelector('.report-content');
+    if (rc) {
+      // Remove any previous clone
+      document.getElementById('print-clone')?.remove();
+      const clone = rc.cloneNode(true) as HTMLElement;
+      clone.id = 'print-clone';
+      clone.classList.add('print-clone');
+      document.body.appendChild(clone);
+    }
     window.print();
+    // Clean up clone after print dialog closes (give it 1s)
+    setTimeout(() => {
+      document.getElementById('print-clone')?.remove();
+    }, 1000);
   }
 
   return (
@@ -201,43 +217,72 @@ export function MedicalReport({ open, onOpenChange }: { open: boolean; onOpenCha
                   {fartTriggers.length > 0 && (
                     <div className="mb-2">
                       <p className="text-[10px] text-muted-foreground mb-1">💨 {t("report_food_trigger_farts" as never)}:</p>
-                      {fartTriggers.slice(0, 5).map((c) => (
-                        <div key={c.name} className="flex justify-between text-xs border-b py-0.5">
-                          <span>{c.name}</span>
-                          <span className="tabular-nums">{c.avgFarts} {t("report_food_trigger_farts" as never)} · {c.times}×</span>
-                        </div>
-                      ))}
+                      {fartTriggers.slice(0, 5).map((c) => {
+                        const tn = t(c.name as never);
+                        const display = tn !== c.name ? tn : c.name;
+                        return (
+                          <div key={c.name} className="flex justify-between text-xs border-b py-0.5">
+                            <span>{display}</span>
+                            <span className="tabular-nums">{c.avgFarts} {t("report_food_trigger_farts" as never)} · {c.times}×</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                   {poopTriggers.length > 0 && (
                     <div>
                       <p className="text-[10px] text-muted-foreground mb-1">🚽 {t("report_food_trigger_poops" as never)}:</p>
-                      {poopTriggers.slice(0, 5).map((c) => (
-                        <div key={c.name} className="flex justify-between text-xs border-b py-0.5">
-                          <span>{c.name}</span>
-                          <span className="tabular-nums">~{c.avgHours}ч · {c.times}×</span>
-                        </div>
-                      ))}
+                      {poopTriggers.slice(0, 5).map((c) => {
+                        const tn = t(c.name as never);
+                        const display = tn !== c.name ? tn : c.name;
+                        return (
+                          <div key={c.name} className="flex justify-between text-xs border-b py-0.5">
+                            <span>{display}</span>
+                            <span className="tabular-nums">~{c.avgHours}ч · {c.times}×</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
               )}
 
-              {/* Chart */}
+              {/* Chart — shows farts (fun mode) or poops (medical mode), stacked if both exist */}
               <div className="mb-4">
                 <h2 className="mb-2 text-sm font-bold uppercase tracking-wider">{t("report_30day_chart" as never)}</h2>
                 <div className="flex items-end gap-px h-24 border-b">
-                  {chartData.map((d, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
-                      <div
-                        className="w-full bg-primary/60"
-                        style={{ height: `${(d.farts / maxChartVal) * 100}%`, minHeight: d.farts > 0 ? 2 : 0 }}
-                        title={`${d.date}: ${d.farts} ${t("report_farts_chart_label" as never)}`}
-                      />
-                    </div>
-                  ))}
+                  {chartData.map((d, i) => {
+                    // In medical mode, prefer poops; in fun mode, prefer farts. Stack if both exist.
+                    const fartH = (d.farts / maxChartVal) * 100;
+                    const poopH = (d.poops / maxChartVal) * 100;
+                    const hasFart = d.farts > 0;
+                    const hasPoop = d.poops > 0;
+                    return (
+                      <div key={i} className="flex-1 flex flex-col-reverse items-center justify-end h-full gap-px">
+                        {/* Bottom: farts (orange) */}
+                        {hasFart && (
+                          <div
+                            className="w-full bg-amber-500/70"
+                            style={{ height: `${fartH}%`, minHeight: 2 }}
+                            title={`${d.date}: ${d.farts} ${t("report_farts_chart_label" as never)}`}
+                          />
+                        )}
+                        {/* Top: poops (primary green) */}
+                        {hasPoop && (
+                          <div
+                            className="w-full bg-primary/70"
+                            style={{ height: `${poopH}%`, minHeight: 2 }}
+                            title={`${d.date}: ${d.poops} ${t("report_avg_poops" as never)}`}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
                 <p className="text-[10px] text-center mt-1 text-muted-foreground">
+                  <span className="inline-block w-2 h-2 bg-primary/70 rounded-sm align-middle mr-1"></span>
+                  {t("report_avg_poops" as never)} ·
+                  <span className="inline-block w-2 h-2 bg-amber-500/70 rounded-sm align-middle mx-1 ml-2"></span>
                   {t("report_farts_chart_label" as never)} ({t("report_period" as never)} {period} {lang === "ru" ? "дн" : "days"})
                 </p>
               </div>
